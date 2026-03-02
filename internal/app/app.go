@@ -53,18 +53,21 @@ func RunServer() {
 	categoryRepo := repository.NewCategoryRepository(db.DB)
 	contentRepo := repository.NewContentRepository(db.DB)
 	userRepo := repository.NewUserRepository(db.DB)
+	employeeRepo := repository.NewEmployeeRepository(db.DB)
 
 	//service
 	authService := service.NewAuthService(authRepo, cfg, jwt)
 	categoryService := service.NewCategoryService(categoryRepo)
 	contentService := service.NewContentService(contentRepo, cfg, r2Adapter)
 	userService := service.NewUserService(userRepo)
+	employeeService := service.NewEmployeeService(employeeRepo, cfg, r2Adapter)
 
 	//handler
 	authHandler := handler.NewAuthHandler(authService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	contentHandler := handler.NewContentHandler(contentService)
 	userHandler := handler.NewUserHandler(userService)
+	employeeHandler := handler.NewEmployeeHandler(employeeService)
 
 	app := fiber.New()
 	app.Use(cors.New())
@@ -112,6 +115,10 @@ func RunServer() {
 	userApp := adminApp.Group("/users")
 	userApp.Get("/profile", userHandler.GetUserByID)
 	userApp.Put("/update-password", userHandler.UpdatePassword)
+
+	// Employee
+	employeeApp := adminApp.Group("/employees")
+	employeeApp.Get("/", employeeHandler.GetEmployees)
 
 	// FE
 	feApp := api.Group("/fe")

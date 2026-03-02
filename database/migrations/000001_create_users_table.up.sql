@@ -1,8 +1,26 @@
+CREATE TYPE user_role AS ENUM (
+  'SUPER_ADMIN',
+  'TENANT_ADMIN',
+  'SUPERVISOR',
+  'EMPLOYEE'
+);
+
+CREATE TYPE user_status AS ENUM (
+  'ACTIVE',
+  'INACTIVE',
+  'BANNED'
+);
+
 CREATE TABLE IF NOT EXISTS "users" (
-       id SERIAL PRIMARY KEY,
-       name VARCHAR(100) NOT NULL,
-       email VARCHAR(100) UNIQUE NOT NULL,
-       password VARCHAR(100) NOT NULL,
-       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-       updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
-)
+    id SERIAL PRIMARY KEY,
+    tenant_id INT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    role user_role NOT NULL DEFAULT 'EMPLOYEE',
+    status user_status NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_users_tenant_id ON users (tenant_id);

@@ -17,6 +17,8 @@ func SeedRoles(db *gorm.DB) {
 	admin := model.User{
 		Name:     "Admin",
 		Email:    "admin@mail.com",
+		Status:   "ACTIVE",
+		Role:     "SUPER_ADMIN",
 		Password: string(bytes),
 	}
 
