@@ -15,6 +15,7 @@ func SeedRoles(db *gorm.DB) {
 	}
 
 	admin := model.User{
+		TenantID: nil,
 		Name:     "Admin",
 		Email:    "admin@mail.com",
 		Status:   "ACTIVE",

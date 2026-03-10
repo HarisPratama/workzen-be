@@ -3,7 +3,9 @@ package middleware
 import (
 	"bwanews/config"
 	"bwanews/internal/adapter/handler/response"
+	"bwanews/internal/core/domain/entity"
 	"bwanews/lib/auth"
+	"fmt"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,6 +13,7 @@ import (
 
 type Middleware interface {
 	CheckToken() fiber.Handler
+	RequireRole(roles ...string) fiber.Handler
 }
 
 type Options struct {
@@ -39,6 +42,38 @@ func (o Options) CheckToken() fiber.Handler {
 		c.Locals("user", claims)
 
 		return c.Next()
+	}
+}
+
+func (o Options) RequireRole(roles ...string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var errorResponse response.ErrorResponseDefault
+
+		claims, ok := c.Locals("user").(*entity.JwtData)
+		if !ok {
+			errorResponse.Meta.Status = false
+			errorResponse.Meta.Message = "Invalid token claims"
+			return c.Status(fiber.StatusUnauthorized).JSON(errorResponse)
+		}
+
+		role := claims.Role
+		fmt.Println(role)
+
+		if role == "" {
+			errorResponse.Meta.Status = false
+			errorResponse.Meta.Message = "Unauthorized access"
+			return c.Status(fiber.StatusForbidden).JSON(errorResponse)
+		}
+
+		for _, allowed := range roles {
+			if role == allowed {
+				return c.Next()
+			}
+		}
+
+		errorResponse.Meta.Status = false
+		errorResponse.Meta.Message = "Access forbidden"
+		return c.Status(fiber.StatusForbidden).JSON(errorResponse)
 	}
 }
 

@@ -25,9 +25,9 @@ func (e *employeeHandler) CreateEmployee(c *fiber.Ctx) error {
 	var req request.EmployeeRequest
 	claims := c.Locals("user").(*entity.JwtData)
 	userID := claims.UserID
-	role := claims.Role
+	tenantID := claims.TenantID
 
-	if userID == 0 {
+	if userID == 0 || tenantID == 0 {
 		code = "[Handler] CreateEmployee - 1"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
@@ -57,14 +57,30 @@ func (e *employeeHandler) CreateEmployee(c *fiber.Ctx) error {
 		Name:        req.Name,
 		CitizenID:   req.CitizenID,
 		PhoneNumber: req.PhoneNumber,
+		TenantID:    int64(tenantID),
 	}
 
 	err = e.employeeService.CreateEmployee(c.Context(), reqEntity)
 
-	panic("implement me")
+	if err != nil {
+		code := "[HANDLER] CreateEmployee - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = nil
+
+	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
 }
 
 func (e *employeeHandler) GetEmployees(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+
 	page := 1
 	if c.Query("page") != "" {
 		page, err = conv.StringToInt(c.Query("page"))
@@ -120,7 +136,10 @@ func (e *employeeHandler) GetEmployees(c *fiber.Ctx) error {
 		Status:    status,
 	}
 
-	results, totalData, totalPages, err := e.employeeService.GetEmployees(c.Context(), reqEntity)
+	role := claims.Role
+	tenantID := claims.TenantID
+	results, totalData, totalPages, err := e.employeeService.GetEmployees(c.Context(), reqEntity, role, int64(tenantID))
+
 	if err != nil {
 		code := "[HANDLER] GetEmployees - 3"
 		log.Errorw(code, err)

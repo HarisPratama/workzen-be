@@ -37,6 +37,7 @@ func (a authRepository) GetUserByEmail(ctx context.Context, req entity.LoginRequ
 		Password: modelUser.Password,
 		Role:     modelUser.Role,
 		Status:   modelUser.Status,
+		TenantID: modelUser.TenantID,
 	}
 
 	return resp, nil

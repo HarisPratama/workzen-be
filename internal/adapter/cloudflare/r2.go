@@ -5,6 +5,8 @@ import (
 	"bwanews/internal/core/domain/entity"
 	"context"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -36,11 +38,26 @@ func (c *cloudflareR2Adapter) UploadImage(req *entity.FileUploadEntity) (string,
 
 	defer openedFile.Close()
 
+	buffer := make([]byte, 512)
+	n, err := openedFile.Read(buffer)
+	if err != nil && err != io.EOF {
+		log.Errorw("[CLOUDFLARE R2] ReadBuffer Error", err)
+		return "", err
+	}
+
+	contentType := http.DetectContentType(buffer[:n])
+
+	_, err = openedFile.Seek(0, 0)
+	if err != nil {
+		log.Errorw("[CLOUDFLARE R2] Seek Error", err)
+		return "", err
+	}
+
 	_, err = c.Client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(c.Bucket),
 		Key:         aws.String(req.Name),
 		Body:        openedFile,
-		ContentType: aws.String("image/jpeg"),
+		ContentType: aws.String(contentType),
 	})
 
 	if err != nil {

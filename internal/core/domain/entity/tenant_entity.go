@@ -7,3 +7,12 @@ type TenantEntity struct {
 	Status      string
 	Address     string
 }
+
+type RegisterTenantEntity struct {
+	CompanyName string
+	Address     string
+	Plan        string
+	Name        string
+	Email       string
+	Password    string
+}

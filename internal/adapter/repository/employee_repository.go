@@ -4,6 +4,7 @@ import (
 	"bwanews/internal/core/domain/entity"
 	"bwanews/internal/core/domain/model"
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -15,26 +16,40 @@ import (
 type EmployeeRepository interface {
 	GetEmployees(ctx context.Context, query entity.EmployeeQueryString) ([]entity.EmployeeEntity, int64, int64, error)
 	GetEmployee(ctx context.Context, id int64) (*entity.EmployeeEntity, error)
-	CreateEmployee(ctx context.Context, req entity.EmployeeEntity, tenantId int64) error
+	GetEmployeesByTenant(ctx context.Context, tenantId int64, query entity.EmployeeQueryString) ([]entity.EmployeeEntity, int64, int64, error)
+	CreateEmployee(ctx context.Context, req entity.EmployeeEntity) error
 }
 
 type employeeRepository struct {
 	db *gorm.DB
 }
 
-func (e *employeeRepository) CreateEmployee(ctx context.Context, req entity.EmployeeEntity, tenantId int64) error {
+func (e *employeeRepository) CreateEmployee(ctx context.Context, req entity.EmployeeEntity) error {
 	modelEmployee := model.Employee{
 		Name:        req.Name,
 		CitizenID:   req.CitizenID,
 		PhoneNumber: req.PhoneNumber,
-		TenantID:    tenantId,
+		TenantID:    req.TenantID,
+		UserID:      nil,
+		Status:      "ACTIVE",
 	}
 
-	err := e.db.Create(&modelEmployee).Error
-	if err != nil {
-		code = "[REPOSITORY] CreateEmployee - 1"
-		log.Errorw(code, err)
-		return err
+	result := e.db.WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: "tenant_id"},
+				{Name: "citizen_id"},
+			},
+			DoNothing: true,
+		}).
+		Create(&modelEmployee)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return errors.New("citizen ID already exists")
 	}
 
 	return nil
@@ -120,6 +135,64 @@ func (e *employeeRepository) GetEmployees(ctx context.Context, query entity.Empl
 	}
 
 	return resps, countData, int64(totalPages), err
+}
+
+func (e *employeeRepository) GetEmployeesByTenant(
+	ctx context.Context,
+	tenantID int64,
+	query entity.EmployeeQueryString,
+) ([]entity.EmployeeEntity, int64, int64, error) {
+
+	var modelEmployees []model.Employee
+	var countData int64
+
+	order := fmt.Sprintf("%s %s", query.OrderBy, query.OrderType)
+	offset := (query.Page - 1) * query.Limit
+
+	status := "ACTIVE"
+	if query.Status != "" {
+		status = query.Status
+	}
+
+	sqlMain := e.db.WithContext(ctx).
+		Preload(clause.Associations).
+		Where("tenant_id = ?", tenantID). // 🔐 INI KUNCI
+		Where("name ILIKE ?", "%"+query.Search+"%").
+		Where("status = ?", status)
+
+	if err := sqlMain.Model(&modelEmployees).Count(&countData).Error; err != nil {
+		log.Errorw("[REPOSITORY] GetEmployees - 1")
+		return nil, 0, 0, err
+	}
+
+	totalPages := int64(math.Ceil(float64(countData) / float64(query.Limit)))
+
+	if err := sqlMain.
+		Order(order).
+		Limit(query.Limit).
+		Offset(offset).
+		Find(&modelEmployees).Error; err != nil {
+		log.Errorw("[REPOSITORY] GetEmployees - find", "tenant_id", tenantID, "error", err)
+		return nil, 0, 0, err
+	}
+
+	// mapping tetap
+	resps := make([]entity.EmployeeEntity, 0, len(modelEmployees))
+	for _, val := range modelEmployees {
+		resps = append(resps, entity.EmployeeEntity{
+			ID:        val.ID,
+			Name:      val.Name,
+			Status:    val.Status,
+			CitizenID: val.CitizenID,
+			CreatedAt: val.CreatedAt,
+			User: entity.UserEntity{
+				ID:   val.User.ID,
+				Name: val.User.Name,
+			},
+		})
+	}
+
+	return resps, countData, totalPages, nil
 }
 
 func NewEmployeeRepository(db *gorm.DB) EmployeeRepository {

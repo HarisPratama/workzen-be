@@ -7,4 +7,5 @@ type UserEntity struct {
 	Password string
 	Role     string
 	Status   string
+	TenantID *int64
 }

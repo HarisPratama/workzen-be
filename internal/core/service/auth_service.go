@@ -42,9 +42,15 @@ func (a authService) GetUserByEmail(ctx context.Context, req entity.LoginRequest
 		return nil, err
 	}
 
+	var tenantID float64
+	if result.TenantID != nil {
+		tenantID = float64(*result.TenantID)
+	}
+
 	jwtData := entity.JwtData{
-		UserID: float64(result.ID),
-		Role:   result.Role,
+		UserID:   float64(result.ID),
+		Role:     result.Role,
+		TenantID: tenantID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			NotBefore: jwt.NewNumericDate(time.Now().Add(-time.Hour * 2)),
 			ID:        string(result.ID),

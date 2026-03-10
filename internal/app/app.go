@@ -54,6 +54,9 @@ func RunServer() {
 	contentRepo := repository.NewContentRepository(db.DB)
 	userRepo := repository.NewUserRepository(db.DB)
 	employeeRepo := repository.NewEmployeeRepository(db.DB)
+	tenantRepo := repository.NewTenantRepository(db.DB)
+	clientRepo := repository.NewClientRepository(db.DB)
+	manpowerReqRepo := repository.NewManpowerReqRepository(db.DB)
 
 	//service
 	authService := service.NewAuthService(authRepo, cfg, jwt)
@@ -61,6 +64,9 @@ func RunServer() {
 	contentService := service.NewContentService(contentRepo, cfg, r2Adapter)
 	userService := service.NewUserService(userRepo)
 	employeeService := service.NewEmployeeService(employeeRepo, cfg, r2Adapter)
+	tenantService := service.NewTenantService(tenantRepo)
+	clientService := service.NewClientService(clientRepo)
+	manpowerReqService := service.NewManpowerReqService(manpowerReqRepo)
 
 	//handler
 	authHandler := handler.NewAuthHandler(authService)
@@ -68,6 +74,9 @@ func RunServer() {
 	contentHandler := handler.NewContentHandler(contentService)
 	userHandler := handler.NewUserHandler(userService)
 	employeeHandler := handler.NewEmployeeHandler(employeeService)
+	tenantHandler := handler.NewTenantHandler(tenantService)
+	clientHandler := handler.NewClientHandler(clientService)
+	manpowerReqHandler := handler.NewManpowerReqHandler(manpowerReqService)
 
 	app := fiber.New()
 	app.Use(cors.New())
@@ -91,7 +100,7 @@ func RunServer() {
 
 	api.Post("/login", authHandler.Login)
 
-	adminApp := api.Group("/admin")
+	adminApp := api.Group("/v1/admin")
 	adminApp.Use(middlewareAuth.CheckToken())
 
 	// category
@@ -118,13 +127,31 @@ func RunServer() {
 
 	// Employee
 	employeeApp := adminApp.Group("/employees")
-	employeeApp.Get("/", employeeHandler.GetEmployees)
+	employeeApp.Get("/", middlewareAuth.RequireRole("SUPER_ADMIN"), employeeHandler.GetEmployees)
 
 	// FE
 	feApp := api.Group("/fe")
 	feApp.Get("/categories", categoryHandler.GetCategoryFE)
 	feApp.Get("/contents", contentHandler.GetContentWithQuery)
 	feApp.Get("/contents/:contentID", contentHandler.GetContentDetail)
+
+	// Tenant
+	feApp.Post("/tenants/register", tenantHandler.RegisterTenant)
+
+	tenantApp := api.Group("/v1")
+	tenantApp.Use(middlewareAuth.CheckToken())
+
+	// employee
+	tenantApp.Get("/employees", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.GetEmployees)
+	tenantApp.Post("/employees", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.CreateEmployee)
+
+	// client
+	tenantApp.Get("/client", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.GetClientByTenant)
+	tenantApp.Post("/client", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.CreateClient)
+
+	// manpower request
+	tenantApp.Get("/manpower-requests", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.GetManpowerReqByTenant)
+	tenantApp.Post("/manpower-requests", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.CreateManpowerReq)
 
 	// Start server
 	log.Println("Starting server on port:", cfg.App.AppPort)
