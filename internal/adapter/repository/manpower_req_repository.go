@@ -45,7 +45,7 @@ func (m *manpowerReqRepository) GetManpowerReqsByTenant(ctx context.Context, ten
 		Limit(query.Limit).
 		Offset(offset).
 		Find(&modelManpowerReqs).Error; err != nil {
-		code = "[REPOSITORY] GetManpowerReqsByTenant - 1"
+		code = "[REPOSITORY] GetManpowerReqsByTenant - 2"
 		log.Errorw(code, err)
 		return nil, 0, 0, err
 	}

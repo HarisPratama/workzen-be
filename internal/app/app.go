@@ -57,6 +57,7 @@ func RunServer() {
 	tenantRepo := repository.NewTenantRepository(db.DB)
 	clientRepo := repository.NewClientRepository(db.DB)
 	manpowerReqRepo := repository.NewManpowerReqRepository(db.DB)
+	candidateRepo := repository.NewCandidateRepository(db.DB)
 
 	//service
 	authService := service.NewAuthService(authRepo, cfg, jwt)
@@ -67,6 +68,7 @@ func RunServer() {
 	tenantService := service.NewTenantService(tenantRepo)
 	clientService := service.NewClientService(clientRepo)
 	manpowerReqService := service.NewManpowerReqService(manpowerReqRepo)
+	candidateService := service.NewCandidateService(candidateRepo)
 
 	//handler
 	authHandler := handler.NewAuthHandler(authService)
@@ -77,9 +79,15 @@ func RunServer() {
 	tenantHandler := handler.NewTenantHandler(tenantService)
 	clientHandler := handler.NewClientHandler(clientService)
 	manpowerReqHandler := handler.NewManpowerReqHandler(manpowerReqService)
+	candidateHandler := handler.NewCandidateHandler(candidateService)
 
 	app := fiber.New()
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "http://localhost:3000",
+		AllowCredentials: true,
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
+	}))
 	app.Use(recover.New())
 	app.Use(logger.New(logger.Config{
 		Format: "[${time}] ${status} - ${latency} - ${method}\n",
@@ -98,10 +106,13 @@ func RunServer() {
 
 	api := app.Group("/api")
 
-	api.Post("/login", authHandler.Login)
+	authApp := api.Group("/v1/auth")
+	authApp.Post("/login", authHandler.Login)
+	authApp.Post("/logout", authHandler.Logout)
+	authApp.Post("/refresh", authHandler.RefreshToken)
 
 	adminApp := api.Group("/v1/admin")
-	adminApp.Use(middlewareAuth.CheckToken())
+	adminApp.Use(middlewareAuth.CheckCookieToken())
 
 	// category
 	categoryApp := adminApp.Group("/categories")
@@ -139,19 +150,23 @@ func RunServer() {
 	feApp.Post("/tenants/register", tenantHandler.RegisterTenant)
 
 	tenantApp := api.Group("/v1")
-	tenantApp.Use(middlewareAuth.CheckToken())
+	tenantApp.Use(middlewareAuth.CheckCookieToken())
 
 	// employee
 	tenantApp.Get("/employees", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.GetEmployees)
 	tenantApp.Post("/employees", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.CreateEmployee)
 
 	// client
-	tenantApp.Get("/client", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.GetClientByTenant)
-	tenantApp.Post("/client", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.CreateClient)
+	tenantApp.Get("/clients", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.GetClientByTenant)
+	tenantApp.Post("/clients", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.CreateClient)
 
 	// manpower request
 	tenantApp.Get("/manpower-requests", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.GetManpowerReqByTenant)
 	tenantApp.Post("/manpower-requests", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.CreateManpowerReq)
+
+	// candidate
+	tenantApp.Get("/candidates", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateHandler.GetCandidatesByTenant)
+	tenantApp.Post("/candidates", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateHandler.CreateCandidate)
 
 	// Start server
 	log.Println("Starting server on port:", cfg.App.AppPort)

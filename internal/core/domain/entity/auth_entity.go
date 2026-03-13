@@ -6,6 +6,7 @@ type LoginRequest struct {
 }
 
 type AccessToken struct {
-	AccessToken string
-	ExpiresAt   int64
+	AccessToken  string
+	RefreshToken string
+	ExpiresAt    int64
 }

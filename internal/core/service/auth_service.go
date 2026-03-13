@@ -19,6 +19,7 @@ var code string
 
 type AuthService interface {
 	GetUserByEmail(ctx context.Context, req entity.LoginRequest) (*entity.AccessToken, error)
+	RefreshToken(ctx context.Context, refreshToken string) (string, int64, error)
 }
 
 type authService struct {
@@ -27,7 +28,31 @@ type authService struct {
 	jwtToken       auth.Jwt
 }
 
-func (a authService) GetUserByEmail(ctx context.Context, req entity.LoginRequest) (*entity.AccessToken, error) {
+func (a *authService) RefreshToken(ctx context.Context, refreshToken string) (string, int64, error) {
+	claims, err := a.jwtToken.VerifyAccessToken(refreshToken)
+
+	if err != nil {
+		code = "[SERVICE] RefreshToken - 1"
+		log.Errorw(code, err)
+		return "", 0, err
+	}
+
+	jwtData := entity.JwtData{
+		UserID:   claims.UserID,
+		Role:     claims.Role,
+		TenantID: claims.TenantID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			NotBefore: jwt.NewNumericDate(time.Now().Add(-time.Hour * 2)),
+			ID:        string(claims.ID),
+		},
+	}
+
+	accessToken, expiresAt, err := a.jwtToken.GenerateToken(&jwtData)
+
+	return accessToken, expiresAt, err
+}
+
+func (a *authService) GetUserByEmail(ctx context.Context, req entity.LoginRequest) (*entity.AccessToken, error) {
 	result, err := a.authRepository.GetUserByEmail(ctx, req)
 	if err != nil {
 		code = "[SERVICE] GetUserByEmail - 1"
@@ -58,6 +83,8 @@ func (a authService) GetUserByEmail(ctx context.Context, req entity.LoginRequest
 	}
 
 	accessToken, expiresAt, err := a.jwtToken.GenerateToken(&jwtData)
+	refreshToken, _, err := a.jwtToken.GenerateRefreshToken(&jwtData)
+
 	if err != nil {
 		code = "[SERVICE] GetUserByEmail - 3"
 		log.Errorw(code, err)
@@ -65,8 +92,9 @@ func (a authService) GetUserByEmail(ctx context.Context, req entity.LoginRequest
 	}
 
 	resp := entity.AccessToken{
-		AccessToken: accessToken,
-		ExpiresAt:   expiresAt,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiresAt:    expiresAt,
 	}
 
 	return &resp, nil

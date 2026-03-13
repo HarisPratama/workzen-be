@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS "candidates" (
 
     email VARCHAR(100) NOT NULL,
     phone VARCHAR(100) NOT NULL,
-    citizen_id VARCHAR(100) NOT NULL,
+    citizen_id VARCHAR(100),
 
     birth_date DATE NOT NULL,
     address VARCHAR(200),

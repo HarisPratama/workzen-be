@@ -13,6 +13,7 @@ import (
 
 type Middleware interface {
 	CheckToken() fiber.Handler
+	CheckCookieToken() fiber.Handler
 	RequireRole(roles ...string) fiber.Handler
 }
 
@@ -32,6 +33,32 @@ func (o Options) CheckToken() fiber.Handler {
 
 		tokenString := strings.Split(authHandler, "Bearer ")[1]
 		claims, err := o.authJwt.VerifyAccessToken(tokenString)
+
+		if err != nil {
+			errorResponse.Meta.Status = false
+			errorResponse.Meta.Message = "Invalid access token"
+			return c.Status(fiber.StatusUnauthorized).JSON(errorResponse)
+		}
+
+		c.Locals("user", claims)
+
+		return c.Next()
+	}
+}
+
+func (o Options) CheckCookieToken() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var errorResponse response.ErrorResponseDefault
+
+		token := c.Cookies("access_token")
+
+		if token == "" {
+			errorResponse.Meta.Status = false
+			errorResponse.Meta.Message = "Authorization required"
+			return c.Status(fiber.StatusUnauthorized).JSON(errorResponse)
+		}
+
+		claims, err := o.authJwt.VerifyAccessToken(token)
 
 		if err != nil {
 			errorResponse.Meta.Status = false
