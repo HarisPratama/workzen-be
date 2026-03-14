@@ -53,6 +53,7 @@ jobs:
             cd /workzen
             docker compose pull
             docker compose up -d
+            docker compose run migrate
             docker compose logs --tail=50
 
   notify:
