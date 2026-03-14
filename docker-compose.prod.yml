@@ -17,11 +17,15 @@ services:
 
   migrate:
     image: ghcr.io/harispratama/workzen-be:latest
-    command: migrate -path /migrations -database $DATABASE_URL up
     depends_on:
       - db
     volumes:
       - ./database/migrations:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "postgres://postgres:postgres@db:5432/my_database?sslmode=disable",
+      "up"
+    ]
     networks:
       - workzen-network
 
