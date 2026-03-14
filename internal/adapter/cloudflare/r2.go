@@ -15,7 +15,6 @@ import (
 )
 
 var code string
-var err error
 
 type CloudflareR2Adapter interface {
 	UploadImage(req *entity.FileUploadEntity) (string, error)
