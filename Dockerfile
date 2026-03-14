@@ -8,15 +8,16 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o main ./
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+go build -ldflags="-s -w" -o main .
 
-FROM gcr.io/distroless/base-debian10
-
-COPY --from=builder /app/main app/main
-COPY ./docs /app/docs
-COPY ./database/migrations database/migrations
+FROM gcr.io/distroless/base-debian12
 
 WORKDIR /app
+
+COPY --from=builder /app/main /app/main
+COPY --from=builder /app/docs /app/docs
+COPY --from=builder /app/database/migrations /app/database/migrations
 
 EXPOSE 8080
 
