@@ -204,7 +204,7 @@ func RunServer() {
 
 	<-quit
 
-	log.Println("Shutting down server...")
+	log.Println("Shutting down server....")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
