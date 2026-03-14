@@ -26,7 +26,6 @@ type cloudflareR2Adapter struct {
 	Baseurl string
 }
 
-// uploadimahe implement CloidflareR2Adapter
 func (c *cloudflareR2Adapter) UploadImage(req *entity.FileUploadEntity) (string, error) {
 	openedFile, err := os.Open(req.Path)
 	if err != nil {
