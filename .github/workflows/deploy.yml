@@ -52,8 +52,9 @@ jobs:
           script: |
             cd /workzen
             docker compose pull
-            docker compose up -d
-            docker compose run migrate
+            docker compose run --rm migrate
+            docker compose up -d --remove-orphans
+            docker compose ps
             docker compose logs --tail=50
 
   notify:
@@ -69,6 +70,11 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             🚀 Workzen Deploy Status
+
+            Branch: ${{ github.ref_name }}
             Commit: ${{ github.sha }}
-            Branch: ${{ github.ref }}
+          
+            Message:
+            ${{ github.event.head_commit.message }}
+          
             Status: ${{ job.status }}
