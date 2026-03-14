@@ -50,7 +50,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /workzen
+            cd /opt/workzen
             docker compose pull
             docker compose run --rm migrate
             docker compose up -d --remove-orphans
