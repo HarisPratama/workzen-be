@@ -10,6 +10,7 @@ type ManpowerReqEntity struct {
 	RequiredCount  int
 	SalaryMin      float64
 	SalaryMax      float64
+	Hired          int
 	WorkLocation   string
 	JobDescription string
 	DeadlineDate   time.Time

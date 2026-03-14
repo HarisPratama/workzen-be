@@ -58,6 +58,7 @@ func RunServer() {
 	clientRepo := repository.NewClientRepository(db.DB)
 	manpowerReqRepo := repository.NewManpowerReqRepository(db.DB)
 	candidateRepo := repository.NewCandidateRepository(db.DB)
+	candidateApplicationRepo := repository.NewCandidateApplicationRepository(db.DB)
 
 	//service
 	authService := service.NewAuthService(authRepo, cfg, jwt)
@@ -69,6 +70,7 @@ func RunServer() {
 	clientService := service.NewClientService(clientRepo)
 	manpowerReqService := service.NewManpowerReqService(manpowerReqRepo)
 	candidateService := service.NewCandidateService(candidateRepo)
+	candidateApplicationService := service.NewCandidateApplicationService(candidateApplicationRepo)
 
 	//handler
 	authHandler := handler.NewAuthHandler(authService)
@@ -80,6 +82,7 @@ func RunServer() {
 	clientHandler := handler.NewClientHandler(clientService)
 	manpowerReqHandler := handler.NewManpowerReqHandler(manpowerReqService)
 	candidateHandler := handler.NewCandidateHandler(candidateService)
+	candidateApplicationHandler := handler.NewCandidateApplicationHandler(candidateApplicationService)
 
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
@@ -162,11 +165,16 @@ func RunServer() {
 
 	// manpower request
 	tenantApp.Get("/manpower-requests", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.GetManpowerReqByTenant)
+	tenantApp.Get("/manpower-requests/:manpowerRequestID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.GetDetailManpowerRequestByTenant)
+	tenantApp.Get("/manpower_requests/:manpowerRequestID/candidates", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.GetCandidateApplicationByTenantMR)
 	tenantApp.Post("/manpower-requests", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.CreateManpowerReq)
 
 	// candidate
 	tenantApp.Get("/candidates", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateHandler.GetCandidatesByTenant)
 	tenantApp.Post("/candidates", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateHandler.CreateCandidate)
+
+	// candidate application
+	tenantApp.Post("/candidate-application", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.CreateCandidateApplication)
 
 	// Start server
 	log.Println("Starting server on port:", cfg.App.AppPort)

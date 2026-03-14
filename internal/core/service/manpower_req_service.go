@@ -10,11 +10,23 @@ import (
 
 type ManpowerReqService interface {
 	GetManpowerReqByTenant(ctx context.Context, tenantID int64, query entity.ManpowerReqQueryString) ([]entity.ManpowerReqEntity, int64, int64, error)
+	GetDetailManpowerRequestByTenant(ctx context.Context, tenantID int64, id int64) (*entity.ManpowerReqEntity, error)
 	CreateManpowerReq(ctx context.Context, req entity.ManpowerReqEntity) error
 }
 
 type manpowerReqService struct {
 	manpowerReqRepo repository.ManpowerReqRepository
+}
+
+func (m *manpowerReqService) GetDetailManpowerRequestByTenant(ctx context.Context, tenantID int64, id int64) (*entity.ManpowerReqEntity, error) {
+	result, err := m.manpowerReqRepo.GetDetailManpowerRequestByTenant(ctx, tenantID, id)
+	if err != nil {
+		code = "[SERVICE] GetDetailManpowerRequestByTenant - 1"
+		log.Error(code, err)
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (m *manpowerReqService) GetManpowerReqByTenant(ctx context.Context, tenantID int64, query entity.ManpowerReqQueryString) ([]entity.ManpowerReqEntity, int64, int64, error) {

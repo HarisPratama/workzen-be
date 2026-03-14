@@ -32,7 +32,7 @@ func (c *candidateRepository) GetCandidatesByTenant(ctx context.Context, tenantI
 		Preload(clause.Associations).
 		Where("tenant_id = ?", tenantID)
 
-	if err := sqlMain.Model(&modelCandidate).Count(&countData).Error; err != nil {
+	if err := sqlMain.Model(&model.Candidate{}).Count(&countData).Error; err != nil {
 		code = "[REPOSITORY] GetCandidateByTenant - 1"
 		log.Errorw(code, err)
 		return nil, 0, 0, err

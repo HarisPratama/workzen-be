@@ -27,6 +27,12 @@ CREATE TABLE IF NOT EXISTS candidate_applications (
     UNIQUE (tenant_id, candidate_id, manpower_request_id)
 );
 
+CREATE EXTENSION pg_trgm;
+
+CREATE INDEX idx_candidate_name
+    ON candidates
+    USING gin(full_name gin_trgm_ops);
+
 CREATE INDEX idx_candidate_applications_tenant
     ON candidate_applications (tenant_id);
 

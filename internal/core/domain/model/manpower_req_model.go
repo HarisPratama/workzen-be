@@ -13,6 +13,7 @@ type ManpowerRequest struct {
 	WorkLocation   string    `gorm:"work_location"`
 	JobDescription string    `gorm:"job_description"`
 	DeadlineDate   time.Time `gorm:"deadline_date"`
+	CreatedAt      time.Time `gorm:"created_at"`
 	Status         string    `gorm:"status"`
 	Tenant         Tenant    `gorm:"foreignkey:TenantID"`
 	Client         Client    `gorm:"foreignkey:ClientID"`
