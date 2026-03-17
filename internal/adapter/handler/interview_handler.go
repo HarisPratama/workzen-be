@@ -637,3 +637,4 @@ func (h *interviewHandler) GetInterviewMetrics(c *fiber.Ctx) error {
 		Data: metrics,
 	})
 }
+}
