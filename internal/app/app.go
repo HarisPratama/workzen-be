@@ -60,6 +60,10 @@ func RunServer() {
 	candidateRepo := repository.NewCandidateRepository(db.DB)
 	candidateApplicationRepo := repository.NewCandidateApplicationRepository(db.DB)
 
+	// New repositories for payroll, attendance, interview, offer, and employee assignment
+	payrollRepo := repository.NewPayrollRepository(db.DB)
+	attendanceRepo := repository.NewAttendanceRepository(db.DB)
+
 	//service
 	authService := service.NewAuthService(authRepo, cfg, jwt)
 	categoryService := service.NewCategoryService(categoryRepo)
@@ -72,6 +76,13 @@ func RunServer() {
 	candidateService := service.NewCandidateService(candidateRepo)
 	candidateApplicationService := service.NewCandidateApplicationService(candidateApplicationRepo)
 
+	// New services for payroll, attendance, interview, offer, and employee assignment
+	payrollService := service.NewPayrollService(payrollRepo)
+	attendanceService := service.NewAttendanceService(attendanceRepo)
+	interviewService := service.NewInterviewService(candidateApplicationRepo)
+	offerService := service.NewOfferService(candidateApplicationRepo)
+	employeeAssignmentService := service.NewEmployeeAssignmentService(employeeRepo)
+
 	//handler
 	authHandler := handler.NewAuthHandler(authService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
@@ -83,6 +94,13 @@ func RunServer() {
 	manpowerReqHandler := handler.NewManpowerReqHandler(manpowerReqService)
 	candidateHandler := handler.NewCandidateHandler(candidateService)
 	candidateApplicationHandler := handler.NewCandidateApplicationHandler(candidateApplicationService)
+
+	// New handlers for payroll, attendance, interview, offer, and employee assignment
+	payrollHandler := handler.NewPayrollHandler(payrollService)
+	attendanceHandler := handler.NewAttendanceHandler(attendanceService)
+	interviewHandler := handler.NewInterviewHandler(interviewService)
+	offerHandler := handler.NewOfferHandler(offerService)
+	employeeAssignmentHandler := handler.NewEmployeeAssignmentHandler(employeeAssignmentService)
 
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
@@ -175,6 +193,71 @@ func RunServer() {
 
 	// candidate application
 	tenantApp.Post("/candidate-application", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.CreateCandidateApplication)
+
+	// ========== NEW ENDPOINTS ==========
+	// Payroll endpoints
+	payrollApp := tenantApp.Group("/payrolls", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"))
+	payrollApp.Get("/", payrollHandler.GetPayrollsByTenant)
+	payrollApp.Post("/", payrollHandler.CreatePayroll)
+	payrollApp.Get("/:id", payrollHandler.GetPayrollByID)
+	payrollApp.Put("/:id", payrollHandler.UpdatePayroll)
+	payrollApp.Delete("/:id", payrollHandler.DeletePayroll)
+	payrollApp.Get("/employee/:employeeId", payrollHandler.GetPayrollsByEmployee)
+	payrollApp.Post("/:id/process", payrollHandler.ProcessPayroll)
+	payrollApp.Post("/:id/mark-as-paid", payrollHandler.MarkAsPaid)
+
+	// Attendance endpoints
+	attendanceApp := tenantApp.Group("/attendances", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"))
+	attendanceApp.Get("/", attendanceHandler.GetAttendancesByTenant)
+	attendanceApp.Post("/", attendanceHandler.CreateAttendance)
+	attendanceApp.Get("/:id", attendanceHandler.GetAttendanceByID)
+	attendanceApp.Put("/:id", attendanceHandler.UpdateAttendance)
+	attendanceApp.Delete("/:id", attendanceHandler.DeleteAttendance)
+	attendanceApp.Get("/employee/:employeeId", attendanceHandler.GetAttendancesByEmployee)
+	attendanceApp.Post("/:id/check-in", attendanceHandler.CheckIn)
+	attendanceApp.Post("/:id/check-out", attendanceHandler.CheckOut)
+	attendanceApp.Get("/today", attendanceHandler.GetTodayAttendance)
+
+	// Interview endpoints
+	interviewApp := tenantApp.Group("/interviews", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"))
+	interviewApp.Get("/", interviewHandler.GetInterviewsByTenant)
+	interviewApp.Post("/", interviewHandler.CreateInterview)
+	interviewApp.Get("/:id", interviewHandler.GetInterviewByID)
+	interviewApp.Put("/:id", interviewHandler.UpdateInterview)
+	interviewApp.Delete("/:id", interviewHandler.DeleteInterview)
+	interviewApp.Get("/candidate/:candidateApplicationId", interviewHandler.GetInterviewsByCandidate)
+	interviewApp.Get("/interviewer/:interviewerId", interviewHandler.GetInterviewsByInterviewer)
+	interviewApp.Post("/:id/reschedule", interviewHandler.RescheduleInterview)
+	interviewApp.Post("/:id/cancel", interviewHandler.CancelInterview)
+	interviewApp.Post("/:id/complete", interviewHandler.CompleteInterview)
+	interviewApp.Post("/:id/feedback", interviewHandler.SubmitFeedback)
+
+	// Offer endpoints
+	offerApp := tenantApp.Group("/offers", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"))
+	offerApp.Get("/", offerHandler.GetOffersByTenant)
+	offerApp.Post("/", offerHandler.CreateOffer)
+	offerApp.Get("/:id", offerHandler.GetOfferByID)
+	offerApp.Put("/:id", offerHandler.UpdateOffer)
+	offerApp.Delete("/:id", offerHandler.DeleteOffer)
+	offerApp.Get("/candidate/:candidateApplicationId", offerHandler.GetOffersByCandidate)
+	offerApp.Post("/:id/send", offerHandler.SendOffer)
+	offerApp.Post("/:id/withdraw", offerHandler.WithdrawOffer)
+	offerApp.Post("/:id/accept", offerHandler.AcceptOffer)
+	offerApp.Post("/:id/reject", offerHandler.RejectOffer)
+	offerApp.Post("/:id/negotiate", offerHandler.NegotiateOffer)
+
+	// Employee Assignment endpoints
+	assignmentApp := tenantApp.Group("/assignments", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"))
+	assignmentApp.Get("/", employeeAssignmentHandler.GetAssignmentsByTenant)
+	assignmentApp.Post("/", employeeAssignmentHandler.CreateAssignment)
+	assignmentApp.Get("/:id", employeeAssignmentHandler.GetAssignmentByID)
+	assignmentApp.Put("/:id", employeeAssignmentHandler.UpdateAssignment)
+	assignmentApp.Delete("/:id", employeeAssignmentHandler.DeleteAssignment)
+	assignmentApp.Get("/employee/:employeeId", employeeAssignmentHandler.GetAssignmentsByEmployee)
+	assignmentApp.Get("/employee/:employeeId/active", employeeAssignmentHandler.GetActiveAssignmentsByEmployee)
+	assignmentApp.Get("/project/:projectId", employeeAssignmentHandler.GetAssignmentsByProject)
+	assignmentApp.Post("/:id/start", employeeAssignmentHandler.StartAssignment)
+	assignmentApp.Post("/:id/end", employeeAssignmentHandler.EndAssignment)
 
 	// Start server
 	log.Println("Starting server on port:", cfg.App.AppPort)
