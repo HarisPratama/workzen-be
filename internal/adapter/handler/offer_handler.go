@@ -447,3 +447,98 @@ func (h *offerHandler) RejectOffer(c *fiber.Ctx) error {
 			Meta: response.Meta{
 				Status:  false,
 				
+			},
+		})
+	}
+
+	if err := h.offerService.RejectOffer(c.Context(), offerID, req.Reason); err != nil {
+		log.Errorw("[Handler] RejectOffer - Service", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
+			Meta: response.Meta{
+				Status:  false,
+				Message: err.Error(),
+			},
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
+		Meta: response.Meta{
+			Status:  true,
+			Message: "Offer rejected successfully",
+		},
+	})
+}
+
+func (h *offerHandler) NegotiateOffer(c *fiber.Ctx) error {
+	id := c.Params("id")
+	offerID, err := uuid.Parse(id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
+			Meta: response.Meta{
+				Status:  false,
+				Message: "Invalid offer ID",
+			},
+		})
+	}
+
+	var req request.NegotiateRequest
+	if err := c.BodyParser(&req); err != nil {
+		log.Errorw("[Handler] NegotiateOffer - BodyParser", err)
+		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
+			Meta: response.Meta{
+				Status:  false,
+				Message: "Invalid request body",
+			},
+		})
+	}
+
+	if err := h.offerService.NegotiateOffer(c.Context(), offerID, req.ProposedBaseSalary, req.ProposedBenefits, req.Justification); err != nil {
+		log.Errorw("[Handler] NegotiateOffer - Service", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
+			Meta: response.Meta{
+				Status:  false,
+				Message: err.Error(),
+			},
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
+		Meta: response.Meta{
+			Status:  true,
+			Message: "Offer negotiation submitted successfully",
+		},
+	})
+}
+
+func (h *offerHandler) GetOfferMetrics(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	tenantID := claims.TenantID
+
+	if tenantID == 0 {
+		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
+			Meta: response.Meta{
+				Status:  false,
+				Message: "Unauthorized access",
+			},
+		})
+	}
+
+	metrics, err := h.offerService.GetOfferMetrics(c.Context(), uuid.UUID{})
+	if err != nil {
+		log.Errorw("[Handler] GetOfferMetrics - Service", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
+			Meta: response.Meta{
+				Status:  false,
+				Message: err.Error(),
+			},
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
+		Meta: response.Meta{
+			Status:  true,
+			Message: "Success",
+		},
+		Data: metrics,
+	})
+}
