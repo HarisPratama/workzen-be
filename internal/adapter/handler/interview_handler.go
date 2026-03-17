@@ -559,3 +559,81 @@ func (h *interviewHandler) GetInterviewMetrics(c *fiber.Ctx) error {
 		Data: metrics,
 	})
 }
+
+		},
+	})
+}
+
+func (h *interviewHandler) SubmitFeedback(c *fiber.Ctx) error {
+	id := c.Params("id")
+	interviewID, err := uuid.Parse(id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
+			Meta: response.Meta{
+				Status:  false,
+				Message: "Invalid interview ID",
+			},
+		})
+	}
+
+	var req request.SubmitFeedbackRequest
+	if err := c.BodyParser(&req); err != nil {
+		log.Errorw("[Handler] SubmitFeedback - BodyParser", err)
+		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
+			Meta: response.Meta{
+				Status:  false,
+				Message: "Invalid request body",
+			},
+		})
+	}
+
+	if err := h.interviewService.SubmitFeedback(c.Context(), interviewID, req.OverallFeedback, req.Rating, req.Recommendation); err != nil {
+		log.Errorw("[Handler] SubmitFeedback - Service", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
+			Meta: response.Meta{
+				Status:  false,
+				Message: err.Error(),
+			},
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
+		Meta: response.Meta{
+			Status:  true,
+			Message: "Feedback submitted successfully",
+		},
+	})
+}
+
+func (h *interviewHandler) GetInterviewMetrics(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	tenantID := claims.TenantID
+
+	if tenantID == 0 {
+		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
+			Meta: response.Meta{
+				Status:  false,
+				Message: "Unauthorized access",
+			},
+		})
+	}
+
+	metrics, err := h.interviewService.GetInterviewMetrics(c.Context(), uuid.UUID{})
+	if err != nil {
+		log.Errorw("[Handler] GetInterviewMetrics - Service", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
+			Meta: response.Meta{
+				Status:  false,
+				Message: err.Error(),
+			},
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
+		Meta: response.Meta{
+			Status:  true,
+			Message: "Success",
+		},
+		Data: metrics,
+	})
+}
