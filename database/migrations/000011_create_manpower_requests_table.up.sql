@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS manpower_requests (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE EXTENSION pg_trgm;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE INDEX idx_manpower_requests_tenant
     ON manpower_requests (tenant_id);
