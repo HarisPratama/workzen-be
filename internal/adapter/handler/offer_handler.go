@@ -5,540 +5,290 @@ import (
 	"bwanews/internal/adapter/handler/response"
 	"bwanews/internal/core/domain/entity"
 	"bwanews/internal/core/service"
-	"bwanews/lib/validator"
-	"time"
+	"bwanews/lib/conv"
+	validatorLib "bwanews/lib/validator"
+	"context"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/google/uuid"
 )
 
 type OfferHandler interface {
+	GetOffers(c *fiber.Ctx) error
+	GetOfferByID(c *fiber.Ctx) error
 	CreateOffer(c *fiber.Ctx) error
 	UpdateOffer(c *fiber.Ctx) error
 	DeleteOffer(c *fiber.Ctx) error
-	GetOfferByID(c *fiber.Ctx) error
-	GetOffersByTenant(c *fiber.Ctx) error
-	GetOffersByCandidate(c *fiber.Ctx) error
-	SendOffer(c *fiber.Ctx) error
-	WithdrawOffer(c *fiber.Ctx) error
-	AcceptOffer(c *fiber.Ctx) error
-	RejectOffer(c *fiber.Ctx) error
-	NegotiateOffer(c *fiber.Ctx) error
-	GetOfferMetrics(c *fiber.Ctx) error
 }
 
 type offerHandler struct {
 	offerService service.OfferService
 }
 
-func NewOfferHandler(offerService service.OfferService) OfferHandler {
-	return &offerHandler{
-		offerService: offerService,
+func (h *offerHandler) GetOffers(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] GetOffers - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
+
+	tenantID := claims.TenantID
+
+	query := entity.OfferQueryString{
+		Limit:  10,
+		Page:   1,
+		Search: c.Query("search"),
+		Status: c.Query("status"),
+	}
+
+	if c.Query("limit") != "" {
+		if val, err := conv.StringToInt(c.Query("limit")); err == nil {
+			query.Limit = val
+		}
+	}
+
+	if c.Query("page") != "" {
+		if val, err := conv.StringToInt(c.Query("page")); err == nil {
+			query.Page = val
+		}
+	}
+
+	if c.Query("order_by") != "" {
+		query.OrderBy = c.Query("order_by")
+	}
+
+	if c.Query("order_type") != "" {
+		query.OrderType = c.Query("order_type")
+	}
+
+	results, totalData, totalPages, err := h.offerService.GetOffersByTenant(context.Background(), tenantID, query)
+	if err != nil {
+		code := "[HANDLER] GetOffers - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	var respData []response.OfferResponse
+	for _, item := range results {
+		respData = append(respData, response.OfferResponse{
+			ID:                     item.ID,
+			Position:               item.Position,
+			Department:             item.Department,
+			EmploymentType:         item.EmploymentType,
+			BaseSalary:             item.BaseSalary,
+			Currency:               item.Currency,
+			Status:                 item.Status,
+			StartDate:              item.StartDate,
+			ExpiryDate:             item.ExpiryDate,
+			SentAt:                 item.SentAt,
+			RespondedAt:            item.RespondedAt,
+		})
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = respData
+	defaultSuccessResponse.Pagination = &response.PaginationResponse{
+		TotalRecords: totalData,
+		Page:         query.Page,
+		PerPage:      query.Limit,
+		TotalPages:   totalPages,
+	}
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (h *offerHandler) GetOfferByID(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserID == 0 {
+		code := "[HANDLER] GetOfferByID - 1"
+		log.Errorw(code, "unauthorized")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	idParam := c.Params("offerID")
+	offerID, err := conv.StringToInt64(idParam)
+	if err != nil {
+		code := "[HANDLER] GetOfferByID - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid offer ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	result, err := h.offerService.GetOfferByID(context.Background(), offerID)
+	if err != nil {
+		code := "[HANDLER] GetOfferByID - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusNotFound).JSON(errorResp)
+	}
+
+	respData := response.OfferResponse{
+		ID:                     result.ID,
+		Position:               result.Position,
+		Department:             result.Department,
+		EmploymentType:         result.EmploymentType,
+		BaseSalary:             result.BaseSalary,
+		Currency:               result.Currency,
+		Bonus:                  result.Bonus,
+		Benefits:               result.Benefits,
+		ProbationPeriodMonths:  result.ProbationPeriodMonths,
+		NoticePeriodDays:       result.NoticePeriodDays,
+		StartDate:              result.StartDate,
+		ExpiryDate:             result.ExpiryDate,
+		Status:                 result.Status,
+		SentAt:                 result.SentAt,
+		RespondedAt:          result.RespondedAt,
+		Notes:                  result.Notes,
+		Terms:                  result.Terms,
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = respData
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *offerHandler) CreateOffer(c *fiber.Ctx) error {
-	var req request.OfferRequest
 	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] CreateOffer - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
 	tenantID := claims.TenantID
 
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
-	}
-
+	var req request.OfferRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] CreateOffer - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
+		code := "[HANDLER] CreateOffer - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	if err := validator.ValidateStruct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+	if err := validatorLib.ValidateStruct(req); err != nil {
+		code := "[HANDLER] CreateOffer - 3"
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	offer := entity.Offer{
-		TenantID:                 uuid.UUID{},
-		CandidateApplicationID:   req.CandidateApplicationID,
-		JobTitle:                 req.JobTitle,
-		Department:              req.Department,
-		OfferType:               entity.OfferType(req.OfferType),
-		EmploymentLevel:         req.EmploymentLevel,
-		BaseSalary:              req.BaseSalary,
-		Currency:                req.Currency,
-		SignOnBonus:             req.SignOnBonus,
-		AnnualBonus:             req.AnnualBonus,
-		BenefitsPackage:         req.BenefitsPackage,
-		StockOptions:            req.StockOptions,
-		VestingSchedule:         req.VestingSchedule,
-		ProbationPeriodDays:    req.ProbationPeriodDays,
-		NoticePeriodDays:       req.NoticePeriodDays,
-		PaidTimeOffDays:        req.PaidTimeOffDays,
-		Status:                  entity.OfferStatusDraft,
-		ResponseDeadline:        req.ResponseDeadline,
-		InternalNotes:          req.InternalNotes,
+	if err := h.offerService.CreateOffer(context.Background(), req, tenantID); err != nil {
+		code := "[HANDLER] CreateOffer - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	createdOffer, err := h.offerService.CreateOffer(c.Context(), offer)
-	if err != nil {
-		log.Errorw("[Handler] CreateOffer - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Offer created successfully"
+	defaultSuccessResponse.Data = nil
 
-	return c.Status(fiber.StatusCreated).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Offer created successfully",
-		},
-		Data: createdOffer,
-	})
+	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
 }
 
 func (h *offerHandler) UpdateOffer(c *fiber.Ctx) error {
-	id := c.Params("id")
-	offerID, err := uuid.Parse(id)
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] UpdateOffer - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	idParam := c.Params("offerID")
+	offerID, err := conv.StringToInt64(idParam)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid offer ID",
-			},
-		})
+		code := "[HANDLER] UpdateOffer - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid offer ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	var req request.OfferUpdateRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] UpdateOffer - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
+		code := "[HANDLER] UpdateOffer - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	if err := validator.ValidateStruct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+	if err := validatorLib.ValidateStruct(req); err != nil {
+		code := "[HANDLER] UpdateOffer - 4"
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	offer := entity.Offer{
-		ID:                   offerID,
-		JobTitle:             req.JobTitle,
-		Department:           req.Department,
-		OfferType:            entity.OfferType(req.OfferType),
-		EmploymentLevel:      req.EmploymentLevel,
-		BaseSalary:           req.BaseSalary,
-		Currency:             req.Currency,
-		SignOnBonus:          req.SignOnBonus,
-		AnnualBonus:          req.AnnualBonus,
-		BenefitsPackage:     req.BenefitsPackage,
-		StockOptions:         req.StockOptions,
-		VestingSchedule:      req.VestingSchedule,
-		ProbationPeriodDays: req.ProbationPeriodDays,
-		NoticePeriodDays:    req.NoticePeriodDays,
-		PaidTimeOffDays:     req.PaidTimeOffDays,
-		InternalNotes:       req.InternalNotes,
+	if err := h.offerService.UpdateOffer(context.Background(), offerID, req); err != nil {
+		code := "[HANDLER] UpdateOffer - 5"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	updatedOffer, err := h.offerService.UpdateOffer(c.Context(), offerID, offer)
-	if err != nil {
-		log.Errorw("[Handler] UpdateOffer - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Offer updated successfully"
+	defaultSuccessResponse.Data = nil
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Offer updated successfully",
-		},
-		Data: updatedOffer,
-	})
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *offerHandler) DeleteOffer(c *fiber.Ctx) error {
-	id := c.Params("id")
-	offerID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid offer ID",
-			},
-		})
-	}
-
-	if err := h.offerService.DeleteOffer(c.Context(), offerID); err != nil {
-		log.Errorw("[Handler] DeleteOffer - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Offer deleted successfully",
-		},
-	})
-}
-
-func (h *offerHandler) GetOfferByID(c *fiber.Ctx) error {
-	id := c.Params("id")
-	offerID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid offer ID",
-			},
-		})
-	}
-
-	offer, err := h.offerService.GetOfferByID(c.Context(), offerID)
-	if err != nil {
-		log.Errorw("[Handler] GetOfferByID - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: offer,
-	})
-}
-
-func (h *offerHandler) GetOffersByTenant(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
-	tenantID := claims.TenantID
-
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
+	if claims.TenantID == 0 {
+		code := "[HANDLER] DeleteOffer - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
 
-	page := c.QueryInt("page", 1)
-	limit := c.QueryInt("limit", 10)
-
-	offers, total, err := h.offerService.GetOffersByTenant(c.Context(), uuid.UUID{}, page, limit)
+	idParam := c.Params("offerID")
+	offerID, err := conv.StringToInt64(idParam)
 	if err != nil {
-		log.Errorw("[Handler] GetOffersByTenant - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] DeleteOffer - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid offer ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: response.PaginationData{
-			Data:  offers,
-			Total: total,
-			Page:  page,
-			Limit: limit,
-		},
-	})
+	if err := h.offerService.DeleteOffer(context.Background(), offerID); err != nil {
+		code := "[HANDLER] DeleteOffer - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Offer deleted successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
 }
 
-func (h *offerHandler) GetOffersByCandidate(c *fiber.Ctx) error {
-	candidateApplicationID := c.Params("candidateApplicationId")
-	candidateUUID, err := uuid.Parse(candidateApplicationID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid candidate application ID",
-			},
-		})
-	}
-
-	page := c.QueryInt("page", 1)
-	limit := c.QueryInt("limit", 10)
-
-	offers, total, err := h.offerService.GetOffersByCandidate(c.Context(), candidateUUID, page, limit)
-	if err != nil {
-		log.Errorw("[Handler] GetOffersByCandidate - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: response.PaginationData{
-			Data:  offers,
-			Total: total,
-			Page:  page,
-			Limit: limit,
-		},
-	})
-}
-
-func (h *offerHandler) SendOffer(c *fiber.Ctx) error {
-	id := c.Params("id")
-	offerID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid offer ID",
-			},
-		})
-	}
-
-	if err := h.offerService.SendOffer(c.Context(), offerID); err != nil {
-		log.Errorw("[Handler] SendOffer - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Offer sent successfully",
-		},
-	})
-}
-
-func (h *offerHandler) WithdrawOffer(c *fiber.Ctx) error {
-	id := c.Params("id")
-	offerID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid offer ID",
-			},
-		})
-	}
-
-	var req request.WithdrawRequest
-	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] WithdrawOffer - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
-	}
-
-	if err := h.offerService.WithdrawOffer(c.Context(), offerID, req.Reason); err != nil {
-		log.Errorw("[Handler] WithdrawOffer - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Offer withdrawn successfully",
-		},
-	})
-}
-
-func (h *offerHandler) AcceptOffer(c *fiber.Ctx) error {
-	id := c.Params("id")
-	offerID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid offer ID",
-			},
-		})
-	}
-
-	if err := h.offerService.AcceptOffer(c.Context(), offerID); err != nil {
-		log.Errorw("[Handler] AcceptOffer - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Offer accepted successfully",
-		},
-	})
-}
-
-func (h *offerHandler) RejectOffer(c *fiber.Ctx) error {
-	id := c.Params("id")
-	offerID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid offer ID",
-			},
-		})
-	}
-
-	var req request.RejectRequest
-	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] RejectOffer - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				
-			},
-		})
-	}
-
-	if err := h.offerService.RejectOffer(c.Context(), offerID, req.Reason); err != nil {
-		log.Errorw("[Handler] RejectOffer - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Offer rejected successfully",
-		},
-	})
-}
-
-func (h *offerHandler) NegotiateOffer(c *fiber.Ctx) error {
-	id := c.Params("id")
-	offerID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid offer ID",
-			},
-		})
-	}
-
-	var req request.NegotiateRequest
-	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] NegotiateOffer - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
-	}
-
-	if err := h.offerService.NegotiateOffer(c.Context(), offerID, req.ProposedBaseSalary, req.ProposedBenefits, req.Justification); err != nil {
-		log.Errorw("[Handler] NegotiateOffer - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Offer negotiation submitted successfully",
-		},
-	})
-}
-
-func (h *offerHandler) GetOfferMetrics(c *fiber.Ctx) error {
-	claims := c.Locals("user").(*entity.JwtData)
-	tenantID := claims.TenantID
-
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
-	}
-
-	metrics, err := h.offerService.GetOfferMetrics(c.Context(), uuid.UUID{})
-	if err != nil {
-		log.Errorw("[Handler] GetOfferMetrics - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: metrics,
-	})
+func NewOfferHandler(offerService service.OfferService) OfferHandler {
+	return &offerHandler{offerService: offerService}
 }
