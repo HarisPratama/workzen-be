@@ -53,6 +53,10 @@ jobs:
           script: |
             cd ~/.openclaw/workspace/workzen-be
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u harispratama --password-stdin
+            # inject .env
+            echo "${{ secrets.ENV_FILE }}" > .env
+            # optional: permission
+            chmod 600 .env
             git pull origin ${{ github.ref_name }}
             docker compose -f docker-compose.yml -f docker-compose.prod.yml down --remove-orphans
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
