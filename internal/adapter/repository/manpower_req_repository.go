@@ -6,7 +6,6 @@ import (
 	"math"
 	"strings"
 	"workzen-be/internal/core/domain/entity"
-	"workzen-be/internal/core/domain/model"
 
 	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
@@ -15,8 +14,10 @@ import (
 
 type ManpowerReqRepository interface {
 	GetManpowerReqsByTenant(ctx context.Context, tenantID int64, query entity.ManpowerReqQueryString) ([]entity.ManpowerReqEntity, int64, int64, error)
-	GetDetailManpowerRequestByTenant(ctx context.Context, TenantID int64, manpowerRequestID int64) (*entity.ManpowerReqEntity, error)
-	CreateManpowerReq(ctx context.Context, manpowerReq entity.ManpowerReqEntity) error
+	GetDetailManpowerRequestByTenant(ctx context.Context, tenantID int64, manpowerRequestID int64) (*entity.ManpowerReqEntity, error)
+	CreateManpowerReq(ctx context.Context, manpowerReq *entity.ManpowerReqEntity) error
+	UpdateManpowerReq(ctx context.Context, manpowerReq *entity.ManpowerReqEntity) error
+	DeleteManpowerReq(ctx context.Context, tenantID int64, manpowerReqID int64) error
 }
 
 type manpowerReqRepository struct {
@@ -24,14 +25,14 @@ type manpowerReqRepository struct {
 }
 
 func (m *manpowerReqRepository) GetDetailManpowerRequestByTenant(ctx context.Context, tenantID int64, manpowerRequestID int64) (*entity.ManpowerReqEntity, error) {
-	var modelManpowerRequest model.ManpowerRequest
+	var manpowerRequest entity.ManpowerReqEntity
 	var hiredCount int64
 
-	err = m.db.
+	err := m.db.WithContext(ctx).
 		Where("id = ?", manpowerRequestID).
 		Where("tenant_id = ?", tenantID).
 		Preload(clause.Associations).
-		First(&modelManpowerRequest).Error
+		First(&manpowerRequest).Error
 
 	if err != nil {
 		code = "[REPOSITORY] GetDetailManpowerRequestByTenant - 1"
@@ -39,8 +40,8 @@ func (m *manpowerReqRepository) GetDetailManpowerRequestByTenant(ctx context.Con
 		return nil, err
 	}
 
-	err = m.db.
-		Model(&model.CandidateApplication{}).
+	err = m.db.WithContext(ctx).
+		Model(&entity.CandidateApplicationEntity{}).
 		Where("tenant_id = ?", tenantID).
 		Where("manpower_request_id = ?", manpowerRequestID).
 		Where("status = ?", "HIRED").
@@ -50,34 +51,17 @@ func (m *manpowerReqRepository) GetDetailManpowerRequestByTenant(ctx context.Con
 		return nil, err
 	}
 
-	resp := entity.ManpowerReqEntity{
-		ID:             modelManpowerRequest.ID,
-		Position:       modelManpowerRequest.Position,
-		RequiredCount:  int(modelManpowerRequest.RequiredCount),
-		Hired:          int(hiredCount),
-		SalaryMin:      modelManpowerRequest.SalaryMin,
-		SalaryMax:      modelManpowerRequest.SalaryMax,
-		WorkLocation:   modelManpowerRequest.WorkLocation,
-		JobDescription: modelManpowerRequest.JobDescription,
-		DeadlineDate:   modelManpowerRequest.DeadlineDate,
-		CreatedAt:      modelManpowerRequest.CreatedAt,
-		Status:         modelManpowerRequest.Status,
-		Client: entity.ClientEntity{
-			ID:          modelManpowerRequest.Client.ID,
-			CompanyName: modelManpowerRequest.Client.CompanyName,
-			Address:     modelManpowerRequest.Client.Address,
-		},
-	}
+	manpowerRequest.Hired = int(hiredCount)
 
-	return &resp, nil
+	return &manpowerRequest, nil
 }
 
 func (m *manpowerReqRepository) GetManpowerReqsByTenant(ctx context.Context, tenantID int64, query entity.ManpowerReqQueryString) ([]entity.ManpowerReqEntity, int64, int64, error) {
-	var modelManpowerRequest []model.ManpowerRequest
+	var manpowerRequests []entity.ManpowerReqEntity
 	var countData int64
 
 	sqlMain := m.db.WithContext(ctx).
-		Model(&model.ManpowerRequest{}).
+		Model(&entity.ManpowerReqEntity{}).
 		Joins("LEFT JOIN clients c ON c.id = manpower_requests.client_id").
 		Where("manpower_requests.tenant_id = ?", tenantID)
 
@@ -138,54 +122,43 @@ func (m *manpowerReqRepository) GetManpowerReqsByTenant(ctx context.Context, ten
 		Order(order).
 		Limit(query.Limit).
 		Offset(offset).
-		Find(&modelManpowerRequest).Error; err != nil {
+		Find(&manpowerRequests).Error; err != nil {
 		code = "[REPOSITORY] GetManpowerReqsByTenant - 2"
 		log.Errorw(code, err)
 		return nil, 0, 0, err
 	}
 
-	resps := make([]entity.ManpowerReqEntity, 0, len(modelManpowerRequest))
-	for _, val := range modelManpowerRequest {
-		resps = append(resps, entity.ManpowerReqEntity{
-			ID:             val.ID,
-			TenantID:       val.TenantID,
-			ClientID:       val.ClientID,
-			Position:       val.Position,
-			RequiredCount:  int(val.RequiredCount),
-			SalaryMin:      val.SalaryMin,
-			SalaryMax:      val.SalaryMax,
-			WorkLocation:   val.WorkLocation,
-			JobDescription: val.JobDescription,
-			DeadlineDate:   val.DeadlineDate,
-			Status:         val.Status,
-			Client: entity.ClientEntity{
-				ID:          val.ClientID,
-				CompanyName: val.Client.CompanyName,
-				Address:     val.Client.Address,
-			},
-		})
-	}
-
-	return resps, countData, totalPages, nil
+	return manpowerRequests, countData, totalPages, nil
 }
 
-func (m *manpowerReqRepository) CreateManpowerReq(ctx context.Context, req entity.ManpowerReqEntity) error {
-	modelManpowerReq := model.ManpowerRequest{
-		TenantID:       req.TenantID,
-		ClientID:       req.ClientID,
-		Position:       req.Position,
-		RequiredCount:  int64(req.RequiredCount),
-		SalaryMin:      req.SalaryMin,
-		SalaryMax:      req.SalaryMax,
-		WorkLocation:   req.WorkLocation,
-		JobDescription: req.JobDescription,
-		DeadlineDate:   req.DeadlineDate,
-		Status:         "OPEN",
-	}
-
-	err := m.db.Create(&modelManpowerReq).Error
+func (m *manpowerReqRepository) CreateManpowerReq(ctx context.Context, manpowerReq *entity.ManpowerReqEntity) error {
+	err := m.db.WithContext(ctx).Create(manpowerReq).Error
 	if err != nil {
 		code = "[REPOSITORY] CreateManpowerReq - 1"
+		log.Errorw(code, err)
+		return err
+	}
+
+	return nil
+}
+
+func (m *manpowerReqRepository) UpdateManpowerReq(ctx context.Context, manpowerReq *entity.ManpowerReqEntity) error {
+	err := m.db.WithContext(ctx).Save(manpowerReq).Error
+	if err != nil {
+		code = "[REPOSITORY] UpdateManpowerReq - 1"
+		log.Errorw(code, err)
+		return err
+	}
+
+	return nil
+}
+
+func (m *manpowerReqRepository) DeleteManpowerReq(ctx context.Context, tenantID int64, manpowerReqID int64) error {
+	err := m.db.WithContext(ctx).
+		Where("tenant_id = ?", tenantID).
+		Delete(&entity.ManpowerReqEntity{}, manpowerReqID).Error
+	if err != nil {
+		code = "[REPOSITORY] DeleteManpowerReq - 1"
 		log.Errorw(code, err)
 		return err
 	}

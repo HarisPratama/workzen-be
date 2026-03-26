@@ -6,7 +6,12 @@
       "Bash(grep:*)",
       "Bash(brew install:*)",
       "Bash(go build:*)",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(for file:*)",
+      "Bash(do)",
+      "Bash(if ! grep -q \"domain/model\" \"$file\")",
+      "Bash(then)",
+      "Bash(basename \"$file\")"
     ]
   }
 }

@@ -194,24 +194,37 @@ func RunServer() {
 	// employee
 	tenantApp.Get("/employees", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.GetEmployees)
 	tenantApp.Post("/employees", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.CreateEmployee)
+	tenantApp.Get("/employees/:employeeID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.GetEmployeeDetail)
+	tenantApp.Put("/employees/:employeeID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.UpdateEmployee)
+	tenantApp.Delete("/employees/:employeeID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.DeleteEmployee)
 
 	// client
 	tenantApp.Get("/clients", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.GetClientByTenant)
 	tenantApp.Post("/clients", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.CreateClient)
+	tenantApp.Get("/clients/:clientID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.GetClientDetailByTenant)
+	tenantApp.Put("/clients/:clientID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.UpdateClient)
+	tenantApp.Delete("/clients/:clientID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.DeleteClient)
 
 	// manpower request
 	tenantApp.Get("/manpower-requests", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.GetManpowerReqByTenant)
-	tenantApp.Get("/manpower-requests/:manpowerRequestID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.GetDetailManpowerRequestByTenant)
-	tenantApp.Get("/manpower_requests/:manpowerRequestID/candidates", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.GetCandidateApplicationByTenantMR)
 	tenantApp.Post("/manpower-requests", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.CreateManpowerReq)
+	tenantApp.Get("/manpower-requests/:manpowerRequestID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.GetDetailManpowerRequestByTenant)
+	tenantApp.Put("/manpower-requests/:manpowerRequestID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.UpdateManpowerReq)
+	tenantApp.Delete("/manpower-requests/:manpowerRequestID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.DeleteManpowerReq)
+	tenantApp.Get("/manpower-requests/:manpowerRequestID/candidates", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.GetCandidateApplicationByTenantMR)
 
 	// candidate
 	tenantApp.Get("/candidates", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateHandler.GetCandidatesByTenant)
-	tenantApp.Get("/candidates/:candidateID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateHandler.GetCandidateDetailByTenant)
 	tenantApp.Post("/candidates", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateHandler.CreateCandidate)
+	tenantApp.Get("/candidates/:candidateID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateHandler.GetCandidateDetailByTenant)
+	tenantApp.Put("/candidates/:candidateID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateHandler.UpdateCandidate)
+	tenantApp.Delete("/candidates/:candidateID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateHandler.DeleteCandidate)
 
 	// candidate application
-	tenantApp.Post("/candidate-application", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.CreateCandidateApplication)
+	tenantApp.Post("/candidate-applications", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.CreateCandidateApplication)
+	tenantApp.Get("/candidate-applications/:applicationID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.GetCandidateApplicationDetail)
+	tenantApp.Put("/candidate-applications/:applicationID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.UpdateCandidateApplication)
+	tenantApp.Delete("/candidate-applications/:applicationID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.DeleteCandidateApplication)
 
 	// Subscription (Tenant)
 	subscriptionApp := tenantApp.Group("/subscriptions", middlewareAuth.RequireRole("TENANT_ADMIN"))

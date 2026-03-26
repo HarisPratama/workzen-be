@@ -15,7 +15,10 @@ import (
 
 type CandidateApplicationHandler interface {
 	GetCandidateApplicationByTenantMR(c *fiber.Ctx) error
+	GetCandidateApplicationDetail(c *fiber.Ctx) error
 	CreateCandidateApplication(c *fiber.Ctx) error
+	UpdateCandidateApplication(c *fiber.Ctx) error
+	DeleteCandidateApplication(c *fiber.Ctx) error
 }
 
 type candidateApplicationHandler struct {
@@ -31,7 +34,6 @@ func (c2 *candidateApplicationHandler) CreateCandidateApplication(c *fiber.Ctx) 
 		log.Errorw(code, "tenant id is empty")
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "Unauthorized access"
-
 		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
 
@@ -40,10 +42,8 @@ func (c2 *candidateApplicationHandler) CreateCandidateApplication(c *fiber.Ctx) 
 	if err := c.BodyParser(&req); err != nil {
 		code = "[Handler] CreateCandidateApplication - 2"
 		log.Errorw(code, err)
-		resp := response.ErrorResponseDefault{}
-		resp.Meta.Status = false
-		resp.Meta.Message = "invalid request body"
-
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "invalid request body"
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
@@ -51,20 +51,17 @@ func (c2 *candidateApplicationHandler) CreateCandidateApplication(c *fiber.Ctx) 
 		code = "[Handler] CreateCandidateApplication - 3"
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	reqEntity := entity.CandidateApplicationEntity{
+	application := &entity.CandidateApplicationEntity{
 		TenantID:          int64(tenantID),
 		CandidateID:       req.CandidateID,
 		ManpowerRequestID: req.ManpowerRequestID,
 	}
 
-	err := c2.candidateApplicationService.CreateCandidateApplication(c.Context(), reqEntity)
-
+	err := c2.candidateApplicationService.CreateCandidateApplication(c.Context(), application)
 	if err != nil {
-
 		if strings.Contains(err.Error(), "duplicate key") {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
 				"status":  false,
@@ -76,7 +73,6 @@ func (c2 *candidateApplicationHandler) CreateCandidateApplication(c *fiber.Ctx) 
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
@@ -87,6 +83,136 @@ func (c2 *candidateApplicationHandler) CreateCandidateApplication(c *fiber.Ctx) 
 	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
 }
 
+func (c2 *candidateApplicationHandler) GetCandidateApplicationDetail(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	tenantID := claims.TenantID
+
+	if tenantID == 0 {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("applicationID")
+	applicationID, err := conv.StringToInt64(id)
+	if err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid application ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	result, err := c2.candidateApplicationService.GetDetailCandidateApplication(c.Context(), int64(tenantID), applicationID)
+	if err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusNotFound).JSON(errorResp)
+	}
+
+	resp := response.CandidateApplicationResponse{
+		ID:        result.ID,
+		Status:    result.Status,
+		AppliedAt: result.AppliedAt,
+		Candidate: response.CandidateResponse{
+			ID:       result.Candidate.ID,
+			FullName: result.Candidate.FullName,
+			Email:    result.Candidate.Email,
+			Phone:    result.Candidate.Phone,
+			Status:   result.Candidate.Status,
+		},
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = resp
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (c2 *candidateApplicationHandler) UpdateCandidateApplication(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	tenantID := claims.TenantID
+
+	if tenantID == 0 {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("applicationID")
+	applicationID, err := conv.StringToInt64(id)
+	if err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid application ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	var req request.CandidateApplicationUpdateRequest
+	if err := c.BodyParser(&req); err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err = validatorLib.ValidateStruct(req); err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	application := &entity.CandidateApplicationEntity{
+		Status: req.Status,
+	}
+
+	err = c2.candidateApplicationService.UpdateCandidateApplication(c.Context(), int64(tenantID), applicationID, application)
+	if err != nil {
+		code := "[HANDLER] UpdateCandidateApplication - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (c2 *candidateApplicationHandler) DeleteCandidateApplication(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	tenantID := claims.TenantID
+
+	if tenantID == 0 {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("applicationID")
+	applicationID, err := conv.StringToInt64(id)
+	if err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid application ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	err = c2.candidateApplicationService.DeleteCandidateApplication(c.Context(), int64(tenantID), applicationID)
+	if err != nil {
+		code := "[HANDLER] DeleteCandidateApplication - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusNotFound).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Candidate application deleted successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
+}
+
 func (c2 *candidateApplicationHandler) GetCandidateApplicationByTenantMR(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
 
@@ -94,11 +220,10 @@ func (c2 *candidateApplicationHandler) GetCandidateApplicationByTenantMR(c *fibe
 	if c.Query("page") != "" {
 		page, err = conv.StringToInt(c.Query("page"))
 		if err != nil {
-			code := "[HANDLER] GetManpowerReqByTenant - 1"
+			code := "[HANDLER] GetCandidateApplicationByTenantMR - 1"
 			log.Errorw(code, err)
 			errorResp.Meta.Status = false
 			errorResp.Meta.Message = "invalid page number"
-
 			return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 		}
 	}
@@ -107,11 +232,10 @@ func (c2 *candidateApplicationHandler) GetCandidateApplicationByTenantMR(c *fibe
 	if c.Query("limit") != "" {
 		limit, err = conv.StringToInt(c.Query("limit"))
 		if err != nil {
-			code := "[HANDLER] GetManpowerReqByTenant - 2"
+			code := "[HANDLER] GetCandidateApplicationByTenantMR - 2"
 			log.Errorw(code, err)
 			errorResp.Meta.Status = false
 			errorResp.Meta.Message = "invalid limit number"
-
 			return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 		}
 	}
@@ -150,22 +274,20 @@ func (c2 *candidateApplicationHandler) GetCandidateApplicationByTenantMR(c *fibe
 	manpowerRequestID, err := conv.StringToInt64(idParam)
 
 	if tenantID == 0 {
-		code := "[HANDLER] GetManpowerReqByTenant - 3"
+		code := "[HANDLER] GetCandidateApplicationByTenantMR - 3"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "Tenant ID is empty"
-
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
 	results, totalData, totalPages, err := c2.candidateApplicationService.GetCandidateApplicationByTenantMR(c.Context(), int64(tenantID), manpowerRequestID, reqEntity)
 
 	if err != nil {
-		code := "[HANDLER] GetManpowerReqByTenant - 4"
+		code := "[HANDLER] GetCandidateApplicationByTenantMR - 4"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
@@ -179,13 +301,12 @@ func (c2 *candidateApplicationHandler) GetCandidateApplicationByTenantMR(c *fibe
 			Status:    result.Status,
 			AppliedAt: result.AppliedAt,
 			Candidate: response.CandidateResponse{
-				ID:       result.ID,
+				ID:       result.Candidate.ID,
 				FullName: result.Candidate.FullName,
 				Email:    result.Candidate.Email,
 				Status:   result.Candidate.Status,
 			},
 		}
-
 		respCandidateApplications = append(respCandidateApplications, respCandidateApplication)
 	}
 

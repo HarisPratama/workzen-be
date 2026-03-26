@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"workzen-be/internal/core/domain/entity"
-	"workzen-be/internal/core/domain/model"
 
 	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
@@ -14,21 +13,31 @@ import (
 
 type ClientRepository interface {
 	GetClientsByTenant(ctx context.Context, tenantID int64, query entity.ClientQueryString) ([]entity.ClientEntity, int64, int64, error)
-	CreateClient(ctx context.Context, client entity.ClientEntity) error
+	GetDetailClientByTenant(ctx context.Context, tenantID int64, clientID int64) (*entity.ClientEntity, error)
+	CreateClient(ctx context.Context, client *entity.ClientEntity) error
+	UpdateClient(ctx context.Context, client *entity.ClientEntity) error
+	DeleteClient(ctx context.Context, tenantID int64, clientID int64) error
 }
 
 type clientRepository struct {
 	db *gorm.DB
 }
 
-func (c *clientRepository) CreateClient(ctx context.Context, req entity.ClientEntity) error {
-	modelClient := model.Client{
-		CompanyName: req.CompanyName,
-		Address:     req.Address,
-		TenantID:    req.TenantID,
+func (c *clientRepository) GetDetailClientByTenant(ctx context.Context, tenantID int64, clientID int64) (*entity.ClientEntity, error) {
+	var client entity.ClientEntity
+	err := c.db.WithContext(ctx).
+		Where("tenant_id = ?", tenantID).
+		First(&client, clientID).Error
+
+	if err != nil {
+		return nil, err
 	}
 
-	err := c.db.Create(&modelClient).Error
+	return &client, nil
+}
+
+func (c *clientRepository) CreateClient(ctx context.Context, client *entity.ClientEntity) error {
+	err := c.db.WithContext(ctx).Create(client).Error
 	if err != nil {
 		code = "[REPOSITORY] CreateClient - 1"
 		log.Errorw(code, err)
@@ -38,8 +47,32 @@ func (c *clientRepository) CreateClient(ctx context.Context, req entity.ClientEn
 	return nil
 }
 
+func (c *clientRepository) UpdateClient(ctx context.Context, client *entity.ClientEntity) error {
+	err := c.db.WithContext(ctx).Save(client).Error
+	if err != nil {
+		code = "[REPOSITORY] UpdateClient - 1"
+		log.Errorw(code, err)
+		return err
+	}
+
+	return nil
+}
+
+func (c *clientRepository) DeleteClient(ctx context.Context, tenantID int64, clientID int64) error {
+	err := c.db.WithContext(ctx).
+		Where("tenant_id = ?", tenantID).
+		Delete(&entity.ClientEntity{}, clientID).Error
+	if err != nil {
+		code = "[REPOSITORY] DeleteClient - 1"
+		log.Errorw(code, err)
+		return err
+	}
+
+	return nil
+}
+
 func (c *clientRepository) GetClientsByTenant(ctx context.Context, tenantID int64, query entity.ClientQueryString) ([]entity.ClientEntity, int64, int64, error) {
-	var modelClients []model.Client
+	var clients []entity.ClientEntity
 	var countData int64
 
 	order := fmt.Sprintf("%s %s", query.OrderBy, query.OrderType)
@@ -49,7 +82,12 @@ func (c *clientRepository) GetClientsByTenant(ctx context.Context, tenantID int6
 		Preload(clause.Associations).
 		Where("tenant_id = ?", tenantID)
 
-	if err := sqlMain.Model(&modelClients).Count(&countData).Error; err != nil {
+	if query.Search != "" {
+		search := "%" + query.Search + "%"
+		sqlMain = sqlMain.Where("company_name ILIKE ?", search)
+	}
+
+	if err := sqlMain.Model(&entity.ClientEntity{}).Count(&countData).Error; err != nil {
 		code = "[REPOSITORY] GetClientByTenant - 1"
 		log.Errorw(code, err)
 		return nil, 0, 0, err
@@ -61,23 +99,13 @@ func (c *clientRepository) GetClientsByTenant(ctx context.Context, tenantID int6
 		Order(order).
 		Limit(query.Limit).
 		Offset(offset).
-		Find(&modelClients).Error; err != nil {
+		Find(&clients).Error; err != nil {
 		code = "[REPOSITORY] GetClientByTenant - 2"
 		log.Errorw(code, err)
 		return nil, 0, 0, err
 	}
 
-	resps := make([]entity.ClientEntity, 0, len(modelClients))
-	for _, val := range modelClients {
-		resps = append(resps, entity.ClientEntity{
-			ID:          val.ID,
-			CompanyName: val.CompanyName,
-			Address:     val.Address,
-			CreatedAt:   val.CreatedAt,
-		})
-	}
-
-	return resps, countData, totalPages, nil
+	return clients, countData, totalPages, nil
 }
 
 func NewClientRepository(db *gorm.DB) ClientRepository {
