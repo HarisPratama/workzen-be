@@ -1,3 +1,1 @@
-DROP TABLE IF EXISTS tenant_subscriptions;
-DROP TABLE IF EXISTS subscription_plans;
-DROP TYPE IF EXISTS subscription_status;
+-- Cannot remove enum value in PostgreSQL, so this is a no-op
