@@ -1,9 +1,11 @@
 package request
 
 type InterviewRequest struct {
-	CandidateApplicationID string `json:"candidate_application_id" validate:"required,uuid"`
-	InterviewerID          string `json:"interviewer_id" validate:"required,uuid"`
+	ManpowerRequestID      int64  `json:"manpower_request_id"`
+	CandidateApplicationID int64  `json:"candidate_application_id" validate:"required"`
+	InterviewerID          int64  `json:"interviewer_id" validate:"required"`
 	ScheduledAt            string `json:"scheduled_at" validate:"required,datetime=2006-01-02T15:04:05Z07:00"`
+	InterviewType          string `json:"interview_type"`
 	DurationMinutes        int    `json:"duration_minutes" validate:"required,gte=15"`
 	Type                   string `json:"type" validate:"required,oneof=phone video in-person technical hr final"`
 	Location               string `json:"location"`
@@ -28,11 +30,11 @@ type CancelRequest struct {
 }
 
 type SubmitFeedbackRequest struct {
-	Rating        int    `json:"rating" validate:"required,gte=1,lte=5"`
-	Strengths     string `json:"strengths"`
-	Weaknesses    string `json:"weaknesses"`
+	Rating          int    `json:"rating" validate:"required,gte=1,lte=5"`
+	Strengths       string `json:"strengths"`
+	Weaknesses      string `json:"weaknesses"`
 	OverallFeedback string `json:"overall_feedback"`
-	Recommendation string `json:"recommendation" validate:"required,oneof=hire no_hire strong_hire"`
+	Recommendation  string `json:"recommendation" validate:"required,oneof=hire no_hire strong_hire"`
 }
 
 type CompleteInterviewRequest struct {

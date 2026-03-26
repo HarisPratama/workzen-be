@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"bwanews/internal/app"
+	"workzen-be/internal/app"
 
 	"github.com/spf13/cobra"
 )

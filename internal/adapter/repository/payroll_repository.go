@@ -1,10 +1,9 @@
 package repository
 
 import (
-	"bwanews/internal/core/domain/entity"
 	"context"
-	"fmt"
 	"time"
+	"workzen-be/internal/core/domain/entity"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -137,9 +136,9 @@ func (r *payrollRepository) GetPayrollItems(ctx context.Context, payrollID uuid.
 
 func (r *payrollRepository) CalculatePayrollSummary(ctx context.Context, tenantID uuid.UUID, startDate, endDate time.Time) (*entity.PayrollSummary, error) {
 	type result struct {
-		TotalPayrolls   int64   `gorm:"column:total_payrolls"`
+		TotalPayrolls    int64   `gorm:"column:total_payrolls"`
 		TotalBasicSalary float64 `gorm:"column:total_basic_salary"`
-		TotalNetSalary     float64 `gorm:"column:total_net_salary"`
+		TotalNetSalary   float64 `gorm:"column:total_net_salary"`
 	}
 
 	var res result
@@ -154,11 +153,11 @@ func (r *payrollRepository) CalculatePayrollSummary(ctx context.Context, tenantI
 	}
 
 	summary := &entity.PayrollSummary{
-		TotalPayrolls:      res.TotalPayrolls,
-		TotalBasicSalary:   res.TotalBasicSalary,
-		TotalNetSalary:     res.TotalNetSalary,
-		PeriodStart:        startDate,
-		PeriodEnd:          endDate,
+		TotalPayrolls:    res.TotalPayrolls,
+		TotalBasicSalary: res.TotalBasicSalary,
+		TotalNetSalary:   res.TotalNetSalary,
+		PeriodStart:      startDate,
+		PeriodEnd:        endDate,
 	}
 
 	return summary, nil

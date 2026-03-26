@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"bwanews/internal/core/domain/entity"
 	"context"
 	"time"
+	"workzen-be/internal/core/domain/entity"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

@@ -16,26 +16,22 @@ const (
 )
 
 type Payroll struct {
-	ID            uuid.UUID     `json:"id" gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
-	TenantID      uuid.UUID     `json:"tenant_id" gorm:"type:uuid;not null;index"`
-	EmployeeID    uuid.UUID     `json:"employee_id" gorm:"type:uuid;not null;index"`
-	PeriodStart   time.Time     `json:"period_start" gorm:"not null"`
-	PeriodEnd     time.Time     `json:"period_end" gorm:"not null"`
-	BasicSalary   float64       `json:"basic_salary" gorm:"type:decimal(15,2);not null"`
-	Allowances    float64       `json:"allowances" gorm:"type:decimal(15,2);default:0"`
-	Deductions    float64       `json:"deductions" gorm:"type:decimal(15,2);default:0"`
-	Tax           float64       `json:"tax" gorm:"type:decimal(15,2);default:0"`
-	NetSalary     float64       `json:"net_salary" gorm:"type:decimal(15,2);not null"`
-	Status        PayrollStatus `json:"status" gorm:"type:varchar(20);default:'DRAFT'"`
-	PaidAt        *time.Time     `json:"paid_at,omitempty"`
-	Notes         string        `json:"notes" gorm:"type:text"`
-	CreatedAt     time.Time     `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt     time.Time     `json:"updated_at" gorm:"autoUpdateTime"`
-	DeletedAt     *time.Time     `json:"deleted_at,omitempty" gorm:"index"`
-
-	// Relationships
-	Employee *Employee `json:"employee,omitempty" gorm:"foreignKey:EmployeeID"`
-	Tenant   *Tenant   `json:"tenant,omitempty" gorm:"foreignKey:TenantID"`
+	ID          uuid.UUID     `json:"id" gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
+	TenantID    uuid.UUID     `json:"tenant_id" gorm:"type:uuid;not null;index"`
+	EmployeeID  uuid.UUID     `json:"employee_id" gorm:"type:uuid;not null;index"`
+	PeriodStart time.Time     `json:"period_start" gorm:"not null"`
+	PeriodEnd   time.Time     `json:"period_end" gorm:"not null"`
+	BasicSalary float64       `json:"basic_salary" gorm:"type:decimal(15,2);not null"`
+	Allowances  float64       `json:"allowances" gorm:"type:decimal(15,2);default:0"`
+	Deductions  float64       `json:"deductions" gorm:"type:decimal(15,2);default:0"`
+	Tax         float64       `json:"tax" gorm:"type:decimal(15,2);default:0"`
+	NetSalary   float64       `json:"net_salary" gorm:"type:decimal(15,2);not null"`
+	Status      PayrollStatus `json:"status" gorm:"type:varchar(20);default:'DRAFT'"`
+	PaidAt      *time.Time    `json:"paid_at,omitempty"`
+	Notes       string        `json:"notes" gorm:"type:text"`
+	CreatedAt   time.Time     `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt   time.Time     `json:"updated_at" gorm:"autoUpdateTime"`
+	DeletedAt   *time.Time    `json:"deleted_at,omitempty" gorm:"index"`
 }
 
 type PayrollItem struct {
@@ -51,12 +47,12 @@ type PayrollItem struct {
 }
 
 type PayrollCalculation struct {
-	BasicSalary  float64 `json:"basic_salary"`
-	Allowances   float64 `json:"allowances"`
-	Deductions   float64 `json:"deductions"`
-	Tax          float64 `json:"tax"`
-	NetSalary    float64 `json:"net_salary"`
-	TaxDetails   TaxInfo `json:"tax_details,omitempty"`
+	BasicSalary float64 `json:"basic_salary"`
+	Allowances  float64 `json:"allowances"`
+	Deductions  float64 `json:"deductions"`
+	Tax         float64 `json:"tax"`
+	NetSalary   float64 `json:"net_salary"`
+	TaxDetails  TaxInfo `json:"tax_details,omitempty"`
 }
 
 type TaxInfo struct {
@@ -83,4 +79,12 @@ func (p *Payroll) CanProcess() bool {
 // CanPay checks if the payroll can be marked as paid
 func (p *Payroll) CanPay() bool {
 	return p.Status == PayrollStatusProcessed
+}
+
+type PayrollSummary struct {
+	TotalPayrolls    int64     `json:"total_payrolls"`
+	TotalBasicSalary float64   `json:"total_basic_salary"`
+	TotalNetSalary   float64   `json:"total_net_salary"`
+	PeriodStart      time.Time `json:"period_start"`
+	PeriodEnd        time.Time `json:"period_end"`
 }

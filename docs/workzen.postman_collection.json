@@ -1,0 +1,951 @@
+{
+  "info": {
+    "name": "WorkZen API",
+    "description": "WorkZen HRIS Backend API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/auth/login", "host": ["{{base_url}}"], "path": ["v1", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@workzen.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/auth/logout", "host": ["{{base_url}}"], "path": ["v1", "auth", "logout"] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/auth/refresh", "host": ["{{base_url}}"], "path": ["v1", "auth", "refresh"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin / Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/categories?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "admin", "categories"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Category By ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/admin/categories/1", "host": ["{{base_url}}"], "path": ["v1", "admin", "categories", "1"] }
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/admin/categories", "host": ["{{base_url}}"], "path": ["v1", "admin", "categories"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Technology\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/admin/categories/1", "host": ["{{base_url}}"], "path": ["v1", "admin", "categories", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Technology Updated\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/admin/categories/1", "host": ["{{base_url}}"], "path": ["v1", "admin", "categories", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin / Contents",
+      "item": [
+        {
+          "name": "Get All Contents",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/contents?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "admin", "contents"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Content By ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/admin/contents/1", "host": ["{{base_url}}"], "path": ["v1", "admin", "contents", "1"] }
+          }
+        },
+        {
+          "name": "Create Content",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/admin/contents", "host": ["{{base_url}}"], "path": ["v1", "admin", "contents"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Artikel Baru\",\n  \"excerpt\": \"Ringkasan singkat\",\n  \"description\": \"Isi artikel lengkap\",\n  \"tags\": \"tech,news\",\n  \"category_id\": 1,\n  \"status\": \"DRAFT\",\n  \"image\": \"https://cdn.example.com/image.jpg\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Content",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/admin/contents/1", "host": ["{{base_url}}"], "path": ["v1", "admin", "contents", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Artikel Diupdate\",\n  \"excerpt\": \"Ringkasan baru\",\n  \"description\": \"Isi artikel yang diupdate\",\n  \"tags\": \"tech,update\",\n  \"category_id\": 1,\n  \"status\": \"PUBLISH\",\n  \"image\": \"https://cdn.example.com/image-new.jpg\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Content",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/admin/contents/1", "host": ["{{base_url}}"], "path": ["v1", "admin", "contents", "1"] }
+          }
+        },
+        {
+          "name": "Upload Image",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/admin/contents/upload-image", "host": ["{{base_url}}"], "path": ["v1", "admin", "contents", "upload-image"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "image", "type": "file", "src": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin / Users",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/admin/users/profile", "host": ["{{base_url}}"], "path": ["v1", "admin", "users", "profile"] }
+          }
+        },
+        {
+          "name": "Update Password",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/admin/users/update-password", "host": ["{{base_url}}"], "path": ["v1", "admin", "users", "update-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"oldpassword\",\n  \"new_password\": \"newpassword123\",\n  \"confirm_password\": \"newpassword123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin / Employees (SUPER_ADMIN)",
+      "item": [
+        {
+          "name": "Get All Employees",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/employees?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "admin", "employees"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Frontend (Public)",
+      "item": [
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/fe/categories", "host": ["{{base_url}}"], "path": ["fe", "categories"] }
+          }
+        },
+        {
+          "name": "Get Contents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/fe/contents?page=1&limit=10&search=&category_id=&order_by=created_at&order_type=desc",
+              "host": ["{{base_url}}"],
+              "path": ["fe", "contents"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" },
+                { "key": "category_id", "value": "" },
+                { "key": "order_by", "value": "created_at" },
+                { "key": "order_type", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Content Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/fe/contents/1", "host": ["{{base_url}}"], "path": ["fe", "contents", "1"] }
+          }
+        },
+        {
+          "name": "Register Tenant",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/fe/tenants/register", "host": ["{{base_url}}"], "path": ["fe", "tenants", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_name\": \"PT Contoh Jaya\",\n  \"company_address\": \"Jl. Sudirman No. 1, Jakarta\",\n  \"plan\": \"BASIC\",\n  \"admin_name\": \"John Doe\",\n  \"admin_email\": \"admin@ptcontoh.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "Get Employees",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/employees?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "employees"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Employee",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/employees", "host": ["{{base_url}}"], "path": ["v1", "employees"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Budi Santoso\",\n  \"citizen_id\": \"3201234567890001\",\n  \"phone_number\": \"081234567890\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clients",
+      "item": [
+        {
+          "name": "Get Clients",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/clients?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "clients"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Client",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/clients", "host": ["{{base_url}}"], "path": ["v1", "clients"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_name\": \"PT Client ABC\",\n  \"address\": \"Jl. Gatot Subroto No. 10, Jakarta\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Manpower Requests",
+      "item": [
+        {
+          "name": "Get Manpower Requests",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/manpower-requests?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "manpower-requests"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Manpower Request Detail",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/manpower-requests/1", "host": ["{{base_url}}"], "path": ["v1", "manpower-requests", "1"] }
+          }
+        },
+        {
+          "name": "Get Candidates by Manpower Request",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/manpower_requests/1/candidates", "host": ["{{base_url}}"], "path": ["v1", "manpower_requests", "1", "candidates"] }
+          }
+        },
+        {
+          "name": "Create Manpower Request",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/manpower-requests", "host": ["{{base_url}}"], "path": ["v1", "manpower-requests"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": 1,\n  \"position\": \"Software Engineer\",\n  \"required_count\": 3,\n  \"salary_min\": 8000000,\n  \"salary_max\": 15000000,\n  \"work_location\": \"Jakarta\",\n  \"job_description\": \"Develop and maintain backend services\",\n  \"deadline_date\": \"2024-12-31T00:00:00Z\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Candidates",
+      "item": [
+        {
+          "name": "Get Candidates",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/candidates?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "candidates"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Candidate",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/candidates", "host": ["{{base_url}}"], "path": ["v1", "candidates"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Andi Prasetyo\",\n  \"email\": \"andi@mail.com\",\n  \"phone\": \"082123456789\",\n  \"citizen_id\": \"3201234567890002\",\n  \"birth_date\": \"1995-05-20T00:00:00Z\",\n  \"address\": \"Jl. Kebon Jeruk No. 5\",\n  \"source\": \"LinkedIn\",\n  \"status\": \"active\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Create Candidate Application",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/candidate-application", "host": ["{{base_url}}"], "path": ["v1", "candidate-application"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidate_id\": 1,\n  \"manpower_request_id\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Interviews",
+      "item": [
+        {
+          "name": "Get Interviews",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/interviews?page=1&limit=10&search=&status=&order_by=&order_type=desc",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "interviews"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" },
+                { "key": "status", "value": "", "description": "scheduled | completed | cancelled | no_show" },
+                { "key": "order_by", "value": "" },
+                { "key": "order_type", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Interview By ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/interviews/1", "host": ["{{base_url}}"], "path": ["v1", "interviews", "1"] }
+          }
+        },
+        {
+          "name": "Create Interview",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/interviews", "host": ["{{base_url}}"], "path": ["v1", "interviews"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidate_application_id\": 1,\n  \"manpower_request_id\": 1,\n  \"interviewer_id\": 5,\n  \"interview_type\": \"technical\",\n  \"scheduled_at\": \"2024-06-15T10:00:00Z\",\n  \"duration_minutes\": 60,\n  \"type\": \"technical\",\n  \"location\": \"Ruang Meeting A\",\n  \"meeting_link\": \"\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Interview",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/interviews/1", "host": ["{{base_url}}"], "path": ["v1", "interviews", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduled_at\": \"2024-06-16T14:00:00Z\",\n  \"duration_minutes\": 45,\n  \"type\": \"hr\",\n  \"location\": \"Ruang Meeting B\",\n  \"meeting_link\": \"https://zoom.us/j/123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Interview",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/interviews/1", "host": ["{{base_url}}"], "path": ["v1", "interviews", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Offers",
+      "item": [
+        {
+          "name": "Get Offers",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/offers?page=1&limit=10&search=&status=&order_by=&order_type=desc",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "offers"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" },
+                { "key": "status", "value": "", "description": "draft | sent | accepted | rejected | withdrawn | expired" },
+                { "key": "order_by", "value": "" },
+                { "key": "order_type", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Offer By ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/offers/1", "host": ["{{base_url}}"], "path": ["v1", "offers", "1"] }
+          }
+        },
+        {
+          "name": "Create Offer",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/offers", "host": ["{{base_url}}"], "path": ["v1", "offers"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidate_application_id\": 1,\n  \"position\": \"Senior Software Engineer\",\n  \"department\": \"Engineering\",\n  \"employment_type\": \"full_time\",\n  \"base_salary\": 15000000,\n  \"currency\": \"IDR\",\n  \"bonus\": 2000000,\n  \"benefits\": \"BPJS, THR, Laptop\",\n  \"probation_period_months\": 3,\n  \"notice_period_days\": 30,\n  \"start_date\": \"2024-07-01\",\n  \"expiry_date\": \"2024-06-20\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Offer",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/offers/1", "host": ["{{base_url}}"], "path": ["v1", "offers", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"sent\",\n  \"feedback\": \"\",\n  \"negotiated_salary\": null,\n  \"start_date\": \"2024-07-01\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Offer",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/offers/1", "host": ["{{base_url}}"], "path": ["v1", "offers", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assignments",
+      "item": [
+        {
+          "name": "Get Assignments",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/assignments?page=1&limit=10&search=&status=",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "assignments"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" },
+                { "key": "status", "value": "", "description": "active | completed | cancelled" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Assignment By ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/assignments/1", "host": ["{{base_url}}"], "path": ["v1", "assignments", "1"] }
+          }
+        },
+        {
+          "name": "Create Assignment",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/assignments", "host": ["{{base_url}}"], "path": ["v1", "assignments"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": 1,\n  \"client_id\": 2,\n  \"project_id\": 3,\n  \"department_id\": 1,\n  \"assignment_type\": \"onsite\",\n  \"start_date\": \"2024-07-01\",\n  \"end_date\": \"2024-12-31\",\n  \"expected_end_date\": \"2024-12-31\",\n  \"role\": \"Backend Developer\",\n  \"position\": \"Senior Engineer\",\n  \"location\": \"Jakarta\",\n  \"remote_type\": \"hybrid\",\n  \"billing_rate\": 150,\n  \"cost_rate\": 100,\n  \"currency\": \"USD\",\n  \"hours_per_week\": 40,\n  \"notes\": \"Assigned to client project\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Assignment",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/assignments/1", "host": ["{{base_url}}"], "path": ["v1", "assignments", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\",\n  \"end_date\": \"2024-11-30\",\n  \"notes\": \"Project completed early\",\n  \"termination_reason\": \"\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Assignment",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/assignments/1", "host": ["{{base_url}}"], "path": ["v1", "assignments", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendances",
+      "item": [
+        {
+          "name": "Get Attendances",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/attendances?page=1&limit=10&status=&start_date=&end_date=",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "attendances"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "status", "value": "", "description": "present | absent | leave | holiday" },
+                { "key": "start_date", "value": "", "description": "Format: 2024-01-01" },
+                { "key": "end_date", "value": "", "description": "Format: 2024-01-31" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Attendance By ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID"], "variable": [{ "key": "attendanceID", "value": "550e8400-e29b-41d4-a716-446655440000" }] }
+          }
+        },
+        {
+          "name": "Get Attendances By Employee",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/attendances/employee/:employeeID?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "attendances", "employee", ":employeeID"],
+              "variable": [{ "key": "employeeID", "value": "550e8400-e29b-41d4-a716-446655440000" }],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Today Attendance",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/attendances/today/:employeeID", "host": ["{{base_url}}"], "path": ["v1", "attendances", "today", ":employeeID"], "variable": [{ "key": "employeeID", "value": "550e8400-e29b-41d4-a716-446655440000" }] }
+          }
+        },
+        {
+          "name": "Create Attendance",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/attendances", "host": ["{{base_url}}"], "path": ["v1", "attendances"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"date\": \"2024-06-15\",\n  \"type\": \"regular\",\n  \"status\": \"present\",\n  \"check_in\": \"08:00:00\",\n  \"check_out\": \"17:00:00\",\n  \"notes\": \"\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Attendance",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID"], "variable": [{ "key": "attendanceID", "value": "550e8400-e29b-41d4-a716-446655440000" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"present\",\n  \"check_in\": \"08:30:00\",\n  \"check_out\": \"17:30:00\",\n  \"notes\": \"Updated\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Attendance",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID"], "variable": [{ "key": "attendanceID", "value": "550e8400-e29b-41d4-a716-446655440000" }] }
+          }
+        },
+        {
+          "name": "Check In",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID/check-in", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID", "check-in"], "variable": [{ "key": "attendanceID", "value": "550e8400-e29b-41d4-a716-446655440000" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"check_in_time\": \"08:05:00\",\n  \"location\": \"Kantor Pusat\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Check Out",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID/check-out", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID", "check-out"], "variable": [{ "key": "attendanceID", "value": "550e8400-e29b-41d4-a716-446655440000" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"check_out_time\": \"17:05:00\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payrolls",
+      "item": [
+        {
+          "name": "Get Payrolls",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/payrolls?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "payrolls"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Payroll By ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID"], "variable": [{ "key": "payrollID", "value": "550e8400-e29b-41d4-a716-446655440001" }] }
+          }
+        },
+        {
+          "name": "Get Payrolls By Employee",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/payrolls/employee/:employeeID?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "payrolls", "employee", ":employeeID"],
+              "variable": [{ "key": "employeeID", "value": "550e8400-e29b-41d4-a716-446655440000" }],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Payroll",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/payrolls", "host": ["{{base_url}}"], "path": ["v1", "payrolls"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"period_start\": \"2024-06-01\",\n  \"period_end\": \"2024-06-30\",\n  \"basic_salary\": 10000000,\n  \"allowances\": 500000,\n  \"deductions\": 200000,\n  \"tax\": 150000,\n  \"net_salary\": 10150000,\n  \"notes\": \"June 2024 payroll\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Payroll",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID"], "variable": [{ "key": "payrollID", "value": "550e8400-e29b-41d4-a716-446655440001" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"basic_salary\": 11000000,\n  \"allowances\": 600000,\n  \"deductions\": 250000,\n  \"tax\": 180000,\n  \"net_salary\": 11170000,\n  \"notes\": \"Updated\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Payroll",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID"], "variable": [{ "key": "payrollID", "value": "550e8400-e29b-41d4-a716-446655440001" }] }
+          }
+        },
+        {
+          "name": "Process Payroll",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID/process", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID", "process"], "variable": [{ "key": "payrollID", "value": "550e8400-e29b-41d4-a716-446655440001" }] }
+          }
+        },
+        {
+          "name": "Mark As Paid",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID/mark-as-paid", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID", "mark-as-paid"], "variable": [{ "key": "payrollID", "value": "550e8400-e29b-41d4-a716-446655440001" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payment_date\": \"2024-07-01\",\n  \"payment_method\": \"bank_transfer\",\n  \"transaction_id\": \"TXN-20240701-001\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

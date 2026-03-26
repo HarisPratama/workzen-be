@@ -1,13 +1,13 @@
 package cloudflare
 
 import (
-	"bwanews/config"
-	"bwanews/internal/core/domain/entity"
 	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"workzen-be/config"
+	"workzen-be/internal/core/domain/entity"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"

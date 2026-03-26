@@ -1,14 +1,14 @@
 package service
 
 import (
-	"bwanews/config"
-	"bwanews/internal/adapter/repository"
-	"bwanews/internal/core/domain/entity"
-	"bwanews/lib/auth"
-	"bwanews/lib/conv"
 	"context"
 	"errors"
 	"time"
+	"workzen-be/config"
+	"workzen-be/internal/adapter/repository"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/lib/auth"
+	"workzen-be/lib/conv"
 
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v5"

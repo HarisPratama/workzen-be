@@ -1,9 +1,10 @@
 package service
 
 import (
-	"bwanews/internal/adapter/repository"
-	"bwanews/internal/core/domain/entity"
 	"context"
+	"time"
+	"workzen-be/internal/adapter/repository"
+	"workzen-be/internal/core/domain/entity"
 
 	"github.com/gofiber/fiber/v2/log"
 )
@@ -45,6 +46,14 @@ func (s *offerService) GetOfferByID(ctx context.Context, id int64) (*entity.Offe
 }
 
 func (s *offerService) CreateOffer(ctx context.Context, req entity.OfferEntityRequest, tenantID int64) error {
+	var startDate, expiryDate time.Time
+	if req.StartDate != "" {
+		startDate, _ = time.Parse("2006-01-02", req.StartDate)
+	}
+	if req.ExpiryDate != "" {
+		expiryDate, _ = time.Parse("2006-01-02", req.ExpiryDate)
+	}
+
 	reqEntity := entity.OfferEntity{
 		TenantID:               tenantID,
 		CandidateApplicationID: req.CandidateApplicationID,
@@ -57,11 +66,11 @@ func (s *offerService) CreateOffer(ctx context.Context, req entity.OfferEntityRe
 		Benefits:               req.Benefits,
 		ProbationPeriodMonths:  req.ProbationPeriodMonths,
 		NoticePeriodDays:       req.NoticePeriodDays,
-		StartDate:              req.StartDate,
-		ExpiryDate:             req.ExpiryDate,
+		StartDate:              startDate,
+		ExpiryDate:             expiryDate,
 	}
 
-	err := s.offerRepo.CreateOffer(ctx, reqEntity)
+	err := s.offerRepo.CreateOffer(ctx, reqEntity, tenantID)
 
 	if err != nil {
 		code := "[SERVICE] CreateOffer - 1"

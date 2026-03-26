@@ -1,13 +1,13 @@
 package repository
 
 import (
-	"bwanews/internal/core/domain/entity"
-	"bwanews/internal/core/domain/model"
 	"context"
 	"fmt"
 	"math"
 	"strings"
 	"time"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/internal/core/domain/model"
 
 	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
@@ -136,9 +136,25 @@ func (r *interviewRepository) GetInterviewsByTenant(ctx context.Context, tenantI
 			CompletedAt:       item.CompletedAt,
 			CancelledAt:       item.CancelledAt,
 			CancelReason:      item.CancelReason,
-			Tenant:            item.Tenant,
-			Candidate:         item.Candidate,
-			ManpowerRequest:   item.ManpowerRequest,
+			Tenant: entity.TenantEntity{
+				ID:          item.Tenant.ID,
+				CompanyName: item.Tenant.CompanyName,
+				Plan:        item.Tenant.Plan,
+				Status:      item.Tenant.Status,
+				Address:     item.Tenant.Address,
+			},
+			Candidate: entity.CandidateEntity{
+				ID:       item.Candidate.ID,
+				TenantID: item.Candidate.TenantID,
+				FullName: item.Candidate.FullName,
+				Email:    item.Candidate.Email,
+				Phone:    item.Candidate.Phone,
+			},
+			ManpowerRequest: entity.ManpowerReqEntity{
+				ID:       item.ManpowerRequest.ID,
+				Position: item.ManpowerRequest.Position,
+				Status:   item.ManpowerRequest.Status,
+			},
 		})
 	}
 
@@ -172,18 +188,34 @@ func (r *interviewRepository) GetInterviewByID(ctx context.Context, id int64) (*
 		CompletedAt:       modelInterview.CompletedAt,
 		CancelledAt:       modelInterview.CancelledAt,
 		CancelReason:      modelInterview.CancelReason,
-		Tenant:            modelInterview.Tenant,
-		Candidate:         modelInterview.Candidate,
-		ManpowerRequest:   modelInterview.ManpowerRequest,
+		Tenant: entity.TenantEntity{
+			ID:          modelInterview.Tenant.ID,
+			CompanyName: modelInterview.Tenant.CompanyName,
+			Plan:        modelInterview.Tenant.Plan,
+			Status:      modelInterview.Tenant.Status,
+			Address:     modelInterview.Tenant.Address,
+		},
+		Candidate: entity.CandidateEntity{
+			ID:       modelInterview.Candidate.ID,
+			TenantID: modelInterview.Candidate.TenantID,
+			FullName: modelInterview.Candidate.FullName,
+			Email:    modelInterview.Candidate.Email,
+			Phone:    modelInterview.Candidate.Phone,
+		},
+		ManpowerRequest: entity.ManpowerReqEntity{
+			ID:       modelInterview.ManpowerRequest.ID,
+			Position: modelInterview.ManpowerRequest.Position,
+			Status:   modelInterview.ManpowerRequest.Status,
+		},
 	}, nil
 }
 
 func (r *interviewRepository) UpdateInterview(ctx context.Context, id int64, req entity.InterviewUpdateRequest) error {
 	updates := map[string]interface{}{
-		"status":    req.Status,
-		"feedback":  req.Feedback,
-		"rating":    req.Rating,
-		"location":  req.Location,
+		"status":       req.Status,
+		"feedback":     req.Feedback,
+		"rating":       req.Rating,
+		"location":     req.Location,
 		"scheduled_at": req.ScheduledAt,
 	}
 

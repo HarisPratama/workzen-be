@@ -1,14 +1,12 @@
 package handler
 
 import (
-	"bwanews/internal/adapter/handler/request"
-	"bwanews/internal/adapter/handler/response"
-	"bwanews/internal/core/domain/entity"
-	"bwanews/internal/core/service"
-	"bwanews/lib/conv"
-	validatorLib "bwanews/lib/validator"
 	"context"
-	"strings"
+	"workzen-be/internal/adapter/handler/response"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/internal/core/service"
+	"workzen-be/lib/conv"
+	validatorLib "workzen-be/lib/validator"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -65,7 +63,7 @@ func (h *offerHandler) GetOffers(c *fiber.Ctx) error {
 		query.OrderType = c.Query("order_type")
 	}
 
-	results, totalData, totalPages, err := h.offerService.GetOffersByTenant(context.Background(), tenantID, query)
+	results, totalData, totalPages, err := h.offerService.GetOffersByTenant(context.Background(), int64(tenantID), query)
 	if err != nil {
 		code := "[HANDLER] GetOffers - 2"
 		log.Errorw(code, err)
@@ -77,17 +75,17 @@ func (h *offerHandler) GetOffers(c *fiber.Ctx) error {
 	var respData []response.OfferResponse
 	for _, item := range results {
 		respData = append(respData, response.OfferResponse{
-			ID:                     item.ID,
-			Position:               item.Position,
-			Department:             item.Department,
-			EmploymentType:         item.EmploymentType,
-			BaseSalary:             item.BaseSalary,
-			Currency:               item.Currency,
-			Status:                 item.Status,
-			StartDate:              item.StartDate,
-			ExpiryDate:             item.ExpiryDate,
-			SentAt:                 item.SentAt,
-			RespondedAt:            item.RespondedAt,
+			ID:             item.ID,
+			Position:       item.Position,
+			Department:     item.Department,
+			EmploymentType: item.EmploymentType,
+			BaseSalary:     item.BaseSalary,
+			Currency:       item.Currency,
+			Status:         item.Status,
+			StartDate:      item.StartDate.Format("2006-01-02"),
+			ExpiryDate:     item.ExpiryDate.Format("2006-01-02"),
+			SentAt:         item.SentAt,
+			RespondedAt:    item.RespondedAt,
 		})
 	}
 
@@ -95,10 +93,10 @@ func (h *offerHandler) GetOffers(c *fiber.Ctx) error {
 	defaultSuccessResponse.Meta.Message = "Success"
 	defaultSuccessResponse.Data = respData
 	defaultSuccessResponse.Pagination = &response.PaginationResponse{
-		TotalRecords: totalData,
+		TotalRecords: int(totalData),
 		Page:         query.Page,
 		PerPage:      query.Limit,
-		TotalPages:   totalPages,
+		TotalPages:   int(totalPages),
 	}
 
 	return c.JSON(defaultSuccessResponse)
@@ -134,23 +132,23 @@ func (h *offerHandler) GetOfferByID(c *fiber.Ctx) error {
 	}
 
 	respData := response.OfferResponse{
-		ID:                     result.ID,
-		Position:               result.Position,
-		Department:             result.Department,
-		EmploymentType:         result.EmploymentType,
-		BaseSalary:             result.BaseSalary,
-		Currency:               result.Currency,
-		Bonus:                  result.Bonus,
-		Benefits:               result.Benefits,
-		ProbationPeriodMonths:  result.ProbationPeriodMonths,
-		NoticePeriodDays:       result.NoticePeriodDays,
-		StartDate:              result.StartDate,
-		ExpiryDate:             result.ExpiryDate,
-		Status:                 result.Status,
-		SentAt:                 result.SentAt,
-		RespondedAt:          result.RespondedAt,
-		Notes:                  result.Notes,
-		Terms:                  result.Terms,
+		ID:                    result.ID,
+		Position:              result.Position,
+		Department:            result.Department,
+		EmploymentType:        result.EmploymentType,
+		BaseSalary:            result.BaseSalary,
+		Currency:              result.Currency,
+		Bonus:                 result.Bonus,
+		Benefits:              result.Benefits,
+		ProbationPeriodMonths: result.ProbationPeriodMonths,
+		NoticePeriodDays:      result.NoticePeriodDays,
+		StartDate:             result.StartDate.Format("2006-01-02"),
+		ExpiryDate:            result.ExpiryDate.Format("2006-01-02"),
+		Status:                result.Status,
+		SentAt:                result.SentAt,
+		RespondedAt:           result.RespondedAt,
+		Notes:                 result.Notes,
+		Terms:                 result.Terms,
 	}
 
 	defaultSuccessResponse.Meta.Status = true
@@ -172,7 +170,7 @@ func (h *offerHandler) CreateOffer(c *fiber.Ctx) error {
 
 	tenantID := claims.TenantID
 
-	var req request.OfferRequest
+	var req entity.OfferEntityRequest
 	if err := c.BodyParser(&req); err != nil {
 		code := "[HANDLER] CreateOffer - 2"
 		log.Errorw(code, err)
@@ -182,13 +180,12 @@ func (h *offerHandler) CreateOffer(c *fiber.Ctx) error {
 	}
 
 	if err := validatorLib.ValidateStruct(req); err != nil {
-		code := "[HANDLER] CreateOffer - 3"
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	if err := h.offerService.CreateOffer(context.Background(), req, tenantID); err != nil {
+	if err := h.offerService.CreateOffer(context.Background(), req, int64(tenantID)); err != nil {
 		code := "[HANDLER] CreateOffer - 4"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
@@ -223,7 +220,7 @@ func (h *offerHandler) UpdateOffer(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	var req request.OfferUpdateRequest
+	var req entity.OfferUpdateRequest
 	if err := c.BodyParser(&req); err != nil {
 		code := "[HANDLER] UpdateOffer - 3"
 		log.Errorw(code, err)
@@ -233,7 +230,6 @@ func (h *offerHandler) UpdateOffer(c *fiber.Ctx) error {
 	}
 
 	if err := validatorLib.ValidateStruct(req); err != nil {
-		code := "[HANDLER] UpdateOffer - 4"
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)

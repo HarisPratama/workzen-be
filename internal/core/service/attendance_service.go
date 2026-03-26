@@ -1,15 +1,15 @@
 package service
 
 import (
-	"bwanews/internal/adapter/repository"
-	"bwanews/internal/core/domain/entity"
-	"bwanews/lib/validator"
 	"context"
 	"fmt"
 	"time"
+	"workzen-be/internal/adapter/repository"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/lib/validator"
 
-	"github.com/google/uuid"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/google/uuid"
 )
 
 type AttendanceService interface {
@@ -71,7 +71,7 @@ func (s *attendanceService) UpdateAttendance(ctx context.Context, id uuid.UUID, 
 	// Update fields
 	existing.Status = req.Status
 	existing.Notes = req.Notes
-	
+
 	if req.CheckIn != nil {
 		existing.CheckIn = req.CheckIn
 	}

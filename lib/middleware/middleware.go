@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"bwanews/config"
-	"bwanews/internal/adapter/handler/response"
-	"bwanews/internal/core/domain/entity"
-	"bwanews/lib/auth"
 	"fmt"
 	"strings"
+	"workzen-be/config"
+	"workzen-be/internal/adapter/handler/response"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/lib/auth"
 
 	"github.com/gofiber/fiber/v2"
 )

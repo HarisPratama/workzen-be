@@ -1,455 +1,286 @@
 package handler
 
 import (
-	"bwanews/internal/adapter/handler/request"
-	"bwanews/internal/adapter/handler/response"
-	"bwanews/internal/core/domain/entity"
-	"bwanews/internal/core/service"
-	"bwanews/lib/validator"
-	"time"
+	"context"
+	"workzen-be/internal/adapter/handler/response"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/internal/core/service"
+	"workzen-be/lib/conv"
+	validatorLib "workzen-be/lib/validator"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/google/uuid"
 )
 
 type EmployeeAssignmentHandler interface {
+	GetAssignments(c *fiber.Ctx) error
+	GetAssignmentByID(c *fiber.Ctx) error
 	CreateAssignment(c *fiber.Ctx) error
 	UpdateAssignment(c *fiber.Ctx) error
 	DeleteAssignment(c *fiber.Ctx) error
-	GetAssignmentByID(c *fiber.Ctx) error
-	GetAssignmentsByEmployee(c *fiber.Ctx) error
-	GetAssignmentsByProject(c *fiber.Ctx) error
-	GetAssignmentsByTenant(c *fiber.Ctx) error
-	GetActiveAssignmentsByEmployee(c *fiber.Ctx) error
-	StartAssignment(c *fiber.Ctx) error
-	EndAssignment(c *fiber.Ctx) error
-	UpdateAssignmentStatus(c *fiber.Ctx) error
-	GetAssignmentUtilization(c *fiber.Ctx) error
 }
 
 type employeeAssignmentHandler struct {
 	assignmentService service.EmployeeAssignmentService
 }
 
-func NewEmployeeAssignmentHandler(assignmentService service.EmployeeAssignmentService) EmployeeAssignmentHandler {
-	return &employeeAssignmentHandler{
-		assignmentService: assignmentService,
-	}
-}
-
-func (h *employeeAssignmentHandler) CreateAssignment(c *fiber.Ctx) error {
-	var req request.EmployeeAssignmentRequest
+func (h *employeeAssignmentHandler) GetAssignments(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] GetAssignments - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
 	tenantID := claims.TenantID
 
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
+	query := entity.EmployeeAssignmentQueryString{
+		Limit:  10,
+		Page:   1,
+		Search: c.Query("search"),
+		Status: c.Query("status"),
 	}
 
-	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] CreateAssignment - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
+	if c.Query("limit") != "" {
+		if val, err := conv.StringToInt(c.Query("limit")); err == nil {
+			query.Limit = val
+		}
 	}
 
-	if err := validator.ValidateStruct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+	if c.Query("page") != "" {
+		if val, err := conv.StringToInt(c.Query("page")); err == nil {
+			query.Page = val
+		}
 	}
 
-	startDate, _ := time.Parse("2006-01-02", req.StartDate)
-
-	assignment := entity.EmployeeAssignment{
-		TenantID:              uuid.UUID{},
-		EmployeeID:            req.EmployeeID,
-		ProjectID:             req.ProjectID,
-		Role:                  req.Role,
-		StartDate:             startDate,
-		AllocationPercentage:  req.AllocationPercentage,
-		Billable:              req.Billable,
-		Status:                entity.AssignmentStatusPending,
-		Notes:                 req.Notes,
+	if c.Query("order_by") != "" {
+		query.OrderBy = c.Query("order_by")
 	}
 
-	if req.EndDate != "" {
-		endDate, _ := time.Parse("2006-01-02", req.EndDate)
-		assignment.EndDate = &endDate
+	if c.Query("order_type") != "" {
+		query.OrderType = c.Query("order_type")
 	}
 
-	createdAssignment, err := h.assignmentService.CreateAssignment(c.Context(), assignment)
+	results, totalData, totalPages, err := h.assignmentService.GetEmployeeAssignmentsByTenant(context.Background(), int64(tenantID), query)
 	if err != nil {
-		log.Errorw("[Handler] CreateAssignment - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
+		code := "[HANDLER] GetAssignments - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	var respData []response.EmployeeAssignmentResponse
+	for _, item := range results {
+		respData = append(respData, response.EmployeeAssignmentResponse{
+			ID:             item.ID,
+			AssignmentType: item.AssignmentType,
+			StartDate:      item.StartDate.Format("2006-01-02"),
+			EndDate:        item.EndDate.Format("2006-01-02"),
+			Status:         item.Status,
+			Role:           item.Role,
+			Position:       item.Position,
+			Location:       item.Location,
+			RemoteType:     item.RemoteType,
+			BillingRate:    item.BillingRate,
+			CostRate:       item.CostRate,
+			Currency:       item.Currency,
+			HoursPerWeek:   item.HoursPerWeek,
+			Notes:          item.Notes,
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Assignment created successfully",
-		},
-		Data: createdAssignment,
-	})
-}
-
-func (h *employeeAssignmentHandler) UpdateAssignment(c *fiber.Ctx) error {
-	id := c.Params("id")
-	assignmentID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid assignment ID",
-			},
-		})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = respData
+	defaultSuccessResponse.Pagination = &response.PaginationResponse{
+		TotalRecords: int(totalData),
+		Page:         query.Page,
+		PerPage:      query.Limit,
+		TotalPages:   int(totalPages),
 	}
 
-	var req request.EmployeeAssignmentUpdateRequest
-	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] UpdateAssignment - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
-	}
-
-	if err := validator.ValidateStruct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	assignment := entity.EmployeeAssignment{
-		ID:                   assignmentID,
-		Role:                 req.Role,
-		AllocationPercentage: req.AllocationPercentage,
-		Billable:             req.Billable,
-		Notes:                req.Notes,
-	}
-
-	if req.EndDate != "" {
-		endDate, _ := time.Parse("2006-01-02", req.EndDate)
-		assignment.EndDate = &endDate
-	}
-
-	updatedAssignment, err := h.assignmentService.UpdateAssignment(c.Context(), assignmentID, assignment)
-	if err != nil {
-		log.Errorw("[Handler] UpdateAssignment - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Assignment updated successfully",
-		},
-		Data: updatedAssignment,
-	})
-}
-
-func (h *employeeAssignmentHandler) DeleteAssignment(c *fiber.Ctx) error {
-	id := c.Params("id")
-	assignmentID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid assignment ID",
-			},
-		})
-	}
-
-	if err := h.assignmentService.DeleteAssignment(c.Context(), assignmentID); err != nil {
-		log.Errorw("[Handler] DeleteAssignment - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Assignment deleted successfully",
-		},
-	})
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *employeeAssignmentHandler) GetAssignmentByID(c *fiber.Ctx) error {
-	id := c.Params("id")
-	assignmentID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid assignment ID",
-			},
-		})
-	}
-
-	assignment, err := h.assignmentService.GetAssignmentByID(c.Context(), assignmentID)
-	if err != nil {
-		log.Errorw("[Handler] GetAssignmentByID - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: assignment,
-	})
-}
-
-func (h *employeeAssignmentHandler) GetAssignmentsByEmployee(c *fiber.Ctx) error {
-	employeeID := c.Params("employeeId")
-	employeeUUID, err := uuid.Parse(employeeID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid employee ID",
-			},
-		})
-	}
-
-	page := c.QueryInt("page", 1)
-	limit := c.QueryInt("limit", 10)
-
-	assignments, total, err := h.assignmentService.GetAssignmentsByEmployee(c.Context(), employeeUUID, page, limit)
-	if err != nil {
-		log.Errorw("[Handler] GetAssignmentsByEmployee - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: response.PaginationData{
-			Data:  assignments,
-			Total: total,
-			Page:  page,
-			Limit: limit,
-		},
-	})
-}
-
-func (h *employeeAssignmentHandler) GetAssignmentsByProject(c *fiber.Ctx) error {
-	projectID := c.Params("projectId")
-	projectUUID, err := uuid.Parse(projectID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid project ID",
-			},
-		})
-	}
-
-	page := c.QueryInt("page", 1)
-	limit := c.QueryInt("limit", 10)
-
-	assignments, total, err := h.assignmentService.GetAssignmentsByProject(c.Context(), projectUUID, page, limit)
-	if err != nil {
-		log.Errorw("[Handler] GetAssignmentsByProject - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: response.PaginationData{
-			Data:  assignments,
-			Total: total,
-			Page:  page,
-			Limit: limit,
-		},
-	})
-}
-
-func (h *employeeAssignmentHandler) GetAssignmentsByTenant(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserID == 0 {
+		code := "[HANDLER] GetAssignmentByID - 1"
+		log.Errorw(code, "unauthorized")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	idParam := c.Params("assignmentID")
+	assignmentID, err := conv.StringToInt64(idParam)
+	if err != nil {
+		code := "[HANDLER] GetAssignmentByID - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid assignment ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	result, err := h.assignmentService.GetEmployeeAssignmentByID(context.Background(), assignmentID)
+	if err != nil {
+		code := "[HANDLER] GetAssignmentByID - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusNotFound).JSON(errorResp)
+	}
+
+	respData := response.EmployeeAssignmentResponse{
+		ID:             result.ID,
+		AssignmentType: result.AssignmentType,
+		StartDate:      result.StartDate.Format("2006-01-02"),
+		EndDate:        result.EndDate.Format("2006-01-02"),
+		Status:         result.Status,
+		Role:           result.Role,
+		Position:       result.Position,
+		Location:       result.Location,
+		RemoteType:     result.RemoteType,
+		BillingRate:    result.BillingRate,
+		CostRate:       result.CostRate,
+		Currency:       result.Currency,
+		HoursPerWeek:   result.HoursPerWeek,
+		Notes:          result.Notes,
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = respData
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (h *employeeAssignmentHandler) CreateAssignment(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] CreateAssignment - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
 	tenantID := claims.TenantID
 
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
-	}
-
-	page := c.QueryInt("page", 1)
-	limit := c.QueryInt("limit", 10)
-
-	assignments, total, err := h.assignmentService.GetAssignmentsByTenant(c.Context(), uuid.UUID{}, page, limit)
-	if err != nil {
-		log.Errorw("[Handler] GetAssignmentsByTenant - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: response.PaginationData{
-			Data:  assignments,
-			Total: total,
-			Page:  page,
-			Limit: limit,
-		},
-	})
-}
-
-func (h *employeeAssignmentHandler) GetActiveAssignmentsByEmployee(c *fiber.Ctx) error {
-	employeeID := c.Params("employeeId")
-	employeeUUID, err := uuid.Parse(employeeID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid employee ID",
-			},
-		})
-	}
-
-	assignments, err := h.assignmentService.GetActiveAssignmentsByEmployee(c.Context(), employeeUUID)
-	if err != nil {
-		log.Errorw("[Handler] GetActiveAssignmentsByEmployee - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: assignments,
-	})
-}
-
-func (h *employeeAssignmentHandler) StartAssignment(c *fiber.Ctx) error {
-	id := c.Params("id")
-	assignmentID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid assignment ID",
-			},
-		})
-	}
-
-	if err := h.assignmentService.StartAssignment(c.Context(), assignmentID); err != nil {
-		log.Errorw("[Handler] StartAssignment - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Assignment started successfully",
-		},
-	})
-}
-
-func (h *employeeAssignmentHandler) EndAssignment(c *fiber.Ctx) error {
-	id := c.Params("id")
-	assignmentID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid assignment ID",
-			},
-		})
-	}
-
-	var req request.EndAssignmentRequest
+	var req entity.EmployeeAssignmentEntityRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] EndAssignment - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
+		code := "[HANDLER] CreateAssignment - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	if err := h.assignmentService.EndAssignment(c.Context(), assignmentID, req.EndDate, req.Reason); err != nil {
-		log.Errorw("[Handler] EndAssignment - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+	if err := validatorLib.ValidateStruct(req); err != nil {
+		code := "[HANDLER] CreateAssignment - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
+	if err := h.assignmentService.CreateEmployeeAssignment(context.Background(), req, int64(tenantID)); err != nil {
+		code := "[HANDLER] CreateAssignment - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Assignment created successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
+}
+
+func (h *employeeAssignmentHandler) UpdateAssignment(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] UpdateAssignment - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	idParam := c.Params("assignmentID")
+	assignmentID, err := conv.StringToInt64(idParam)
+	if err != nil {
+		code := "[HANDLER] UpdateAssignment - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid assignment ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	var req entity.EmployeeAssignmentUpdateRequest
+	if err := c.BodyParser(&req); err != nil {
+		code := "[HANDLER] UpdateAssignment - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err := h.assignmentService.UpdateEmployeeAssignment(context.Background(), assignmentID, req); err != nil {
+		code := "[HANDLER] UpdateAssignment - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Assignment updated successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (h *employeeAssignmentHandler) DeleteAssignment(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] DeleteAssignment - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	idParam := c.Params("assignmentID")
+	assignmentID, err := conv.StringToInt64(idParam)
+	if err != nil {
+		code := "[HANDLER] DeleteAssignment - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid assignment ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err := h.assignmentService.DeleteEmployeeAssignment(context.Background(), assignmentID); err != nil {
+		code := "[HANDLER] DeleteAssignment - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Assignment deleted successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func NewEmployeeAssignmentHandler(assignmentService service.EmployeeAssignmentService) EmployeeAssignmentHandler {
+	return &employeeAssignmentHandler{assignmentService: assignmentService}
+}

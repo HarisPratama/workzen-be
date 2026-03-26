@@ -1,11 +1,11 @@
 package service
 
 import (
-	"bwanews/config"
-	"bwanews/internal/adapter/cloudflare"
-	"bwanews/internal/adapter/repository"
-	"bwanews/internal/core/domain/entity"
 	"context"
+	"workzen-be/config"
+	"workzen-be/internal/adapter/cloudflare"
+	"workzen-be/internal/adapter/repository"
+	"workzen-be/internal/core/domain/entity"
 
 	"github.com/gofiber/fiber/v2/log"
 )

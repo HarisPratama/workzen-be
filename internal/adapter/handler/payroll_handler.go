@@ -1,13 +1,12 @@
 package handler
 
 import (
-	"bwanews/internal/adapter/handler/request"
-	"bwanews/internal/adapter/handler/response"
-	"bwanews/internal/core/domain/entity"
-	"bwanews/internal/core/service"
-	"bwanews/lib/conv"
-	validatorLib "bwanews/lib/validator"
 	"time"
+	"workzen-be/internal/adapter/handler/request"
+	"workzen-be/internal/adapter/handler/response"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/internal/core/service"
+	validatorLib "workzen-be/lib/validator"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -21,12 +20,9 @@ type PayrollHandler interface {
 	GetPayrollByID(c *fiber.Ctx) error
 	GetPayrollsByTenant(c *fiber.Ctx) error
 	GetPayrollsByEmployee(c *fiber.Ctx) error
-	GetPayrollsByPeriod(c *fiber.Ctx) error
 	ProcessPayroll(c *fiber.Ctx) error
 	MarkAsPaid(c *fiber.Ctx) error
-	AddPayrollItem(c *fiber.Ctx) error
-	RemovePayrollItem(c *fiber.Ctx) error
-	GetPayrollSummary(c *fiber.Ctx) error
+	CalculatePayrollSummary(c *fiber.Ctx) error
 }
 
 type payrollHandler struct {
@@ -34,267 +30,386 @@ type payrollHandler struct {
 }
 
 func NewPayrollHandler(payrollService service.PayrollService) PayrollHandler {
-	return &payrollHandler{
-		payrollService: payrollService,
-	}
+	return &payrollHandler{payrollService: payrollService}
 }
 
 func (h *payrollHandler) CreatePayroll(c *fiber.Ctx) error {
-	var req request.PayrollRequest
 	claims := c.Locals("user").(*entity.JwtData)
-	tenantID := claims.TenantID
-
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
+	if claims.TenantID == 0 {
+		code := "[HANDLER] CreatePayroll - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
 
+	var req request.PayrollRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] CreatePayroll - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
+		code := "[HANDLER] CreatePayroll - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	if err := validatorLib.ValidateStruct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] CreatePayroll - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
+
+	employeeUUID, err := uuid.Parse(req.EmployeeID)
+	if err != nil {
+		code := "[HANDLER] CreatePayroll - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid employee ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	periodStart, _ := time.Parse("2006-01-02", req.PeriodStart)
+	periodEnd, _ := time.Parse("2006-01-02", req.PeriodEnd)
 
 	payroll := entity.Payroll{
-		TenantID:      uuid.UUID{},
-		EmployeeID:    req.EmployeeID,
-		PeriodStart:   req.PeriodStart,
-		PeriodEnd:     req.PeriodEnd,
-		BasicSalary:   req.BasicSalary,
-		Allowances:    req.Allowances,
-		Deductions:    req.Deductions,
-		Tax:           req.Tax,
-		NetSalary:     req.NetSalary,
-		Status:        entity.PayrollStatusDraft,
-		Notes:         req.Notes,
-	}
-
-	createdPayroll, err := h.payrollService.CreatePayroll(c.Context(), payroll)
-	if err != nil {
-		log.Errorw("[Handler] CreatePayroll - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusCreated).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Payroll created successfully",
-		},
-		Data: createdPayroll,
-	})
-}
-
-func (h *payrollHandler) UpdatePayroll(c *fiber.Ctx) error {
-	id := c.Params("id")
-	payrollID, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid payroll ID",
-			},
-		})
-	}
-
-	var req request.PayrollUpdateRequest
-	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] UpdatePayroll - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
-	}
-
-	if err := validatorLib.ValidateStruct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	payroll := entity.Payroll{
-		ID:          payrollID,
+		EmployeeID:  employeeUUID,
+		PeriodStart: periodStart,
+		PeriodEnd:   periodEnd,
 		BasicSalary: req.BasicSalary,
 		Allowances:  req.Allowances,
 		Deductions:  req.Deductions,
 		Tax:         req.Tax,
-		NetSalary:   req.NetSalary,
 		Notes:       req.Notes,
 	}
 
-	updatedPayroll, err := h.payrollService.UpdatePayroll(c.Context(), payrollID, payroll)
+	result, err := h.payrollService.CreatePayroll(c.Context(), payroll)
 	if err != nil {
-		log.Errorw("[Handler] UpdatePayroll - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] CreatePayroll - 5"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Payroll updated successfully",
-		},
-		Data: updatedPayroll,
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Payroll created successfully"
+	defaultSuccessResponse.Data = result
+
+	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
+}
+
+func (h *payrollHandler) UpdatePayroll(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] UpdatePayroll - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("payrollID")
+	payrollID, err := uuid.Parse(id)
+	if err != nil {
+		code := "[HANDLER] UpdatePayroll - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid payroll ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	var req request.PayrollUpdateRequest
+	if err := c.BodyParser(&req); err != nil {
+		code := "[HANDLER] UpdatePayroll - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	payroll := entity.Payroll{
+		BasicSalary: req.BasicSalary,
+		Allowances:  req.Allowances,
+		Deductions:  req.Deductions,
+		Tax:         req.Tax,
+		Notes:       req.Notes,
+	}
+
+	result, err := h.payrollService.UpdatePayroll(c.Context(), payrollID, payroll)
+	if err != nil {
+		code := "[HANDLER] UpdatePayroll - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Payroll updated successfully"
+	defaultSuccessResponse.Data = result
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *payrollHandler) DeletePayroll(c *fiber.Ctx) error {
-	id := c.Params("id")
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] DeletePayroll - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("payrollID")
 	payrollID, err := uuid.Parse(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid payroll ID",
-			},
-		})
+		code := "[HANDLER] DeletePayroll - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid payroll ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	if err := h.payrollService.DeletePayroll(c.Context(), payrollID); err != nil {
-		log.Errorw("[Handler] DeletePayroll - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] DeletePayroll - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Payroll deleted successfully",
-		},
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Payroll deleted successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *payrollHandler) GetPayrollByID(c *fiber.Ctx) error {
-	id := c.Params("id")
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserID == 0 {
+		code := "[HANDLER] GetPayrollByID - 1"
+		log.Errorw(code, "unauthorized")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("payrollID")
 	payrollID, err := uuid.Parse(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid payroll ID",
-			},
-		})
+		code := "[HANDLER] GetPayrollByID - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid payroll ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	payroll, err := h.payrollService.GetPayrollByID(c.Context(), payrollID)
+	result, err := h.payrollService.GetPayrollByID(c.Context(), payrollID)
 	if err != nil {
-		log.Errorw("[Handler] GetPayrollByID - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] GetPayrollByID - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusNotFound).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: payroll,
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = result
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *payrollHandler) GetPayrollsByTenant(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
-	tenantID := claims.TenantID
-
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
+	if claims.TenantID == 0 {
+		code := "[HANDLER] GetPayrollsByTenant - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
 
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 
-	payrolls, total, err := h.payrollService.GetPayrollsByTenant(c.Context(), uuid.UUID{}, page, limit)
+	results, total, err := h.payrollService.GetPayrollsByTenant(c.Context(), uuid.UUID{}, page, limit)
 	if err != nil {
-		log.Errorw("[Handler] GetPayrollsByTenant - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] GetPayrollsByTenant - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: response.PaginationData{
-			Data:  payrolls,
-			Total: total,
-			Page:  page,
-			Limit: limit,
-		},
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = results
+	defaultSuccessResponse.Pagination = &response.PaginationResponse{
+		TotalRecords: int(total),
+		Page:         page,
+		PerPage:      limit,
+	}
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *payrollHandler) GetPayrollsByEmployee(c *fiber.Ctx) error {
-	employeeID := c.Params("employeeId")
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserID == 0 {
+		code := "[HANDLER] GetPayrollsByEmployee - 1"
+		log.Errorw(code, "unauthorized")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	employeeID := c.Params("employeeID")
 	employeeUUID, err := uuid.Parse(employeeID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid employee ID",
-			},
-		})
+		code := "[HANDLER] GetPayrollsByEmployee - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid employee ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 
-	payrolls, total, err := h.payrollService.GetPayrollsByEmployee(c.Context(), employeeUUID, page, limit)
+	results, total, err := h.payrollService.GetPayrollsByEmployee(c.Context(), employeeUUID, page, limit)
 	if err != nil {
-		log.Errorw("[Handler] GetPayrollsByEmployee - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] GetPayrollsByEmployee - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = results
+	defaultSuccessResponse.Pagination = &response.PaginationResponse{
+		TotalRecords: int(total),
+		Page:         page,
+		PerPage:      limit,
+	}
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (h *payrollHandler) ProcessPayroll(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] ProcessPayroll - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("payrollID")
+	payrollID, err := uuid.Parse(id)
+	if err != nil {
+		code := "[HANDLER] ProcessPayroll - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid payroll ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err := h.payrollService.ProcessPayroll(c.Context(), payrollID); err != nil {
+		code := "[HANDLER] ProcessPayroll - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Payroll processed successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (h *payrollHandler) MarkAsPaid(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] MarkAsPaid - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("payrollID")
+	payrollID, err := uuid.Parse(id)
+	if err != nil {
+		code := "[HANDLER] MarkAsPaid - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid payroll ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	var req request.MarkAsPaidRequest
+	if err := c.BodyParser(&req); err != nil {
+		code := "[HANDLER] MarkAsPaid - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	paidAt, _ := time.Parse("2006-01-02", req.PaymentDate)
+
+	if err := h.payrollService.MarkAsPaid(c.Context(), payrollID, paidAt); err != nil {
+		code := "[HANDLER] MarkAsPaid - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Payroll marked as paid"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (h *payrollHandler) CalculatePayrollSummary(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] CalculatePayrollSummary - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	startDateStr := c.Query("start_date")
+	endDateStr := c.Query("end_date")
+
+	startDate, _ := time.Parse("2006-01-02", startDateStr)
+	endDate, _ := time.Parse("2006-01-02", endDateStr)
+
+	result, err := h.payrollService.CalculatePayrollSummary(c.Context(), uuid.UUID{}, startDate, endDate)
+	if err != nil {
+		code := "[HANDLER] CalculatePayrollSummary - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = result
+
+	return c.JSON(defaultSuccessResponse)
+}

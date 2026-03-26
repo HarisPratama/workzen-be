@@ -1,15 +1,13 @@
 package handler
 
 import (
-	"bwanews/internal/adapter/handler/request"
-	"bwanews/internal/adapter/handler/response"
-	"bwanews/internal/core/domain/entity"
-	"bwanews/internal/core/service"
-	"bwanews/lib/conv"
-	validatorLib "bwanews/lib/validator"
 	"context"
-	"strings"
-	"time"
+	"workzen-be/internal/adapter/handler/request"
+	"workzen-be/internal/adapter/handler/response"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/internal/core/service"
+	"workzen-be/lib/conv"
+	validatorLib "workzen-be/lib/validator"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -66,7 +64,7 @@ func (h *interviewHandler) GetInterviews(c *fiber.Ctx) error {
 		query.OrderType = c.Query("order_type")
 	}
 
-	results, totalData, totalPages, err := h.interviewService.GetInterviewsByTenant(context.Background(), tenantID, query)
+	results, totalData, totalPages, err := h.interviewService.GetInterviewsByTenant(context.Background(), int64(tenantID), query)
 	if err != nil {
 		code := "[HANDLER] GetInterviews - 2"
 		log.Errorw(code, err)
@@ -94,10 +92,10 @@ func (h *interviewHandler) GetInterviews(c *fiber.Ctx) error {
 	defaultSuccessResponse.Meta.Message = "Success"
 	defaultSuccessResponse.Data = respData
 	defaultSuccessResponse.Pagination = &response.PaginationResponse{
-		TotalRecords: totalData,
+		TotalRecords: int(totalData),
 		Page:         query.Page,
 		PerPage:      query.Limit,
-		TotalPages:   totalPages,
+		TotalPages:   int(totalPages),
 	}
 
 	return c.JSON(defaultSuccessResponse)
@@ -176,34 +174,25 @@ func (h *interviewHandler) CreateInterview(c *fiber.Ctx) error {
 	}
 
 	if err := validatorLib.ValidateStruct(req); err != nil {
-		code := "[HANDLER] CreateInterview - 3"
+		code = "[HANDLER] CreateInterview - 3"
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	// Parse scheduled time
-	scheduledAt, err := time.Parse(time.RFC3339, req.ScheduledAt)
-	if err != nil {
-		code := "[HANDLER] CreateInterview - 4"
-		log.Errorw(code, err)
-		errorResp.Meta.Status = false
-		errorResp.Meta.Message = "Invalid scheduled time format"
-		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
-	}
-
 	reqEntity := entity.InterviewEntityRequest{
-		CandidateID:       req.CandidateID,
-		ManpowerRequestID: req.ManpowerRequestID,
-		InterviewType:     req.InterviewType,
-		ScheduledAt:       req.ScheduledAt,
-		DurationMinutes:   req.DurationMinutes,
-		Location:          req.Location,
-		MeetingLink:       req.MeetingLink,
+		TenantID:               int64(tenantID),
+		CandidateApplicationID: req.CandidateApplicationID,
+		ManpowerRequestID:      req.ManpowerRequestID,
+		InterviewType:          req.InterviewType,
+		ScheduledAt:            req.ScheduledAt,
+		DurationMinutes:        req.DurationMinutes,
+		Location:               req.Location,
+		MeetingLink:            req.MeetingLink,
 	}
 
-	if err := h.interviewService.CreateInterview(context.Background(), reqEntity, tenantID); err != nil {
-		code := "[HANDLER] CreateInterview - 5"
+	if err := h.interviewService.CreateInterview(context.Background(), reqEntity, int64(tenantID)); err != nil {
+		code = "[HANDLER] CreateInterview - 5"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
@@ -237,28 +226,13 @@ func (h *interviewHandler) UpdateInterview(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	var req request.InterviewUpdateRequest
-	if err := c.BodyParser(&req); err != nil {
+	var reqEntity entity.InterviewUpdateRequest
+	if err := c.BodyParser(&reqEntity); err != nil {
 		code := "[HANDLER] UpdateInterview - 3"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "Invalid request body"
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
-	}
-
-	if err := validatorLib.ValidateStruct(req); err != nil {
-		code := "[HANDLER] UpdateInterview - 4"
-		errorResp.Meta.Status = false
-		errorResp.Meta.Message = err.Error()
-		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
-	}
-
-	reqEntity := entity.InterviewUpdateRequest{
-		Status:    req.Status,
-		Feedback:  req.Feedback,
-		Rating:    req.Rating,
-		Location:  req.Location,
-		ScheduledAt: req.ScheduledAt,
 	}
 
 	if err := h.interviewService.UpdateInterview(context.Background(), interviewID, reqEntity); err != nil {

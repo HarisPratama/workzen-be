@@ -1,12 +1,13 @@
 package repository
 
 import (
-	"bwanews/internal/core/domain/entity"
-	"bwanews/internal/core/domain/model"
 	"context"
 	"fmt"
 	"math"
 	"strings"
+	"time"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/internal/core/domain/model"
 
 	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
@@ -147,8 +148,24 @@ func (r *offerRepository) GetOffersByTenant(ctx context.Context, tenantID int64,
 			Terms:                  item.Terms,
 			NegotiationCounter:     item.NegotiationCounter,
 			NegotiationNotes:       item.NegotiationNotes,
-			Tenant:                 item.Tenant,
-			CandidateApplication:   item.CandidateApplication,
+			Tenant: entity.TenantEntity{
+				ID:          item.Tenant.ID,
+				CompanyName: item.Tenant.CompanyName,
+				Plan:        item.Tenant.Plan,
+				Status:      item.Tenant.Status,
+				Address:     item.Tenant.Address,
+			},
+			CandidateApplication: entity.CandidateApplicationEntity{
+				ID:          item.CandidateApplication.ID,
+				TenantID:    item.CandidateApplication.TenantID,
+				CandidateID: item.CandidateApplication.CandidateID,
+				Status:      item.CandidateApplication.Status,
+				Candidate: entity.CandidateEntity{
+					ID:       item.CandidateApplication.Candidate.ID,
+					FullName: item.CandidateApplication.Candidate.FullName,
+					Email:    item.CandidateApplication.Candidate.Email,
+				},
+			},
 		})
 	}
 
@@ -188,17 +205,33 @@ func (r *offerRepository) GetOfferByID(ctx context.Context, id int64) (*entity.O
 		Terms:                  modelOffer.Terms,
 		NegotiationCounter:     modelOffer.NegotiationCounter,
 		NegotiationNotes:       modelOffer.NegotiationNotes,
-		Tenant:                 modelOffer.Tenant,
-		CandidateApplication:   modelOffer.CandidateApplication,
+		Tenant: entity.TenantEntity{
+			ID:          modelOffer.Tenant.ID,
+			CompanyName: modelOffer.Tenant.CompanyName,
+			Plan:        modelOffer.Tenant.Plan,
+			Status:      modelOffer.Tenant.Status,
+			Address:     modelOffer.Tenant.Address,
+		},
+		CandidateApplication: entity.CandidateApplicationEntity{
+			ID:          modelOffer.CandidateApplication.ID,
+			TenantID:    modelOffer.CandidateApplication.TenantID,
+			CandidateID: modelOffer.CandidateApplication.CandidateID,
+			Status:      modelOffer.CandidateApplication.Status,
+			Candidate: entity.CandidateEntity{
+				ID:       modelOffer.CandidateApplication.Candidate.ID,
+				FullName: modelOffer.CandidateApplication.Candidate.FullName,
+				Email:    modelOffer.CandidateApplication.Candidate.Email,
+			},
+		},
 	}, nil
 }
 
 func (r *offerRepository) UpdateOffer(ctx context.Context, id int64, req entity.OfferUpdateRequest) error {
 	updates := map[string]interface{}{
-		"status":      req.Status,
-		"feedback":    req.Feedback,
+		"status":              req.Status,
+		"feedback":            req.Feedback,
 		"negotiation_counter": req.NegotiatedSalary,
-		"start_date":  req.StartDate,
+		"start_date":          req.StartDate,
 	}
 
 	if req.Status == "SENT" {

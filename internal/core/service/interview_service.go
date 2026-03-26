@@ -1,9 +1,10 @@
 package service
 
 import (
-	"bwanews/internal/adapter/repository"
-	"bwanews/internal/core/domain/entity"
 	"context"
+	"time"
+	"workzen-be/internal/adapter/repository"
+	"workzen-be/internal/core/domain/entity"
 
 	"github.com/gofiber/fiber/v2/log"
 )
@@ -47,7 +48,7 @@ func (s *interviewService) GetInterviewByID(ctx context.Context, id int64) (*ent
 func (s *interviewService) CreateInterview(ctx context.Context, req entity.InterviewEntityRequest, tenantID int64) error {
 	reqEntity := entity.InterviewEntity{
 		TenantID:          tenantID,
-		CandidateID:       req.CandidateID,
+		CandidateID:       req.CandidateApplicationID,
 		ManpowerRequestID: req.ManpowerRequestID,
 		InterviewType:     req.InterviewType,
 		ScheduledAt:       time.Now(),

@@ -1,13 +1,12 @@
 package handler
 
 import (
-	"bwanews/internal/adapter/handler/request"
-	"bwanews/internal/adapter/handler/response"
-	"bwanews/internal/core/domain/entity"
-	"bwanews/internal/core/service"
-	"bwanews/lib/conv"
-	validatorLib "bwanews/lib/validator"
 	"time"
+	"workzen-be/internal/adapter/handler/request"
+	"workzen-be/internal/adapter/handler/response"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/internal/core/service"
+	validatorLib "workzen-be/lib/validator"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -34,48 +33,49 @@ type attendanceHandler struct {
 }
 
 func NewAttendanceHandler(attendanceService service.AttendanceService) AttendanceHandler {
-	return &attendanceHandler{
-		attendanceService: attendanceService,
-	}
+	return &attendanceHandler{attendanceService: attendanceService}
 }
 
 func (h *attendanceHandler) CreateAttendance(c *fiber.Ctx) error {
-	var req request.AttendanceRequest
 	claims := c.Locals("user").(*entity.JwtData)
-	tenantID := claims.TenantID
-
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
+	if claims.TenantID == 0 {
+		code := "[HANDLER] CreateAttendance - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
 
+	var req request.AttendanceRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] CreateAttendance - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
+		code := "[HANDLER] CreateAttendance - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	if err := validatorLib.ValidateStruct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] CreateAttendance - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	employeeUUID, err := uuid.Parse(req.EmployeeID)
+	if err != nil {
+		code := "[HANDLER] CreateAttendance - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid employee ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	date, _ := time.Parse("2006-01-02", req.Date)
 	attendance := entity.Attendance{
 		TenantID:   uuid.UUID{},
-		EmployeeID: req.EmployeeID,
+		EmployeeID: employeeUUID,
 		Date:       date,
 		Status:     entity.AttendanceStatus(req.Status),
 		Type:       entity.AttendanceType(req.Type),
@@ -96,47 +96,49 @@ func (h *attendanceHandler) CreateAttendance(c *fiber.Ctx) error {
 		attendance.CalculateWorkHours()
 	}
 
-	createdAttendance, err := h.attendanceService.CreateAttendance(c.Context(), attendance)
+	result, err := h.attendanceService.CreateAttendance(c.Context(), attendance)
 	if err != nil {
-		log.Errorw("[Handler] CreateAttendance - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] CreateAttendance - 5"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Attendance created successfully",
-		},
-		Data: createdAttendance,
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Attendance created successfully"
+	defaultSuccessResponse.Data = result
+
+	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
 }
 
 func (h *attendanceHandler) UpdateAttendance(c *fiber.Ctx) error {
-	id := c.Params("id")
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] UpdateAttendance - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("attendanceID")
 	attendanceID, err := uuid.Parse(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid attendance ID",
-			},
-		})
+		code := "[HANDLER] UpdateAttendance - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid attendance ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	var req request.AttendanceUpdateRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] UpdateAttendance - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
+		code := "[HANDLER] UpdateAttendance - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	attendance := entity.Attendance{
@@ -155,253 +157,252 @@ func (h *attendanceHandler) UpdateAttendance(c *fiber.Ctx) error {
 		attendance.CheckOut = &checkOut
 	}
 
-	updatedAttendance, err := h.attendanceService.UpdateAttendance(c.Context(), attendanceID, attendance)
+	result, err := h.attendanceService.UpdateAttendance(c.Context(), attendanceID, attendance)
 	if err != nil {
-		log.Errorw("[Handler] UpdateAttendance - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] UpdateAttendance - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Attendance updated successfully",
-		},
-		Data: updatedAttendance,
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Attendance updated successfully"
+	defaultSuccessResponse.Data = result
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *attendanceHandler) DeleteAttendance(c *fiber.Ctx) error {
-	id := c.Params("id")
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] DeleteAttendance - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("attendanceID")
 	attendanceID, err := uuid.Parse(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid attendance ID",
-			},
-		})
+		code := "[HANDLER] DeleteAttendance - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid attendance ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	if err := h.attendanceService.DeleteAttendance(c.Context(), attendanceID); err != nil {
-		log.Errorw("[Handler] DeleteAttendance - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] DeleteAttendance - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Attendance deleted successfully",
-		},
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Attendance deleted successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *attendanceHandler) GetAttendanceByID(c *fiber.Ctx) error {
-	id := c.Params("id")
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserID == 0 {
+		code := "[HANDLER] GetAttendanceByID - 1"
+		log.Errorw(code, "unauthorized")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("attendanceID")
 	attendanceID, err := uuid.Parse(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid attendance ID",
-			},
-		})
+		code := "[HANDLER] GetAttendanceByID - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid attendance ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	attendance, err := h.attendanceService.GetAttendanceByID(c.Context(), attendanceID)
+	result, err := h.attendanceService.GetAttendanceByID(c.Context(), attendanceID)
 	if err != nil {
-		log.Errorw("[Handler] GetAttendanceByID - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] GetAttendanceByID - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusNotFound).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: attendance,
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = result
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *attendanceHandler) GetAttendancesByEmployee(c *fiber.Ctx) error {
-	employeeID := c.Params("employeeId")
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserID == 0 {
+		code := "[HANDLER] GetAttendancesByEmployee - 1"
+		log.Errorw(code, "unauthorized")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	employeeID := c.Params("employeeID")
 	employeeUUID, err := uuid.Parse(employeeID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid employee ID",
-			},
-		})
+		code := "[HANDLER] GetAttendancesByEmployee - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid employee ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 
-	attendances, total, err := h.attendanceService.GetAttendancesByEmployee(c.Context(), employeeUUID, page, limit)
+	results, total, err := h.attendanceService.GetAttendancesByEmployee(c.Context(), employeeUUID, page, limit)
 	if err != nil {
-		log.Errorw("[Handler] GetAttendancesByEmployee - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] GetAttendancesByEmployee - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: response.PaginationData{
-			Data:  attendances,
-			Total: total,
-			Page:  page,
-			Limit: limit,
-		},
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = results
+	defaultSuccessResponse.Pagination = &response.PaginationResponse{
+		TotalRecords: int(total),
+		Page:         page,
+		PerPage:      limit,
+	}
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *attendanceHandler) GetAttendancesByTenant(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
-	tenantID := claims.TenantID
-
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
+	if claims.TenantID == 0 {
+		code := "[HANDLER] GetAttendancesByTenant - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
 
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 
-	attendances, total, err := h.attendanceService.GetAttendancesByTenant(c.Context(), uuid.UUID{}, page, limit)
+	results, total, err := h.attendanceService.GetAttendancesByTenant(c.Context(), uuid.UUID{}, page, limit)
 	if err != nil {
-		log.Errorw("[Handler] GetAttendancesByTenant - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] GetAttendancesByTenant - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: response.PaginationData{
-			Data:  attendances,
-			Total: total,
-			Page:  page,
-			Limit: limit,
-		},
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = results
+	defaultSuccessResponse.Pagination = &response.PaginationResponse{
+		TotalRecords: int(total),
+		Page:         page,
+		PerPage:      limit,
+	}
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *attendanceHandler) GetAttendancesByPeriod(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
-	tenantID := claims.TenantID
-
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
+	if claims.TenantID == 0 {
+		code := "[HANDLER] GetAttendancesByPeriod - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
 
-	startDate := c.Query("startDate")
-	endDate := c.Query("endDate")
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 
 	start, err := time.Parse("2006-01-02", startDate)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid start date format",
-			},
-		})
+		code := "[HANDLER] GetAttendancesByPeriod - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid start date format"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	end, err := time.Parse("2006-01-02", endDate)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid end date format",
-			},
-		})
+		code := "[HANDLER] GetAttendancesByPeriod - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid end date format"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	attendances, total, err := h.attendanceService.GetAttendancesByPeriod(c.Context(), uuid.UUID{}, start, end, page, limit)
+	results, total, err := h.attendanceService.GetAttendancesByPeriod(c.Context(), uuid.UUID{}, start, end, page, limit)
 	if err != nil {
-		log.Errorw("[Handler] GetAttendancesByPeriod - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] GetAttendancesByPeriod - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: response.PaginationData{
-			Data:  attendances,
-			Total: total,
-			Page:  page,
-			Limit: limit,
-		},
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = results
+	defaultSuccessResponse.Pagination = &response.PaginationResponse{
+		TotalRecords: int(total),
+		Page:         page,
+		PerPage:      limit,
+	}
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *attendanceHandler) CheckIn(c *fiber.Ctx) error {
-	id := c.Params("id")
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserID == 0 {
+		code := "[HANDLER] CheckIn - 1"
+		log.Errorw(code, "unauthorized")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("attendanceID")
 	attendanceID, err := uuid.Parse(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid attendance ID",
-			},
-		})
+		code := "[HANDLER] CheckIn - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid attendance ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	var req request.CheckInRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] CheckIn - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
+		code := "[HANDLER] CheckIn - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	checkInTime := time.Now()
@@ -409,45 +410,53 @@ func (h *attendanceHandler) CheckIn(c *fiber.Ctx) error {
 		checkInTime, _ = time.Parse("15:04:05", req.CheckInTime)
 	}
 
-	if err := h.attendanceService.CheckIn(c.Context(), attendanceID, checkInTime, req.Location); err != nil {
-		log.Errorw("[Handler] CheckIn - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+	var location *string
+	if req.Location != "" {
+		location = &req.Location
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Check-in successful",
-		},
-	})
+	if err := h.attendanceService.CheckIn(c.Context(), attendanceID, checkInTime, location); err != nil {
+		code := "[HANDLER] CheckIn - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Check-in successful"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *attendanceHandler) CheckOut(c *fiber.Ctx) error {
-	id := c.Params("id")
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserID == 0 {
+		code := "[HANDLER] CheckOut - 1"
+		log.Errorw(code, "unauthorized")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("attendanceID")
 	attendanceID, err := uuid.Parse(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid attendance ID",
-			},
-		})
+		code := "[HANDLER] CheckOut - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid attendance ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	var req request.CheckOutRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] CheckOut - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
+		code := "[HANDLER] CheckOut - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	checkOutTime := time.Now()
@@ -456,168 +465,154 @@ func (h *attendanceHandler) CheckOut(c *fiber.Ctx) error {
 	}
 
 	if err := h.attendanceService.CheckOut(c.Context(), attendanceID, checkOutTime); err != nil {
-		log.Errorw("[Handler] CheckOut - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] CheckOut - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Check-out successful",
-		},
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Check-out successful"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *attendanceHandler) UpdateStatus(c *fiber.Ctx) error {
-	id := c.Params("id")
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] UpdateStatus - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("attendanceID")
 	attendanceID, err := uuid.Parse(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid attendance ID",
-			},
-		})
+		code := "[HANDLER] UpdateStatus - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid attendance ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	var req request.UpdateAttendanceStatusRequest
 	if err := c.BodyParser(&req); err != nil {
-		log.Errorw("[Handler] UpdateStatus - BodyParser", err)
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid request body",
-			},
-		})
+		code := "[HANDLER] UpdateStatus - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	if err := h.attendanceService.UpdateAttendanceStatus(c.Context(), attendanceID, entity.AttendanceStatus(req.Status)); err != nil {
-		log.Errorw("[Handler] UpdateStatus - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+	if err := h.attendanceService.UpdateStatus(c.Context(), attendanceID, entity.AttendanceStatus(req.Status)); err != nil {
+		code := "[HANDLER] UpdateStatus - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Attendance status updated successfully",
-		},
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Attendance status updated successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (h *attendanceHandler) GetAttendanceSummary(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
-	tenantID := claims.TenantID
-
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
+	if claims.TenantID == 0 {
+		code := "[HANDLER] GetAttendanceSummary - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
 
-	employeeID := c.Query("employeeId")
-	startDate := c.Query("startDate")
-	endDate := c.Query("endDate")
-
-	var summary interface{}
-	var err error
-
-	if employeeID != "" {
-		employeeUUID, _ := uuid.Parse(employeeID)
-		start, _ := time.Parse("2006-01-02", startDate)
-		end, _ := time.Parse("2006-01-02", endDate)
-		summary, err = h.attendanceService.GetAttendanceSummaryByEmployee(c.Context(), employeeUUID, start, end)
-	} else {
-		start, _ := time.Parse("2006-01-02", startDate)
-		end, _ := time.Parse("2006-01-02", endDate)
-		summary, err = h.attendanceService.GetAttendanceSummaryByTenant(c.Context(), uuid.UUID{}, start, end)
-	}
-
-	if err != nil {
-		log.Errorw("[Handler] GetAttendanceSummary - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: summary,
-	})
-}
-
-func (h *attendanceHandler) GetTodayAttendance(c *fiber.Ctx) error {
-	claims := c.Locals("user").(*entity.JwtData)
-	tenantID := claims.TenantID
-
-	if tenantID == 0 {
-		return c.Status(fiber.StatusUnauthorized).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Unauthorized access",
-			},
-		})
-	}
-
-	employeeID := c.Params("employeeId")
-	if employeeID == "" {
-		employeeID = c.Query("employeeId")
-	}
+	employeeID := c.Query("employee_id")
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
 
 	if employeeID == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Employee ID is required",
-			},
-		})
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "employee_id is required"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	employeeUUID, err := uuid.Parse(employeeID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: "Invalid employee ID",
-			},
-		})
+		code := "[HANDLER] GetAttendanceSummary - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid employee ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	today := time.Now().Format("2006-01-02")
-	attendance, err := h.attendanceService.GetAttendanceByEmployeeAndDate(c.Context(), employeeUUID, today)
+	start, _ := time.Parse("2006-01-02", startDate)
+	end, _ := time.Parse("2006-01-02", endDate)
+
+	result, err := h.attendanceService.GetAttendanceSummary(c.Context(), employeeUUID, start, end)
 	if err != nil {
-		log.Errorw("[Handler] GetTodayAttendance - Service", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{
-			Meta: response.Meta{
-				Status:  false,
-				Message: err.Error(),
-			},
-		})
+		code := "[HANDLER] GetAttendanceSummary - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.SuccessResponse{
-		Meta: response.Meta{
-			Status:  true,
-			Message: "Success",
-		},
-		Data: attendance,
-	})
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = result
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (h *attendanceHandler) GetTodayAttendance(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] GetTodayAttendance - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	employeeID := c.Params("employeeID")
+	if employeeID == "" {
+		employeeID = c.Query("employee_id")
+	}
+
+	if employeeID == "" {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "employee_id is required"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	employeeUUID, err := uuid.Parse(employeeID)
+	if err != nil {
+		code := "[HANDLER] GetTodayAttendance - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid employee ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	result, err := h.attendanceService.GetTodayAttendance(c.Context(), employeeUUID)
+	if err != nil {
+		code := "[HANDLER] GetTodayAttendance - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = result
+
+	return c.JSON(defaultSuccessResponse)
 }

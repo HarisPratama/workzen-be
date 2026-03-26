@@ -19,20 +19,20 @@ type PayrollResponse struct {
 }
 
 type PayrollListResponse struct {
-	Payrolls []PayrollResponse `json:"payrolls"`
-	Meta     PaginationMeta    `json:"meta"`
+	Payrolls []PayrollResponse  `json:"payrolls"`
+	Meta     PaginationResponse `json:"meta"`
 }
 
 type PayrollSummaryResponse struct {
-	TotalPayrolls      int     `json:"total_payrolls"`
-	TotalBasicSalary   float64 `json:"total_basic_salary"`
-	TotalAllowances    float64 `json:"total_allowances"`
-	TotalDeductions    float64 `json:"total_deductions"`
-	TotalTax           float64 `json:"total_tax"`
-	TotalNetSalary     float64 `json:"total_net_salary"`
-	PaidCount          int     `json:"paid_count"`
-	PendingCount       int     `json:"pending_count"`
-	ProcessedCount     int     `json:"processed_count"`
+	TotalPayrolls    int     `json:"total_payrolls"`
+	TotalBasicSalary float64 `json:"total_basic_salary"`
+	TotalAllowances  float64 `json:"total_allowances"`
+	TotalDeductions  float64 `json:"total_deductions"`
+	TotalTax         float64 `json:"total_tax"`
+	TotalNetSalary   float64 `json:"total_net_salary"`
+	PaidCount        int     `json:"paid_count"`
+	PendingCount     int     `json:"pending_count"`
+	ProcessedCount   int     `json:"processed_count"`
 }
 
 type PayrollItemResponse struct {

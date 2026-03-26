@@ -1,9 +1,10 @@
 package service
 
 import (
-	"bwanews/internal/adapter/repository"
-	"bwanews/internal/core/domain/entity"
 	"context"
+	"time"
+	"workzen-be/internal/adapter/repository"
+	"workzen-be/internal/core/domain/entity"
 
 	"github.com/gofiber/fiber/v2/log"
 )
@@ -45,26 +46,37 @@ func (s *employeeAssignmentService) GetEmployeeAssignmentByID(ctx context.Contex
 }
 
 func (s *employeeAssignmentService) CreateEmployeeAssignment(ctx context.Context, req entity.EmployeeAssignmentEntityRequest, tenantID int64) error {
+	var startDate, endDate, expectedEndDate time.Time
+	if req.StartDate != "" {
+		startDate, _ = time.Parse("2006-01-02", req.StartDate)
+	}
+	if req.EndDate != "" {
+		endDate, _ = time.Parse("2006-01-02", req.EndDate)
+	}
+	if req.ExpectedEndDate != "" {
+		expectedEndDate, _ = time.Parse("2006-01-02", req.ExpectedEndDate)
+	}
+
 	reqEntity := entity.EmployeeAssignmentEntity{
-		TenantID:         tenantID,
-		EmployeeID:       req.EmployeeID,
-		ClientID:         req.ClientID,
-		ProjectID:        req.ProjectID,
-		DepartmentID:     req.DepartmentID,
-		AssignmentType:   req.AssignmentType,
-		StartDate:        req.StartDate,
-		EndDate:          req.EndDate,
-		ExpectedEndDate:  req.ExpectedEndDate,
-		Status:           "PENDING",
-		Role:             req.Role,
-		Position:         req.Position,
-		Location:         req.Location,
-		RemoteType:       req.RemoteType,
-		BillingRate:      req.BillingRate,
-		CostRate:         req.CostRate,
-		Currency:         req.Currency,
-		HoursPerWeek:     req.HoursPerWeek,
-		Notes:            req.Notes,
+		TenantID:        tenantID,
+		EmployeeID:      req.EmployeeID,
+		ClientID:        req.ClientID,
+		ProjectID:       req.ProjectID,
+		DepartmentID:    req.DepartmentID,
+		AssignmentType:  req.AssignmentType,
+		StartDate:       startDate,
+		EndDate:         endDate,
+		ExpectedEndDate: expectedEndDate,
+		Status:          "PENDING",
+		Role:            req.Role,
+		Position:        req.Position,
+		Location:        req.Location,
+		RemoteType:      req.RemoteType,
+		BillingRate:     req.BillingRate,
+		CostRate:        req.CostRate,
+		Currency:        req.Currency,
+		HoursPerWeek:    req.HoursPerWeek,
+		Notes:           req.Notes,
 	}
 
 	err := s.employeeAssignmentRepo.CreateEmployeeAssignment(ctx, reqEntity)
