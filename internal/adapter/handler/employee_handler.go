@@ -14,7 +14,10 @@ import (
 
 type EmployeeHandler interface {
 	GetEmployees(c *fiber.Ctx) error
+	GetEmployeeDetail(c *fiber.Ctx) error
 	CreateEmployee(c *fiber.Ctx) error
+	UpdateEmployee(c *fiber.Ctx) error
+	DeleteEmployee(c *fiber.Ctx) error
 }
 
 type employeeHandler struct {
@@ -32,7 +35,6 @@ func (e *employeeHandler) CreateEmployee(c *fiber.Ctx) error {
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "Unauthorized access"
-
 		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
 
@@ -41,7 +43,6 @@ func (e *employeeHandler) CreateEmployee(c *fiber.Ctx) error {
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "invalid request body"
-
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
@@ -49,25 +50,22 @@ func (e *employeeHandler) CreateEmployee(c *fiber.Ctx) error {
 		code = "[Handler] CreateEmployee - 3"
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	reqEntity := entity.EmployeeEntity{
+	employee := &entity.EmployeeEntity{
 		Name:        req.Name,
 		CitizenID:   req.CitizenID,
 		PhoneNumber: req.PhoneNumber,
 		TenantID:    int64(tenantID),
 	}
 
-	err = e.employeeService.CreateEmployee(c.Context(), reqEntity)
-
+	err = e.employeeService.CreateEmployee(c.Context(), employee)
 	if err != nil {
 		code := "[HANDLER] CreateEmployee - 4"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
@@ -76,6 +74,132 @@ func (e *employeeHandler) CreateEmployee(c *fiber.Ctx) error {
 	defaultSuccessResponse.Data = nil
 
 	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
+}
+
+func (e *employeeHandler) GetEmployeeDetail(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	tenantID := claims.TenantID
+
+	if tenantID == 0 {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("employeeID")
+	employeeID, err := conv.StringToInt64(id)
+	if err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid employee ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	result, err := e.employeeService.GetDetailEmployeeByTenant(c.Context(), int64(tenantID), employeeID)
+	if err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusNotFound).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = response.EmployeeResponse{
+		ID:          result.ID,
+		Name:        result.Name,
+		CitizenID:   result.CitizenID,
+		PhoneNumber: result.PhoneNumber,
+		Status:      result.Status,
+		CreatedAt:   result.CreatedAt.Local().Format("02 January 2006"),
+	}
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (e *employeeHandler) UpdateEmployee(c *fiber.Ctx) error {
+	var req request.EmployeeRequest
+	claims := c.Locals("user").(*entity.JwtData)
+	tenantID := claims.TenantID
+
+	if tenantID == 0 {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("employeeID")
+	employeeID, err := conv.StringToInt64(id)
+	if err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid employee ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err = validatorLib.ValidateStruct(req); err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	employee := &entity.EmployeeEntity{
+		Name:        req.Name,
+		CitizenID:   req.CitizenID,
+		PhoneNumber: req.PhoneNumber,
+	}
+
+	err = e.employeeService.UpdateEmployee(c.Context(), int64(tenantID), employeeID, employee)
+	if err != nil {
+		code := "[HANDLER] UpdateEmployee - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (e *employeeHandler) DeleteEmployee(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	tenantID := claims.TenantID
+
+	if tenantID == 0 {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	id := c.Params("employeeID")
+	employeeID, err := conv.StringToInt64(id)
+	if err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid employee ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	err = e.employeeService.DeleteEmployee(c.Context(), int64(tenantID), employeeID)
+	if err != nil {
+		code := "[HANDLER] DeleteEmployee - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusNotFound).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Employee deleted successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (e *employeeHandler) GetEmployees(c *fiber.Ctx) error {
@@ -89,7 +213,6 @@ func (e *employeeHandler) GetEmployees(c *fiber.Ctx) error {
 			log.Errorw(code, err)
 			errorResp.Meta.Status = false
 			errorResp.Meta.Message = "invalid page number"
-
 			return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 		}
 	}
@@ -102,7 +225,6 @@ func (e *employeeHandler) GetEmployees(c *fiber.Ctx) error {
 			log.Errorw(code, err)
 			errorResp.Meta.Status = false
 			errorResp.Meta.Message = "invalid limit number"
-
 			return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 		}
 	}
@@ -145,7 +267,6 @@ func (e *employeeHandler) GetEmployees(c *fiber.Ctx) error {
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
@@ -162,7 +283,6 @@ func (e *employeeHandler) GetEmployees(c *fiber.Ctx) error {
 			Status:      employee.Status,
 			CreatedAt:   employee.CreatedAt.Local().Format("02 January 2006"),
 		}
-
 		respEmployees = append(respEmployees, respEmployee)
 	}
 

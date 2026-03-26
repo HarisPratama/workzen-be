@@ -3,15 +3,20 @@ package entity
 import "time"
 
 type CandidateApplicationEntity struct {
-	ID                int64
-	TenantID          int64
-	CandidateID       int64
-	ManpowerRequestID int64
-	Status            string
-	AppliedAt         time.Time
-	Tenant            TenantEntity
-	Candidate         CandidateEntity
-	ManpowerRequest   ManpowerReqEntity
+	ID                int64             `json:"id" gorm:"column:id;primaryKey;autoIncrement"`
+	TenantID          int64             `json:"tenant_id" gorm:"column:tenant_id;not null;index"`
+	CandidateID       int64             `json:"candidate_id" gorm:"column:candidate_id;not null;index"`
+	ManpowerRequestID int64             `json:"manpower_request_id" gorm:"column:manpower_request_id;not null;index"`
+	Status            string            `json:"status" gorm:"column:status;default:'APPLIED'"`
+	AppliedAt         time.Time         `json:"applied_at" gorm:"column:applied_at;autoCreateTime"`
+	UpdatedAt         time.Time         `json:"updated_at" gorm:"column:updated_at;autoUpdateTime"`
+	Tenant            TenantEntity      `json:"tenant,omitempty" gorm:"foreignKey:TenantID"`
+	Candidate         CandidateEntity   `json:"candidate,omitempty" gorm:"foreignKey:CandidateID"`
+	ManpowerRequest   ManpowerReqEntity `json:"manpower_request,omitempty" gorm:"foreignKey:ManpowerRequestID"`
+}
+
+func (CandidateApplicationEntity) TableName() string {
+	return "candidate_applications"
 }
 
 type CandidateApplicationQueryString struct {

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"workzen-be/internal/adapter/handler/request"
 	"workzen-be/internal/adapter/handler/response"
 	"workzen-be/internal/core/domain/entity"
@@ -17,6 +16,8 @@ type ManpowerReqHandler interface {
 	GetManpowerReqByTenant(c *fiber.Ctx) error
 	GetDetailManpowerRequestByTenant(c *fiber.Ctx) error
 	CreateManpowerReq(c *fiber.Ctx) error
+	UpdateManpowerReq(c *fiber.Ctx) error
+	DeleteManpowerReq(c *fiber.Ctx) error
 }
 
 type manpowerReqHandler struct {
@@ -31,7 +32,6 @@ func (m *manpowerReqHandler) GetDetailManpowerRequestByTenant(c *fiber.Ctx) erro
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "Unauthorized access"
-
 		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
 
@@ -44,17 +44,15 @@ func (m *manpowerReqHandler) GetDetailManpowerRequestByTenant(c *fiber.Ctx) erro
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	result, err := m.manpowerService.GetDetailManpowerRequestByTenant(context.Background(), int64(tenantID), manpowerRequestID)
+	result, err := m.manpowerService.GetDetailManpowerRequestByTenant(c.Context(), int64(tenantID), manpowerRequestID)
 	if err != nil {
 		code := "[HANDLER] GetDetailManpowerRequestByTenant - 3"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
@@ -95,7 +93,6 @@ func (m *manpowerReqHandler) GetManpowerReqByTenant(c *fiber.Ctx) error {
 			log.Errorw(code, err)
 			errorResp.Meta.Status = false
 			errorResp.Meta.Message = "invalid page number"
-
 			return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 		}
 	}
@@ -108,7 +105,6 @@ func (m *manpowerReqHandler) GetManpowerReqByTenant(c *fiber.Ctx) error {
 			log.Errorw(code, err)
 			errorResp.Meta.Status = false
 			errorResp.Meta.Message = "invalid limit number"
-
 			return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 		}
 	}
@@ -149,7 +145,6 @@ func (m *manpowerReqHandler) GetManpowerReqByTenant(c *fiber.Ctx) error {
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "Tenant ID is empty"
-
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
@@ -160,7 +155,6 @@ func (m *manpowerReqHandler) GetManpowerReqByTenant(c *fiber.Ctx) error {
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
@@ -179,13 +173,12 @@ func (m *manpowerReqHandler) GetManpowerReqByTenant(c *fiber.Ctx) error {
 			JobDescription: manpowerReq.JobDescription,
 			Status:         manpowerReq.Status,
 			DeadlineDate:   manpowerReq.DeadlineDate.Local().Format("02 January 2006"),
-			CreatedAt:      manpowerReq.DeadlineDate.Local().Format("02 January 2006"),
+			CreatedAt:      manpowerReq.CreatedAt.Local().Format("02 January 2006"),
 			Client: response.ClientResponse{
 				ID:          manpowerReq.ClientID,
 				CompanyName: manpowerReq.Client.CompanyName,
 			},
 		}
-
 		respManpowerReqs = append(respManpowerReqs, respManpowerReq)
 	}
 
@@ -210,7 +203,6 @@ func (m *manpowerReqHandler) CreateManpowerReq(c *fiber.Ctx) error {
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "Unauthorized access"
-
 		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
 
@@ -219,7 +211,6 @@ func (m *manpowerReqHandler) CreateManpowerReq(c *fiber.Ctx) error {
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "invalid request body"
-
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
@@ -227,11 +218,10 @@ func (m *manpowerReqHandler) CreateManpowerReq(c *fiber.Ctx) error {
 		code = "[Handler] CreateManpowerReq - 3"
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	reqEntity := entity.ManpowerReqEntity{
+	manpowerReq := &entity.ManpowerReqEntity{
 		TenantID:       int64(tenantID),
 		ClientID:       req.ClientID,
 		Position:       req.Position,
@@ -243,14 +233,12 @@ func (m *manpowerReqHandler) CreateManpowerReq(c *fiber.Ctx) error {
 		DeadlineDate:   req.DeadlineDate,
 	}
 
-	err := m.manpowerService.CreateManpowerReq(c.Context(), reqEntity)
-
+	err := m.manpowerService.CreateManpowerReq(c.Context(), manpowerReq)
 	if err != nil {
 		code := "[HANDLER] CreateManpowerReq - 4"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
@@ -259,6 +247,98 @@ func (m *manpowerReqHandler) CreateManpowerReq(c *fiber.Ctx) error {
 	defaultSuccessResponse.Data = nil
 
 	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
+}
+
+func (m *manpowerReqHandler) UpdateManpowerReq(c *fiber.Ctx) error {
+	var req request.ManPowerRequest
+	claims := c.Locals("user").(*entity.JwtData)
+	tenantID := claims.TenantID
+
+	if tenantID == 0 {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	idParam := c.Params("manpowerRequestID")
+	manpowerRequestID, err := conv.StringToInt64(idParam)
+	if err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid manpower request ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err = validatorLib.ValidateStruct(req); err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	manpowerReq := &entity.ManpowerReqEntity{
+		ClientID:       req.ClientID,
+		Position:       req.Position,
+		RequiredCount:  req.RequiredCount,
+		SalaryMin:      req.SalaryMin,
+		SalaryMax:      req.SalaryMax,
+		WorkLocation:   req.WorkLocation,
+		JobDescription: req.JobDescription,
+		DeadlineDate:   req.DeadlineDate,
+	}
+
+	err = m.manpowerService.UpdateManpowerReq(c.Context(), int64(tenantID), manpowerRequestID, manpowerReq)
+	if err != nil {
+		code := "[HANDLER] UpdateManpowerReq - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (m *manpowerReqHandler) DeleteManpowerReq(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	tenantID := claims.TenantID
+
+	if tenantID == 0 {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	idParam := c.Params("manpowerRequestID")
+	manpowerRequestID, err := conv.StringToInt64(idParam)
+	if err != nil {
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid manpower request ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	err = m.manpowerService.DeleteManpowerReq(c.Context(), int64(tenantID), manpowerRequestID)
+	if err != nil {
+		code := "[HANDLER] DeleteManpowerReq - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusNotFound).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Manpower request deleted successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func NewManpowerReqHandler(manpowerReqService service.ManpowerReqService) ManpowerReqHandler {

@@ -3,7 +3,7 @@ services:
   db:
     image: postgres:15-alpine
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -19,24 +19,25 @@ services:
       - workzen-network
 
   migrate:
-    image: migrate/migrate
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ./database/migrations:/migrations
+    image: ghcr.io/harispratama/workzen-be:latest
     command: [
-      "-path", "/migrations",
+      "migrate",
+      "-path", "/app/database/migrations",
       "-database", "postgres://postgres:postgres@db:5432/my_database?sslmode=disable",
       "up"
     ]
-    networks:
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:                         # ← tambah ini agar bisa reach db
       - workzen-network
 
   app:
     image: ghcr.io/harispratama/workzen-be:latest
     container_name: workzen-be
     restart: always
+    expose:
+      - "8080"                        # ← expose ke sesama container (tidak ke host)
     depends_on:
       db:
         condition: service_healthy
@@ -47,7 +48,7 @@ services:
     environment:
       DATABASE_HOST: db
       DATABASE_PORT: 5432
-    networks:
+    networks:                         # ← tambah ini
       - workzen-network
 
   nginx:
@@ -70,3 +71,4 @@ volumes:
 
 networks:
   workzen-network:
+    driver: bridge

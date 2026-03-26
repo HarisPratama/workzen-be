@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"workzen-be/internal/core/domain/entity"
-	"workzen-be/internal/core/domain/model"
 
 	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
@@ -14,15 +13,31 @@ import (
 
 type CandidateRepository interface {
 	GetCandidatesByTenant(ctx context.Context, tenantID int64, query entity.CandidateQueryString) ([]entity.CandidateEntity, int64, int64, error)
-	CreateCandidate(ctx context.Context, req entity.CandidateEntity) error
+	GetDetailCandidateByTenant(ctx context.Context, tenantID int64, candidateID int64) (*entity.CandidateEntity, error)
+	CreateCandidate(ctx context.Context, candidate *entity.CandidateEntity) error
+	UpdateCandidate(ctx context.Context, candidate *entity.CandidateEntity) error
+	DeleteCandidate(ctx context.Context, tenantID int64, candidateID int64) error
 }
 
 type candidateRepository struct {
 	db *gorm.DB
 }
 
+func (c *candidateRepository) GetDetailCandidateByTenant(ctx context.Context, tenantID int64, candidateID int64) (*entity.CandidateEntity, error) {
+	var candidate entity.CandidateEntity
+	err := c.db.WithContext(ctx).
+		Where("tenant_id = ?", tenantID).
+		First(&candidate, candidateID).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &candidate, nil
+}
+
 func (c *candidateRepository) GetCandidatesByTenant(ctx context.Context, tenantID int64, query entity.CandidateQueryString) ([]entity.CandidateEntity, int64, int64, error) {
-	var modelCandidate []model.Candidate
+	var candidates []entity.CandidateEntity
 	var countData int64
 
 	order := fmt.Sprintf("%s %s", query.OrderBy, query.OrderType)
@@ -32,7 +47,16 @@ func (c *candidateRepository) GetCandidatesByTenant(ctx context.Context, tenantI
 		Preload(clause.Associations).
 		Where("tenant_id = ?", tenantID)
 
-	if err := sqlMain.Model(&model.Candidate{}).Count(&countData).Error; err != nil {
+	if query.Search != "" {
+		search := "%" + query.Search + "%"
+		sqlMain = sqlMain.Where("full_name ILIKE ? OR email ILIKE ?", search, search)
+	}
+
+	if query.Status != "" {
+		sqlMain = sqlMain.Where("status = ?", query.Status)
+	}
+
+	if err := sqlMain.Model(&entity.CandidateEntity{}).Count(&countData).Error; err != nil {
 		code = "[REPOSITORY] GetCandidateByTenant - 1"
 		log.Errorw(code, err)
 		return nil, 0, 0, err
@@ -44,45 +68,43 @@ func (c *candidateRepository) GetCandidatesByTenant(ctx context.Context, tenantI
 		Order(order).
 		Limit(query.Limit).
 		Offset(offset).
-		Find(&modelCandidate).Error; err != nil {
+		Find(&candidates).Error; err != nil {
 		code = "[REPOSITORY] GetCandidateByTenant - 2"
 		log.Errorw(code, err)
 		return nil, 0, 0, err
 	}
 
-	resps := make([]entity.CandidateEntity, 0, len(modelCandidate))
-	for _, val := range modelCandidate {
-		resps = append(resps, entity.CandidateEntity{
-			ID:        val.ID,
-			FullName:  val.FullName,
-			Email:     val.Email,
-			Phone:     val.Phone,
-			Address:   val.Address,
-			Source:    val.Source,
-			Status:    val.Status,
-			BirthDate: val.BirthDate,
-		})
-	}
-
-	return resps, countData, totalPages, nil
+	return candidates, countData, totalPages, nil
 }
 
-func (c *candidateRepository) CreateCandidate(ctx context.Context, req entity.CandidateEntity) error {
-	modelCandidate := model.Candidate{
-		TenantID:  req.TenantID,
-		FullName:  req.FullName,
-		Email:     req.Email,
-		Phone:     req.Phone,
-		Address:   req.Address,
-		CitizenID: req.CitizenID,
-		Source:    req.Source,
-		Status:    "ACTIVE",
-		BirthDate: req.BirthDate,
-	}
-
-	err := c.db.Create(&modelCandidate).Error
+func (c *candidateRepository) CreateCandidate(ctx context.Context, candidate *entity.CandidateEntity) error {
+	err := c.db.WithContext(ctx).Create(candidate).Error
 	if err != nil {
 		code = "[REPOSITORY] CreateCandidate - 1"
+		log.Errorw(code, err)
+		return err
+	}
+
+	return nil
+}
+
+func (c *candidateRepository) UpdateCandidate(ctx context.Context, candidate *entity.CandidateEntity) error {
+	err := c.db.WithContext(ctx).Save(candidate).Error
+	if err != nil {
+		code = "[REPOSITORY] UpdateCandidate - 1"
+		log.Errorw(code, err)
+		return err
+	}
+
+	return nil
+}
+
+func (c *candidateRepository) DeleteCandidate(ctx context.Context, tenantID int64, candidateID int64) error {
+	err := c.db.WithContext(ctx).
+		Where("tenant_id = ?", tenantID).
+		Delete(&entity.CandidateEntity{}, candidateID).Error
+	if err != nil {
+		code = "[REPOSITORY] DeleteCandidate - 1"
 		log.Errorw(code, err)
 		return err
 	}
