@@ -1,8 +1,8 @@
 package seeds
 
 import (
-	"bwanews/internal/core/domain/model"
-	"bwanews/lib/conv"
+	"workzen-be/internal/core/domain/model"
+	"workzen-be/lib/conv"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"

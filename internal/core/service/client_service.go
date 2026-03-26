@@ -1,9 +1,9 @@
 package service
 
 import (
-	"bwanews/internal/adapter/repository"
-	"bwanews/internal/core/domain/entity"
 	"context"
+	"workzen-be/internal/adapter/repository"
+	"workzen-be/internal/core/domain/entity"
 
 	"github.com/gofiber/fiber/v2/log"
 )

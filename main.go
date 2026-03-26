@@ -1,6 +1,6 @@
 package main
 
-import "bwanews/cmd"
+import "workzen-be/cmd"
 
 func main() {
 	cmd.Execute()

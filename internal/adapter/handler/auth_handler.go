@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"bwanews/internal/adapter/handler/request"
-	"bwanews/internal/adapter/handler/response"
-	"bwanews/internal/core/domain/entity"
-	"bwanews/internal/core/service"
-	validatorLib "bwanews/lib/validator"
 	"time"
+	"workzen-be/internal/adapter/handler/request"
+	"workzen-be/internal/adapter/handler/response"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/internal/core/service"
+	validatorLib "workzen-be/lib/validator"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"

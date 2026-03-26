@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"var errorResp\\\\|var defaultSuccessResponse\" /Users/devita/Documents/BWANEWS/BE/internal/adapter/handler/*.go)",
+      "Bash(grep -L \"var errorResp\\\\|var defaultSuccessResponse\" /Users/devita/Documents/BWANEWS/BE/internal/adapter/handler/*_handler.go)",
+      "Bash(grep:*)",
+      "Bash(brew install:*)",
+      "Bash(go build:*)",
+      "Bash(xargs sed:*)"
+    ]
+  }
+}

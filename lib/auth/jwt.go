@@ -1,10 +1,10 @@
 package auth
 
 import (
-	"bwanews/config"
-	"bwanews/internal/core/domain/entity"
 	"fmt"
 	"time"
+	"workzen-be/config"
+	"workzen-be/internal/core/domain/entity"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"

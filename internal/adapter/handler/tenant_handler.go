@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"bwanews/internal/adapter/handler/request"
-	"bwanews/internal/core/domain/entity"
-	"bwanews/internal/core/service"
-	validatorLib "bwanews/lib/validator"
+	"workzen-be/internal/adapter/handler/request"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/internal/core/service"
+	validatorLib "workzen-be/lib/validator"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"

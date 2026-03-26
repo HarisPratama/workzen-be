@@ -1,9 +1,9 @@
 package config
 
 import (
-	"bwanews/database/seeds"
 	"fmt"
 	"time" // Tambahkan ini
+	"workzen-be/database/seeds"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"

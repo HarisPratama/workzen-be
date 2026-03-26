@@ -1,12 +1,12 @@
 package repository
 
 import (
-	"bwanews/internal/core/domain/entity"
-	"bwanews/internal/core/domain/model"
 	"context"
 	"errors"
 	"fmt"
 	"math"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/internal/core/domain/model"
 
 	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"

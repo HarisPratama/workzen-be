@@ -1,4 +1,4 @@
-module bwanews
+module workzen-be
 
 go 1.24.1
 

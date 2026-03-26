@@ -1,17 +1,17 @@
 package handler
 
 import (
-	"bwanews/internal/adapter/handler/request"
-	"bwanews/internal/adapter/handler/response"
-	"bwanews/internal/core/domain/entity"
-	"bwanews/internal/core/service"
-	"bwanews/lib/conv"
-	validatorLib "bwanews/lib/validator"
 	"context"
 	"fmt"
 	"os"
 	"strings"
 	"time"
+	"workzen-be/internal/adapter/handler/request"
+	"workzen-be/internal/adapter/handler/response"
+	"workzen-be/internal/core/domain/entity"
+	"workzen-be/internal/core/service"
+	"workzen-be/lib/conv"
+	validatorLib "workzen-be/lib/validator"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
