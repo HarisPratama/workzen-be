@@ -1,5 +1,9 @@
 package config
 
+// CI/CD Test: Perubahan minor untuk test deployment pipeline
+// Timestamp: 2026-03-26
+// Author: Assistant
+
 import "github.com/spf13/viper"
 
 type App struct {
