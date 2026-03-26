@@ -14,11 +14,50 @@ import (
 
 type CandidateHandler interface {
 	GetCandidatesByTenant(c *fiber.Ctx) error
+	GetCandidateDetailByTenant(c *fiber.Ctx) error
 	CreateCandidate(c *fiber.Ctx) error
 }
 
 type candidateHandler struct {
 	candidateService service.CandidateService
+}
+
+func (c2 *candidateHandler) GetCandidateDetailByTenant(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserID == 0 {
+		code := "[HANDLER] GetCandidateDetailByTenant - 1"
+		log.Errorw(code, "unauthorized")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	tenantID := claims.TenantID
+
+	id := c.Params("candidateID")
+	candidateID, err := conv.StringToInt64(id)
+	if err != nil {
+		code := "[HANDLER] GetCandidateDetailByTenant - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid candidate ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	result, err := c2.candidateService.GetDetailCandidateByTenant(c.Context(), int64(tenantID), candidateID)
+	if err != nil {
+		code := "[HANDLER] GetCandidateDetailByTenant - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusNotFound).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Data = result
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 func (c2 *candidateHandler) GetCandidatesByTenant(c *fiber.Ctx) error {
@@ -65,7 +104,7 @@ func (c2 *candidateHandler) GetCandidatesByTenant(c *fiber.Ctx) error {
 		search = c.Query("search")
 	}
 
-	status := ""
+	status := "active"
 	if c.Query("status") != "" {
 		status = c.Query("status")
 	}

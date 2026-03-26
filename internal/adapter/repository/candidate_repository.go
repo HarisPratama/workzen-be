@@ -14,11 +14,24 @@ import (
 
 type CandidateRepository interface {
 	GetCandidatesByTenant(ctx context.Context, tenantID int64, query entity.CandidateQueryString) ([]entity.CandidateEntity, int64, int64, error)
+	GetDetailCandidateByTenant(ctx context.Context, tenantID int64, candidateID int64) (*entity.CandidateEntity, error)
 	CreateCandidate(ctx context.Context, req entity.CandidateEntity) error
 }
 
 type candidateRepository struct {
 	db *gorm.DB
+}
+
+func (c *candidateRepository) GetDetailCandidateByTenant(ctx context.Context, tenantID int64, candidateID int64) (*entity.CandidateEntity, error) {
+	var candidate entity.CandidateEntity
+	err := c.db.WithContext(ctx).
+		Where("tenant_id = ?", tenantID).
+		First(&candidate, candidateID).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return &candidate, nil
 }
 
 func (c *candidateRepository) GetCandidatesByTenant(ctx context.Context, tenantID int64, query entity.CandidateQueryString) ([]entity.CandidateEntity, int64, int64, error) {

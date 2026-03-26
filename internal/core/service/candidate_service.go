@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"workzen-be/internal/adapter/repository"
 	"workzen-be/internal/core/domain/entity"
 
@@ -10,11 +11,21 @@ import (
 
 type CandidateService interface {
 	GetCandidatesByTenant(ctx context.Context, tenantID int64, query entity.CandidateQueryString) ([]entity.CandidateEntity, int64, int64, error)
+	GetDetailCandidateByTenant(ctx context.Context, tenantID int64, candidateID int64) (*entity.CandidateEntity, error)
 	CreateCandidate(ctx context.Context, candidate entity.CandidateEntity) error
 }
 
 type candidateService struct {
 	candidateRepository repository.CandidateRepository
+}
+
+func (c *candidateService) GetDetailCandidateByTenant(ctx context.Context, tenantID int64, candidateID int64) (*entity.CandidateEntity, error) {
+	candidate, err := c.candidateRepository.GetDetailCandidateByTenant(ctx, tenantID, candidateID)
+	if err != nil {
+		return nil, fmt.Errorf("attendance not found: %w", err)
+	}
+
+	return candidate, nil
 }
 
 func (c *candidateService) GetCandidatesByTenant(ctx context.Context, tenantID int64, query entity.CandidateQueryString) ([]entity.CandidateEntity, int64, int64, error) {

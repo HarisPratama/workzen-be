@@ -1,0 +1,50 @@
+
+services:
+  db:
+    image: postgres:15-alpine
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    container_name: workzen-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: my_database      # <-- Disamakan dengan DB_URL
+    ports:
+      - "5433:5432"                 # <-- Kiri: Laptop kamu, Kanan: Di dalam Docker
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./database/migrations:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "postgres://postgres:postgres@db:5432/my_database?sslmode=disable",
+      "up"
+    ]
+    depends_on:
+      db:
+        condition: service_healthy
+  app:
+    build: .
+    image: workzen-be-app-image:v1.0
+    container_name: workzen-be
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    env_file:
+      - .env.dev
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+volumes:
+  pgdata:

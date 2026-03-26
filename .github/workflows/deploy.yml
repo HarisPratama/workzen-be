@@ -49,13 +49,15 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          # deploy.yml — update bagian script SSH
           script: |
-            cd /root/workzen
-            docker compose pull
-            docker compose run --rm migrate
-            docker compose up -d --remove-orphans
-            docker compose ps
-            docker compose logs --tail=50
+            cd ~/.openclaw/workspace/workzen-be
+            git pull origin ${{ github.ref_name }}
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm migrate
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml logs --tail=50
 
   notify:
     needs: build-and-deploy
