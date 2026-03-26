@@ -19,9 +19,10 @@ services:
       - workzen-network
 
   migrate:
-    image: ghcr.io/harispratama/workzen-be:latest
+    build: .
+    image: workzen-be:latest
     command: [
-      "/app/migrate",              # ← pakai path absolut, bukan "migrate"
+      "/app/migrate",
       "-path", "/app/database/migrations",
       "-database", "postgres://postgres:postgres@db:5432/my_database?sslmode=disable",
       "up"
@@ -29,15 +30,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    networks:                         # ← tambah ini agar bisa reach db
+    networks:
       - workzen-network
 
   app:
-    image: ghcr.io/harispratama/workzen-be:latest
+    build: .
+    image: workzen-be:latest
     container_name: workzen-be
     restart: always
     expose:
-      - "8080"                        # ← expose ke sesama container (tidak ke host)
+      - "8080"
     depends_on:
       db:
         condition: service_healthy
@@ -48,7 +50,7 @@ services:
     environment:
       DATABASE_HOST: db
       DATABASE_PORT: 5432
-    networks:                         # ← tambah ini
+    networks:
       - workzen-network
 
   nginx:
