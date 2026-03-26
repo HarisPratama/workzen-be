@@ -21,7 +21,7 @@ services:
   migrate:
     image: ghcr.io/harispratama/workzen-be:latest
     command: [
-      "migrate",
+      "/app/migrate",              # ← pakai path absolut, bukan "migrate"
       "-path", "/app/database/migrations",
       "-database", "postgres://postgres:postgres@db:5432/my_database?sslmode=disable",
       "up"

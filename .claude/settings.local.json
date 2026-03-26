@@ -11,7 +11,9 @@
       "Bash(do)",
       "Bash(if ! grep -q \"domain/model\" \"$file\")",
       "Bash(then)",
-      "Bash(basename \"$file\")"
+      "Bash(basename \"$file\")",
+      "Bash(python3 -c \":*)",
+      "Bash(python3:*)"
     ]
   }
 }

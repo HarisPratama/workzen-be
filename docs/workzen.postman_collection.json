@@ -265,6 +265,74 @@
       ]
     },
     {
+      "name": "Admin / Subscription Plans (SUPER_ADMIN)",
+      "item": [
+        {
+          "name": "Get All Plans",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/admin/subscription-plans?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "admin", "subscription-plans"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Plan By ID",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/admin/subscription-plans/1", "host": ["{{base_url}}"], "path": ["v1", "admin", "subscription-plans", "1"] }
+          }
+        },
+        {
+          "name": "Create Plan",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/admin/subscription-plans", "host": ["{{base_url}}"], "path": ["v1", "admin", "subscription-plans"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Enterprise\",\n  \"description\": \"Full-featured plan for large companies\",\n  \"price\": 500000,\n  \"billing_cycle\": \"monthly\",\n  \"max_employees\": 100,\n  \"features\": [\"payroll\", \"attendance\", \"recruitment\"],\n  \"is_active\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Plan",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/admin/subscription-plans/1", "host": ["{{base_url}}"], "path": ["v1", "admin", "subscription-plans", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Enterprise Pro\",\n  \"description\": \"Updated enterprise plan\",\n  \"price\": 750000,\n  \"billing_cycle\": \"monthly\",\n  \"max_employees\": 200,\n  \"features\": [\"payroll\", \"attendance\", \"recruitment\", \"analytics\"],\n  \"is_active\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Plan",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/admin/subscription-plans/1", "host": ["{{base_url}}"], "path": ["v1", "admin", "subscription-plans", "1"] }
+          }
+        }
+      ]
+    },
+    {
       "name": "Frontend (Public)",
       "item": [
         {
@@ -315,6 +383,30 @@
               "options": { "raw": { "language": "json" } }
             }
           }
+        },
+        {
+          "name": "Get Subscription Plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/fe/subscription-plans?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["fe", "subscription-plans"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Subscription Plan By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/fe/subscription-plans/1", "host": ["{{base_url}}"], "path": ["fe", "subscription-plans", "1"] }
+          }
         }
       ]
     },
@@ -340,6 +432,15 @@
           }
         },
         {
+          "name": "Get Employee Detail",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/employees/1", "host": ["{{base_url}}"], "path": ["v1", "employees", "1"] }
+          }
+        },
+        {
           "name": "Create Employee",
           "request": {
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
@@ -351,6 +452,29 @@
               "raw": "{\n  \"name\": \"Budi Santoso\",\n  \"citizen_id\": \"3201234567890001\",\n  \"phone_number\": \"081234567890\"\n}",
               "options": { "raw": { "language": "json" } }
             }
+          }
+        },
+        {
+          "name": "Update Employee",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/employees/1", "host": ["{{base_url}}"], "path": ["v1", "employees", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Budi Santoso Updated\",\n  \"citizen_id\": \"3201234567890001\",\n  \"phone_number\": \"081234567891\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Employee",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/employees/1", "host": ["{{base_url}}"], "path": ["v1", "employees", "1"] }
           }
         }
       ]
@@ -377,6 +501,15 @@
           }
         },
         {
+          "name": "Get Client Detail",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/clients/1", "host": ["{{base_url}}"], "path": ["v1", "clients", "1"] }
+          }
+        },
+        {
           "name": "Create Client",
           "request": {
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
@@ -388,6 +521,29 @@
               "raw": "{\n  \"company_name\": \"PT Client ABC\",\n  \"address\": \"Jl. Gatot Subroto No. 10, Jakarta\"\n}",
               "options": { "raw": { "language": "json" } }
             }
+          }
+        },
+        {
+          "name": "Update Client",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/clients/1", "host": ["{{base_url}}"], "path": ["v1", "clients", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_name\": \"PT Client ABC Updated\",\n  \"address\": \"Jl. Gatot Subroto No. 20, Jakarta\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Client",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/clients/1", "host": ["{{base_url}}"], "path": ["v1", "clients", "1"] }
           }
         }
       ]
@@ -428,7 +584,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/v1/manpower_requests/1/candidates", "host": ["{{base_url}}"], "path": ["v1", "manpower_requests", "1", "candidates"] }
+            "url": { "raw": "{{base_url}}/v1/manpower-requests/1/candidates", "host": ["{{base_url}}"], "path": ["v1", "manpower-requests", "1", "candidates"] }
           }
         },
         {
@@ -443,6 +599,29 @@
               "raw": "{\n  \"client_id\": 1,\n  \"position\": \"Software Engineer\",\n  \"required_count\": 3,\n  \"salary_min\": 8000000,\n  \"salary_max\": 15000000,\n  \"work_location\": \"Jakarta\",\n  \"job_description\": \"Develop and maintain backend services\",\n  \"deadline_date\": \"2024-12-31T00:00:00Z\"\n}",
               "options": { "raw": { "language": "json" } }
             }
+          }
+        },
+        {
+          "name": "Update Manpower Request",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/manpower-requests/1", "host": ["{{base_url}}"], "path": ["v1", "manpower-requests", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": 1,\n  \"position\": \"Senior Software Engineer\",\n  \"required_count\": 5,\n  \"salary_min\": 10000000,\n  \"salary_max\": 20000000,\n  \"work_location\": \"Jakarta\",\n  \"job_description\": \"Lead backend development team\",\n  \"deadline_date\": \"2025-03-31T00:00:00Z\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Manpower Request",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/manpower-requests/1", "host": ["{{base_url}}"], "path": ["v1", "manpower-requests", "1"] }
           }
         }
       ]
@@ -469,6 +648,15 @@
           }
         },
         {
+          "name": "Get Candidate Detail",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/candidates/1", "host": ["{{base_url}}"], "path": ["v1", "candidates", "1"] }
+          }
+        },
+        {
           "name": "Create Candidate",
           "request": {
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
@@ -477,23 +665,83 @@
             "url": { "raw": "{{base_url}}/v1/candidates", "host": ["{{base_url}}"], "path": ["v1", "candidates"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"full_name\": \"Andi Prasetyo\",\n  \"email\": \"andi@mail.com\",\n  \"phone\": \"082123456789\",\n  \"citizen_id\": \"3201234567890002\",\n  \"birth_date\": \"1995-05-20T00:00:00Z\",\n  \"address\": \"Jl. Kebon Jeruk No. 5\",\n  \"source\": \"LinkedIn\",\n  \"status\": \"active\"\n}",
+              "raw": "{\n  \"full_name\": \"Andi Prasetyo\",\n  \"email\": \"andi@mail.com\",\n  \"phone\": \"082123456789\",\n  \"citizen_id\": \"3201234567890002\",\n  \"birth_date\": \"1995-05-20T00:00:00Z\",\n  \"address\": \"Jl. Kebon Jeruk No. 5\",\n  \"source\": \"LinkedIn\",\n  \"status\": \"ACTIVE\"\n}",
               "options": { "raw": { "language": "json" } }
             }
           }
         },
+        {
+          "name": "Update Candidate",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/candidates/1", "host": ["{{base_url}}"], "path": ["v1", "candidates", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Andi Prasetyo Updated\",\n  \"email\": \"andi.updated@mail.com\",\n  \"phone\": \"082123456780\",\n  \"citizen_id\": \"3201234567890002\",\n  \"birth_date\": \"1995-05-20T00:00:00Z\",\n  \"address\": \"Jl. Kebon Jeruk No. 10\",\n  \"source\": \"LinkedIn\",\n  \"status\": \"ACTIVE\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Candidate",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/candidates/1", "host": ["{{base_url}}"], "path": ["v1", "candidates", "1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Candidate Applications",
+      "item": [
         {
           "name": "Create Candidate Application",
           "request": {
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/v1/candidate-application", "host": ["{{base_url}}"], "path": ["v1", "candidate-application"] },
+            "url": { "raw": "{{base_url}}/v1/candidate-applications", "host": ["{{base_url}}"], "path": ["v1", "candidate-applications"] },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"candidate_id\": 1,\n  \"manpower_request_id\": 1\n}",
               "options": { "raw": { "language": "json" } }
             }
+          }
+        },
+        {
+          "name": "Get Candidate Application Detail",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/candidate-applications/1", "host": ["{{base_url}}"], "path": ["v1", "candidate-applications", "1"] }
+          }
+        },
+        {
+          "name": "Update Candidate Application",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/candidate-applications/1", "host": ["{{base_url}}"], "path": ["v1", "candidate-applications", "1"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SHORTLISTED\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Delete Candidate Application",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/candidate-applications/1", "host": ["{{base_url}}"], "path": ["v1", "candidate-applications", "1"] }
           }
         }
       ]
@@ -713,6 +961,74 @@
       ]
     },
     {
+      "name": "Subscriptions (Tenant)",
+      "item": [
+        {
+          "name": "Get Active Subscription",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/subscriptions/active", "host": ["{{base_url}}"], "path": ["v1", "subscriptions", "active"] }
+          }
+        },
+        {
+          "name": "Get Subscription History",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v1/subscriptions/history?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["v1", "subscriptions", "history"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Subscribe",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/subscriptions/subscribe", "host": ["{{base_url}}"], "path": ["v1", "subscriptions", "subscribe"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan_id\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/subscriptions/1/cancel", "host": ["{{base_url}}"], "path": ["v1", "subscriptions", "1", "cancel"] }
+          }
+        },
+        {
+          "name": "Change Plan",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v1/subscriptions/change-plan", "host": ["{{base_url}}"], "path": ["v1", "subscriptions", "change-plan"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan_id\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Attendances",
       "item": [
         {
@@ -741,7 +1057,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID"], "variable": [{ "key": "attendanceID", "value": "550e8400-e29b-41d4-a716-446655440000" }] }
+            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID"], "variable": [{ "key": "attendanceID", "value": "1" }] }
           }
         },
         {
@@ -754,7 +1070,7 @@
               "raw": "{{base_url}}/v1/attendances/employee/:employeeID?page=1&limit=10",
               "host": ["{{base_url}}"],
               "path": ["v1", "attendances", "employee", ":employeeID"],
-              "variable": [{ "key": "employeeID", "value": "550e8400-e29b-41d4-a716-446655440000" }],
+              "variable": [{ "key": "employeeID", "value": "1" }],
               "query": [
                 { "key": "page", "value": "1" },
                 { "key": "limit", "value": "10" }
@@ -768,7 +1084,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/v1/attendances/today/:employeeID", "host": ["{{base_url}}"], "path": ["v1", "attendances", "today", ":employeeID"], "variable": [{ "key": "employeeID", "value": "550e8400-e29b-41d4-a716-446655440000" }] }
+            "url": { "raw": "{{base_url}}/v1/attendances/today/:employeeID", "host": ["{{base_url}}"], "path": ["v1", "attendances", "today", ":employeeID"], "variable": [{ "key": "employeeID", "value": "1" }] }
           }
         },
         {
@@ -780,7 +1096,7 @@
             "url": { "raw": "{{base_url}}/v1/attendances", "host": ["{{base_url}}"], "path": ["v1", "attendances"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"date\": \"2024-06-15\",\n  \"type\": \"regular\",\n  \"status\": \"present\",\n  \"check_in\": \"08:00:00\",\n  \"check_out\": \"17:00:00\",\n  \"notes\": \"\"\n}",
+              "raw": "{\n  \"employee_id\": 1,\n  \"date\": \"2024-06-15\",\n  \"type\": \"regular\",\n  \"status\": \"present\",\n  \"check_in\": \"08:00:00\",\n  \"check_out\": \"17:00:00\",\n  \"notes\": \"\"\n}",
               "options": { "raw": { "language": "json" } }
             }
           }
@@ -791,7 +1107,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "PUT",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID"], "variable": [{ "key": "attendanceID", "value": "550e8400-e29b-41d4-a716-446655440000" }] },
+            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID"], "variable": [{ "key": "attendanceID", "value": "1" }] },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"present\",\n  \"check_in\": \"08:30:00\",\n  \"check_out\": \"17:30:00\",\n  \"notes\": \"Updated\"\n}",
@@ -805,7 +1121,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "DELETE",
             "header": [],
-            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID"], "variable": [{ "key": "attendanceID", "value": "550e8400-e29b-41d4-a716-446655440000" }] }
+            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID"], "variable": [{ "key": "attendanceID", "value": "1" }] }
           }
         },
         {
@@ -814,7 +1130,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID/check-in", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID", "check-in"], "variable": [{ "key": "attendanceID", "value": "550e8400-e29b-41d4-a716-446655440000" }] },
+            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID/check-in", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID", "check-in"], "variable": [{ "key": "attendanceID", "value": "1" }] },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"check_in_time\": \"08:05:00\",\n  \"location\": \"Kantor Pusat\"\n}",
@@ -828,7 +1144,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID/check-out", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID", "check-out"], "variable": [{ "key": "attendanceID", "value": "550e8400-e29b-41d4-a716-446655440000" }] },
+            "url": { "raw": "{{base_url}}/v1/attendances/:attendanceID/check-out", "host": ["{{base_url}}"], "path": ["v1", "attendances", ":attendanceID", "check-out"], "variable": [{ "key": "attendanceID", "value": "1" }] },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"check_out_time\": \"17:05:00\"\n}",
@@ -864,7 +1180,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID"], "variable": [{ "key": "payrollID", "value": "550e8400-e29b-41d4-a716-446655440001" }] }
+            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID"], "variable": [{ "key": "payrollID", "value": "1" }] }
           }
         },
         {
@@ -877,7 +1193,7 @@
               "raw": "{{base_url}}/v1/payrolls/employee/:employeeID?page=1&limit=10",
               "host": ["{{base_url}}"],
               "path": ["v1", "payrolls", "employee", ":employeeID"],
-              "variable": [{ "key": "employeeID", "value": "550e8400-e29b-41d4-a716-446655440000" }],
+              "variable": [{ "key": "employeeID", "value": "1" }],
               "query": [
                 { "key": "page", "value": "1" },
                 { "key": "limit", "value": "10" }
@@ -894,7 +1210,7 @@
             "url": { "raw": "{{base_url}}/v1/payrolls", "host": ["{{base_url}}"], "path": ["v1", "payrolls"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"employee_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"period_start\": \"2024-06-01\",\n  \"period_end\": \"2024-06-30\",\n  \"basic_salary\": 10000000,\n  \"allowances\": 500000,\n  \"deductions\": 200000,\n  \"tax\": 150000,\n  \"net_salary\": 10150000,\n  \"notes\": \"June 2024 payroll\"\n}",
+              "raw": "{\n  \"employee_id\": 1,\n  \"period_start\": \"2024-06-01\",\n  \"period_end\": \"2024-06-30\",\n  \"basic_salary\": 10000000,\n  \"allowances\": 500000,\n  \"deductions\": 200000,\n  \"tax\": 150000,\n  \"net_salary\": 10150000,\n  \"notes\": \"June 2024 payroll\"\n}",
               "options": { "raw": { "language": "json" } }
             }
           }
@@ -905,7 +1221,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "PUT",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID"], "variable": [{ "key": "payrollID", "value": "550e8400-e29b-41d4-a716-446655440001" }] },
+            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID"], "variable": [{ "key": "payrollID", "value": "1" }] },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"basic_salary\": 11000000,\n  \"allowances\": 600000,\n  \"deductions\": 250000,\n  \"tax\": 180000,\n  \"net_salary\": 11170000,\n  \"notes\": \"Updated\"\n}",
@@ -919,7 +1235,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "DELETE",
             "header": [],
-            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID"], "variable": [{ "key": "payrollID", "value": "550e8400-e29b-41d4-a716-446655440001" }] }
+            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID"], "variable": [{ "key": "payrollID", "value": "1" }] }
           }
         },
         {
@@ -928,7 +1244,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "POST",
             "header": [],
-            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID/process", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID", "process"], "variable": [{ "key": "payrollID", "value": "550e8400-e29b-41d4-a716-446655440001" }] }
+            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID/process", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID", "process"], "variable": [{ "key": "payrollID", "value": "1" }] }
           }
         },
         {
@@ -937,7 +1253,7 @@
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID/mark-as-paid", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID", "mark-as-paid"], "variable": [{ "key": "payrollID", "value": "550e8400-e29b-41d4-a716-446655440001" }] },
+            "url": { "raw": "{{base_url}}/v1/payrolls/:payrollID/mark-as-paid", "host": ["{{base_url}}"], "path": ["v1", "payrolls", ":payrollID", "mark-as-paid"], "variable": [{ "key": "payrollID", "value": "1" }] },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"payment_date\": \"2024-07-01\",\n  \"payment_method\": \"bank_transfer\",\n  \"transaction_id\": \"TXN-20240701-001\"\n}",

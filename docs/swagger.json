@@ -16,32 +16,90 @@
     }
   ],
   "tags": [
-    { "name": "auth", "description": "Authentication endpoints" },
-    { "name": "category", "description": "Content category management (admin)" },
-    { "name": "content", "description": "Content management (admin)" },
-    { "name": "user", "description": "User profile management" },
-    { "name": "fe", "description": "Public frontend endpoints" },
-    { "name": "employee", "description": "Employee management" },
-    { "name": "client", "description": "Client management" },
-    { "name": "manpower-request", "description": "Manpower request management" },
-    { "name": "candidate", "description": "Candidate management" },
-    { "name": "interview", "description": "Interview management" },
-    { "name": "offer", "description": "Job offer management" },
-    { "name": "assignment", "description": "Employee assignment management" },
-    { "name": "attendance", "description": "Attendance management" },
-    { "name": "payroll", "description": "Payroll management" }
+    {
+      "name": "auth",
+      "description": "Authentication endpoints"
+    },
+    {
+      "name": "category",
+      "description": "Content category management (admin)"
+    },
+    {
+      "name": "content",
+      "description": "Content management (admin)"
+    },
+    {
+      "name": "user",
+      "description": "User profile management"
+    },
+    {
+      "name": "fe",
+      "description": "Public frontend endpoints"
+    },
+    {
+      "name": "employee",
+      "description": "Employee management"
+    },
+    {
+      "name": "client",
+      "description": "Client management"
+    },
+    {
+      "name": "manpower-request",
+      "description": "Manpower request management"
+    },
+    {
+      "name": "candidate",
+      "description": "Candidate management"
+    },
+    {
+      "name": "interview",
+      "description": "Interview management"
+    },
+    {
+      "name": "offer",
+      "description": "Job offer management"
+    },
+    {
+      "name": "assignment",
+      "description": "Employee assignment management"
+    },
+    {
+      "name": "attendance",
+      "description": "Attendance management"
+    },
+    {
+      "name": "payroll",
+      "description": "Payroll management"
+    },
+    {
+      "name": "candidate-application",
+      "description": "Candidate application management"
+    },
+    {
+      "name": "subscription",
+      "description": "Subscription management"
+    },
+    {
+      "name": "subscription-plan",
+      "description": "Subscription plan management (admin)"
+    }
   ],
   "paths": {
     "/v1/auth/login": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Login",
         "description": "Authenticate user and get access token",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
             }
           }
         },
@@ -50,29 +108,45 @@
             "description": "Login success",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
         }
       }
     },
     "/v1/auth/logout": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Logout",
         "description": "Invalidate current session",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          }
         }
       }
     },
     "/v1/auth/refresh": {
       "post": {
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "summary": "Refresh Token",
         "description": "Refresh access token using cookie",
         "responses": {
@@ -80,23 +154,39 @@
             "description": "Token refreshed",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
         }
       }
     },
     "/v1/admin/categories": {
       "get": {
-        "tags": ["category"],
+        "tags": [
+          "category"
+        ],
         "summary": "Get all categories",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/Search" }
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          }
         ],
         "responses": {
           "200": {
@@ -105,15 +195,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/CategoryResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/CategoryResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -121,35 +217,59 @@
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
         }
       },
       "post": {
-        "tags": ["category"],
+        "tags": [
+          "category"
+        ],
         "summary": "Create category",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CategoryRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CategoryRequest"
+              }
             }
           }
         },
         "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
         }
       }
     },
     "/v1/admin/categories/{categoryID}": {
       "get": {
-        "tags": ["category"],
+        "tags": [
+          "category"
+        ],
         "summary": "Get category by ID",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/CategoryID" }
+          {
+            "$ref": "#/components/parameters/CategoryID"
+          }
         ],
         "responses": {
           "200": {
@@ -158,11 +278,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/CategoryResponse" }
+                        "data": {
+                          "$ref": "#/components/schemas/CategoryResponse"
+                        }
                       }
                     }
                   ]
@@ -170,51 +294,91 @@
               }
             }
           },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       },
       "put": {
-        "tags": ["category"],
+        "tags": [
+          "category"
+        ],
         "summary": "Update category",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/CategoryID" }
+          {
+            "$ref": "#/components/parameters/CategoryID"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CategoryRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CategoryRequest"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       },
       "delete": {
-        "tags": ["category"],
+        "tags": [
+          "category"
+        ],
         "summary": "Delete category",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/CategoryID" }
+          {
+            "$ref": "#/components/parameters/CategoryID"
+          }
         ],
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       }
     },
     "/v1/admin/contents": {
       "get": {
-        "tags": ["content"],
+        "tags": [
+          "content"
+        ],
         "summary": "Get all contents (admin)",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/Search" }
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          }
         ],
         "responses": {
           "200": {
@@ -223,15 +387,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/ContentResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/ContentResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -242,35 +412,55 @@
         }
       },
       "post": {
-        "tags": ["content"],
+        "tags": [
+          "content"
+        ],
         "summary": "Create content",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ContentRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/ContentRequest"
+              }
             }
           }
         },
         "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/v1/admin/contents/upload-image": {
       "post": {
-        "tags": ["content"],
+        "tags": [
+          "content"
+        ],
         "summary": "Upload content image",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "required": ["image"],
+                "required": [
+                  "image"
+                ],
                 "properties": {
                   "image": {
                     "type": "string",
@@ -289,14 +479,19 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "object",
                           "properties": {
-                            "url": { "type": "string", "example": "https://cdn.example.com/image.jpg" }
+                            "url": {
+                              "type": "string",
+                              "example": "https://cdn.example.com/image.jpg"
+                            }
                           }
                         }
                       }
@@ -311,11 +506,19 @@
     },
     "/v1/admin/contents/{contentID}": {
       "get": {
-        "tags": ["content"],
+        "tags": [
+          "content"
+        ],
         "summary": "Get content by ID (admin)",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/ContentID" }
+          {
+            "$ref": "#/components/parameters/ContentID"
+          }
         ],
         "responses": {
           "200": {
@@ -324,11 +527,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/ContentResponse" }
+                        "data": {
+                          "$ref": "#/components/schemas/ContentResponse"
+                        }
                       }
                     }
                   ]
@@ -339,46 +546,80 @@
         }
       },
       "put": {
-        "tags": ["content"],
+        "tags": [
+          "content"
+        ],
         "summary": "Update content",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/ContentID" }
+          {
+            "$ref": "#/components/parameters/ContentID"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ContentRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/ContentRequest"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          }
         }
       },
       "delete": {
-        "tags": ["content"],
+        "tags": [
+          "content"
+        ],
         "summary": "Delete content",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/ContentID" }
+          {
+            "$ref": "#/components/parameters/ContentID"
+          }
         ],
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          }
         }
       }
     },
     "/v1/admin/employees": {
       "get": {
-        "tags": ["employee"],
+        "tags": [
+          "employee"
+        ],
         "summary": "Get all employees (SUPER_ADMIN only)",
         "description": "List all employees across all tenants. Requires SUPER_ADMIN role.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/Search" }
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          }
         ],
         "responses": {
           "200": {
@@ -387,15 +628,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/EmployeeResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/EmployeeResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -403,12 +650,16 @@
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "403": {
             "description": "Forbidden - SUPER_ADMIN role required",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -417,9 +668,15 @@
     },
     "/v1/admin/users/profile": {
       "get": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Get current user profile",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -427,11 +684,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/ProfileResponse" }
+                        "data": {
+                          "$ref": "#/components/schemas/ProfileResponse"
+                        }
                       }
                     }
                   ]
@@ -444,26 +705,40 @@
     },
     "/v1/admin/users/update-password": {
       "put": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "Update password",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/UpdatePasswordRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePasswordRequest"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/fe/categories": {
       "get": {
-        "tags": ["fe"],
+        "tags": [
+          "fe"
+        ],
         "summary": "Get categories (public)",
         "responses": {
           "200": {
@@ -472,13 +747,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/CategoryResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/CategoryResponse"
+                          }
                         }
                       }
                     }
@@ -492,27 +771,47 @@
     },
     "/fe/contents": {
       "get": {
-        "tags": ["fe"],
+        "tags": [
+          "fe"
+        ],
         "summary": "Get contents (public)",
         "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/Search" },
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          },
           {
             "in": "query",
             "name": "category_id",
-            "schema": { "type": "integer" },
+            "schema": {
+              "type": "integer"
+            },
             "description": "Filter by category ID"
           },
           {
             "in": "query",
             "name": "order_by",
-            "schema": { "type": "string", "default": "created_at" }
+            "schema": {
+              "type": "string",
+              "default": "created_at"
+            }
           },
           {
             "in": "query",
             "name": "order_type",
-            "schema": { "type": "string", "enum": ["asc", "desc"], "default": "desc" }
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
           }
         ],
         "responses": {
@@ -522,15 +821,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/ContentResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/ContentResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -543,10 +848,14 @@
     },
     "/fe/contents/{contentID}": {
       "get": {
-        "tags": ["fe"],
+        "tags": [
+          "fe"
+        ],
         "summary": "Get content detail (public)",
         "parameters": [
-          { "$ref": "#/components/parameters/ContentID" }
+          {
+            "$ref": "#/components/parameters/ContentID"
+          }
         ],
         "responses": {
           "200": {
@@ -555,11 +864,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/ContentResponse" }
+                        "data": {
+                          "$ref": "#/components/schemas/ContentResponse"
+                        }
                       }
                     }
                   ]
@@ -572,227 +885,50 @@
     },
     "/fe/tenants/register": {
       "post": {
-        "tags": ["fe"],
+        "tags": [
+          "fe"
+        ],
         "summary": "Register new tenant",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/RegisterTenantRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTenantRequest"
+              }
             }
           }
         },
         "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/v1/employees": {
       "get": {
-        "tags": ["employee"],
+        "tags": [
+          "employee"
+        ],
         "summary": "Get employees",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/Search" }
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "type": "array",
-                          "items": { "$ref": "#/components/schemas/EmployeeResponse" }
-                        },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["employee"],
-        "summary": "Create employee",
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/EmployeeRequest" }
-            }
-          }
-        },
-        "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
-        }
-      }
-    },
-    "/v1/clients": {
-      "get": {
-        "tags": ["client"],
-        "summary": "Get clients by tenant",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/Search" }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "type": "array",
-                          "items": { "$ref": "#/components/schemas/ClientResponse" }
-                        },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["client"],
-        "summary": "Create client",
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/ClientRequest" }
-            }
-          }
-        },
-        "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
-        }
-      }
-    },
-    "/v1/manpower-requests": {
-      "get": {
-        "tags": ["manpower-request"],
-        "summary": "Get manpower requests by tenant",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/Search" }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "type": "array",
-                          "items": { "$ref": "#/components/schemas/ManpowerRequestResponse" }
-                        },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["manpower-request"],
-        "summary": "Create manpower request",
-        "security": [{ "bearerAuth": [] }],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/ManpowerRequestBody" }
-            }
-          }
-        },
-        "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
-        }
-      }
-    },
-    "/v1/manpower-requests/{manpowerRequestID}": {
-      "get": {
-        "tags": ["manpower-request"],
-        "summary": "Get manpower request detail",
-        "security": [{ "bearerAuth": [] }],
         "parameters": [
           {
-            "name": "manpowerRequestID",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "integer" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "data": { "$ref": "#/components/schemas/ManpowerRequestResponse" }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/manpower_requests/{manpowerRequestID}/candidates": {
-      "get": {
-        "tags": ["manpower-request"],
-        "summary": "Get candidates for a manpower request",
-        "security": [{ "bearerAuth": [] }],
-        "parameters": [
+            "$ref": "#/components/parameters/Page"
+          },
           {
-            "name": "manpowerRequestID",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "integer" }
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
           }
         ],
         "responses": {
@@ -802,13 +938,20 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/CandidateApplicationResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/EmployeeResponse"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
                         }
                       }
                     }
@@ -818,17 +961,58 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "employee"
+        ],
+        "summary": "Create employee",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
       }
     },
-    "/v1/candidates": {
+    "/v1/clients": {
       "get": {
-        "tags": ["candidate"],
-        "summary": "Get candidates by tenant",
-        "security": [{ "bearerAuth": [] }],
+        "tags": [
+          "client"
+        ],
+        "summary": "Get clients by tenant",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/Search" }
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          }
         ],
         "responses": {
           "200": {
@@ -837,15 +1021,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/CandidateResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/ClientResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -856,69 +1046,361 @@
         }
       },
       "post": {
-        "tags": ["candidate"],
-        "summary": "Create candidate",
-        "security": [{ "bearerAuth": [] }],
+        "tags": [
+          "client"
+        ],
+        "summary": "Create client",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CandidateRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/ClientRequest"
+              }
             }
           }
         },
         "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
-    "/v1/candidate-application": {
+    "/v1/manpower-requests": {
+      "get": {
+        "tags": [
+          "manpower-request"
+        ],
+        "summary": "Get manpower requests by tenant",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ManpowerRequestResponse"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
-        "tags": ["candidate"],
-        "summary": "Create candidate application",
-        "security": [{ "bearerAuth": [] }],
+        "tags": [
+          "manpower-request"
+        ],
+        "summary": "Create manpower request",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CandidateApplicationRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/ManpowerRequestBody"
+              }
             }
           }
         },
         "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/manpower-requests/{manpowerRequestID}": {
+      "get": {
+        "tags": [
+          "manpower-request"
+        ],
+        "summary": "Get manpower request detail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "manpowerRequestID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/ManpowerRequestResponse"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "manpower-request"
+        ],
+        "summary": "Update manpower request",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ManpowerRequestID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManpowerRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "manpower-request"
+        ],
+        "summary": "Delete manpower request",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ManpowerRequestID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/candidates": {
+      "get": {
+        "tags": [
+          "candidate"
+        ],
+        "summary": "Get candidates by tenant",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CandidateResponse"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "candidate"
+        ],
+        "summary": "Create candidate",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/v1/interviews": {
       "get": {
-        "tags": ["interview"],
+        "tags": [
+          "interview"
+        ],
         "summary": "Get interviews by tenant",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/Search" },
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          },
           {
             "in": "query",
             "name": "status",
             "schema": {
               "type": "string",
-              "enum": ["scheduled", "completed", "cancelled", "no_show"]
+              "enum": [
+                "scheduled",
+                "completed",
+                "cancelled",
+                "no_show"
+              ]
             },
             "description": "Filter by status"
           },
           {
             "in": "query",
             "name": "order_by",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "in": "query",
             "name": "order_type",
-            "schema": { "type": "string", "enum": ["asc", "desc"] }
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
@@ -928,15 +1410,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/InterviewResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/InterviewResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -947,30 +1435,50 @@
         }
       },
       "post": {
-        "tags": ["interview"],
+        "tags": [
+          "interview"
+        ],
         "summary": "Create interview",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/InterviewRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/InterviewRequest"
+              }
             }
           }
         },
         "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/v1/interviews/{interviewID}": {
       "get": {
-        "tags": ["interview"],
+        "tags": [
+          "interview"
+        ],
         "summary": "Get interview by ID",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/InterviewID" }
+          {
+            "$ref": "#/components/parameters/InterviewID"
+          }
         ],
         "responses": {
           "200": {
@@ -979,11 +1487,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/InterviewResponse" }
+                        "data": {
+                          "$ref": "#/components/schemas/InterviewResponse"
+                        }
                       }
                     }
                   ]
@@ -991,68 +1503,123 @@
               }
             }
           },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       },
       "put": {
-        "tags": ["interview"],
+        "tags": [
+          "interview"
+        ],
         "summary": "Update interview",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/InterviewID" }
+          {
+            "$ref": "#/components/parameters/InterviewID"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/InterviewUpdateRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/InterviewUpdateRequest"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       },
       "delete": {
-        "tags": ["interview"],
+        "tags": [
+          "interview"
+        ],
         "summary": "Delete interview",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/InterviewID" }
+          {
+            "$ref": "#/components/parameters/InterviewID"
+          }
         ],
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       }
     },
     "/v1/offers": {
       "get": {
-        "tags": ["offer"],
+        "tags": [
+          "offer"
+        ],
         "summary": "Get offers by tenant",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/Search" },
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          },
           {
             "in": "query",
             "name": "status",
             "schema": {
               "type": "string",
-              "enum": ["draft", "sent", "accepted", "rejected", "withdrawn", "expired"]
+              "enum": [
+                "draft",
+                "sent",
+                "accepted",
+                "rejected",
+                "withdrawn",
+                "expired"
+              ]
             }
           },
           {
             "in": "query",
             "name": "order_by",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "in": "query",
             "name": "order_type",
-            "schema": { "type": "string", "enum": ["asc", "desc"] }
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
@@ -1062,15 +1629,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/OfferResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/OfferResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -1081,30 +1654,50 @@
         }
       },
       "post": {
-        "tags": ["offer"],
+        "tags": [
+          "offer"
+        ],
         "summary": "Create offer",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/OfferRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/OfferRequest"
+              }
             }
           }
         },
         "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/v1/offers/{offerID}": {
       "get": {
-        "tags": ["offer"],
+        "tags": [
+          "offer"
+        ],
         "summary": "Get offer by ID",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/OfferID" }
+          {
+            "$ref": "#/components/parameters/OfferID"
+          }
         ],
         "responses": {
           "200": {
@@ -1113,11 +1706,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/OfferResponse" }
+                        "data": {
+                          "$ref": "#/components/schemas/OfferResponse"
+                        }
                       }
                     }
                   ]
@@ -1125,57 +1722,101 @@
               }
             }
           },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       },
       "put": {
-        "tags": ["offer"],
+        "tags": [
+          "offer"
+        ],
         "summary": "Update offer",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/OfferID" }
+          {
+            "$ref": "#/components/parameters/OfferID"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/OfferUpdateRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/OfferUpdateRequest"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       },
       "delete": {
-        "tags": ["offer"],
+        "tags": [
+          "offer"
+        ],
         "summary": "Delete offer",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/OfferID" }
+          {
+            "$ref": "#/components/parameters/OfferID"
+          }
         ],
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       }
     },
     "/v1/assignments": {
       "get": {
-        "tags": ["assignment"],
+        "tags": [
+          "assignment"
+        ],
         "summary": "Get employee assignments by tenant",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
-          { "$ref": "#/components/parameters/Search" },
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          },
           {
             "in": "query",
             "name": "status",
             "schema": {
               "type": "string",
-              "enum": ["active", "completed", "cancelled"]
+              "enum": [
+                "active",
+                "completed",
+                "cancelled"
+              ]
             }
           }
         ],
@@ -1186,15 +1827,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/AssignmentResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/AssignmentResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -1205,30 +1852,50 @@
         }
       },
       "post": {
-        "tags": ["assignment"],
+        "tags": [
+          "assignment"
+        ],
         "summary": "Create employee assignment",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/AssignmentRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/AssignmentRequest"
+              }
             }
           }
         },
         "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/v1/assignments/{assignmentID}": {
       "get": {
-        "tags": ["assignment"],
+        "tags": [
+          "assignment"
+        ],
         "summary": "Get assignment by ID",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/AssignmentID" }
+          {
+            "$ref": "#/components/parameters/AssignmentID"
+          }
         ],
         "responses": {
           "200": {
@@ -1237,11 +1904,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/AssignmentResponse" }
+                        "data": {
+                          "$ref": "#/components/schemas/AssignmentResponse"
+                        }
                       }
                     }
                   ]
@@ -1249,67 +1920,118 @@
               }
             }
           },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       },
       "put": {
-        "tags": ["assignment"],
+        "tags": [
+          "assignment"
+        ],
         "summary": "Update assignment",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/AssignmentID" }
+          {
+            "$ref": "#/components/parameters/AssignmentID"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/AssignmentUpdateRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/AssignmentUpdateRequest"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       },
       "delete": {
-        "tags": ["assignment"],
+        "tags": [
+          "assignment"
+        ],
         "summary": "Delete assignment",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/AssignmentID" }
+          {
+            "$ref": "#/components/parameters/AssignmentID"
+          }
         ],
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       }
     },
     "/v1/attendances": {
       "get": {
-        "tags": ["attendance"],
+        "tags": [
+          "attendance"
+        ],
         "summary": "Get attendances by tenant",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" },
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
           {
             "in": "query",
             "name": "status",
             "schema": {
               "type": "string",
-              "enum": ["present", "absent", "leave", "holiday"]
+              "enum": [
+                "present",
+                "absent",
+                "leave",
+                "holiday"
+              ]
             }
           },
           {
             "in": "query",
             "name": "start_date",
-            "schema": { "type": "string", "format": "date", "example": "2024-01-01" }
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2024-01-01"
+            }
           },
           {
             "in": "query",
             "name": "end_date",
-            "schema": { "type": "string", "format": "date", "example": "2024-01-31" }
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2024-01-31"
+            }
           }
         ],
         "responses": {
@@ -1319,15 +2041,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/AttendanceResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/AttendanceResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -1338,30 +2066,50 @@
         }
       },
       "post": {
-        "tags": ["attendance"],
+        "tags": [
+          "attendance"
+        ],
         "summary": "Create attendance record",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/AttendanceRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceRequest"
+              }
             }
           }
         },
         "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/v1/attendances/{attendanceID}": {
       "get": {
-        "tags": ["attendance"],
+        "tags": [
+          "attendance"
+        ],
         "summary": "Get attendance by ID",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/AttendanceID" }
+          {
+            "$ref": "#/components/parameters/AttendanceID"
+          }
         ],
         "responses": {
           "200": {
@@ -1370,11 +2118,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/AttendanceResponse" }
+                        "data": {
+                          "$ref": "#/components/schemas/AttendanceResponse"
+                        }
                       }
                     }
                   ]
@@ -1385,50 +2137,85 @@
         }
       },
       "put": {
-        "tags": ["attendance"],
+        "tags": [
+          "attendance"
+        ],
         "summary": "Update attendance",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/AttendanceID" }
+          {
+            "$ref": "#/components/parameters/AttendanceID"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/AttendanceUpdateRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceUpdateRequest"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          }
         }
       },
       "delete": {
-        "tags": ["attendance"],
+        "tags": [
+          "attendance"
+        ],
         "summary": "Delete attendance",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/AttendanceID" }
+          {
+            "$ref": "#/components/parameters/AttendanceID"
+          }
         ],
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          }
         }
       }
     },
     "/v1/attendances/employee/{employeeID}": {
       "get": {
-        "tags": ["attendance"],
+        "tags": [
+          "attendance"
+        ],
         "summary": "Get attendances by employee",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "employeeID",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           },
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" }
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          }
         ],
         "responses": {
           "200": {
@@ -1437,15 +2224,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/AttendanceResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/AttendanceResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -1458,57 +2251,94 @@
     },
     "/v1/attendances/{attendanceID}/check-in": {
       "post": {
-        "tags": ["attendance"],
+        "tags": [
+          "attendance"
+        ],
         "summary": "Check in",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/AttendanceID" }
+          {
+            "$ref": "#/components/parameters/AttendanceID"
+          }
         ],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CheckInRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CheckInRequest"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/v1/attendances/{attendanceID}/check-out": {
       "post": {
-        "tags": ["attendance"],
+        "tags": [
+          "attendance"
+        ],
         "summary": "Check out",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/AttendanceID" }
+          {
+            "$ref": "#/components/parameters/AttendanceID"
+          }
         ],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CheckOutRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CheckOutRequest"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/v1/attendances/today/{employeeID}": {
       "get": {
-        "tags": ["attendance"],
+        "tags": [
+          "attendance"
+        ],
         "summary": "Get today's attendance for an employee",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "employeeID",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -1518,11 +2348,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/AttendanceResponse" }
+                        "data": {
+                          "$ref": "#/components/schemas/AttendanceResponse"
+                        }
                       }
                     }
                   ]
@@ -1535,12 +2369,22 @@
     },
     "/v1/payrolls": {
       "get": {
-        "tags": ["payroll"],
+        "tags": [
+          "payroll"
+        ],
         "summary": "Get payrolls by tenant",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" }
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          }
         ],
         "responses": {
           "200": {
@@ -1549,15 +2393,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/PayrollResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/PayrollResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -1568,30 +2418,50 @@
         }
       },
       "post": {
-        "tags": ["payroll"],
+        "tags": [
+          "payroll"
+        ],
         "summary": "Create payroll",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/PayrollRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/PayrollRequest"
+              }
             }
           }
         },
         "responses": {
-          "201": { "$ref": "#/components/responses/Created" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/v1/payrolls/{payrollID}": {
       "get": {
-        "tags": ["payroll"],
+        "tags": [
+          "payroll"
+        ],
         "summary": "Get payroll by ID",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/PayrollID" }
+          {
+            "$ref": "#/components/parameters/PayrollID"
+          }
         ],
         "responses": {
           "200": {
@@ -1600,11 +2470,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/PayrollResponse" }
+                        "data": {
+                          "$ref": "#/components/schemas/PayrollResponse"
+                        }
                       }
                     }
                   ]
@@ -1612,54 +2486,91 @@
               }
             }
           },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
         }
       },
       "put": {
-        "tags": ["payroll"],
+        "tags": [
+          "payroll"
+        ],
         "summary": "Update payroll",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/PayrollID" }
+          {
+            "$ref": "#/components/parameters/PayrollID"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/PayrollUpdateRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/PayrollUpdateRequest"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          }
         }
       },
       "delete": {
-        "tags": ["payroll"],
+        "tags": [
+          "payroll"
+        ],
         "summary": "Delete payroll",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/PayrollID" }
+          {
+            "$ref": "#/components/parameters/PayrollID"
+          }
         ],
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          }
         }
       }
     },
     "/v1/payrolls/employee/{employeeID}": {
       "get": {
-        "tags": ["payroll"],
+        "tags": [
+          "payroll"
+        ],
         "summary": "Get payrolls by employee",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "employeeID",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           },
-          { "$ref": "#/components/parameters/Page" },
-          { "$ref": "#/components/parameters/Limit" }
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          }
         ],
         "responses": {
           "200": {
@@ -1668,15 +2579,21 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "#/components/schemas/DefaultResponse" },
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/PayrollResponse" }
+                          "items": {
+                            "$ref": "#/components/schemas/PayrollResponse"
+                          }
                         },
-                        "pagination": { "$ref": "#/components/schemas/Pagination" }
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
                       }
                     }
                   ]
@@ -1689,37 +2606,1020 @@
     },
     "/v1/payrolls/{payrollID}/process": {
       "post": {
-        "tags": ["payroll"],
+        "tags": [
+          "payroll"
+        ],
         "summary": "Process payroll",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/PayrollID" }
+          {
+            "$ref": "#/components/parameters/PayrollID"
+          }
         ],
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     },
     "/v1/payrolls/{payrollID}/mark-as-paid": {
       "post": {
-        "tags": ["payroll"],
+        "tags": [
+          "payroll"
+        ],
         "summary": "Mark payroll as paid",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          { "$ref": "#/components/parameters/PayrollID" }
+          {
+            "$ref": "#/components/parameters/PayrollID"
+          }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/MarkAsPaidRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/MarkAsPaidRequest"
+              }
             }
           }
         },
         "responses": {
-          "200": { "$ref": "#/components/responses/Success" },
-          "400": { "$ref": "#/components/responses/BadRequest" }
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/candidates/{candidateID}": {
+      "get": {
+        "tags": [
+          "candidate"
+        ],
+        "summary": "Get candidate detail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CandidateID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CandidateResponse"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "candidate"
+        ],
+        "summary": "Update candidate",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CandidateID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "candidate"
+        ],
+        "summary": "Delete candidate",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CandidateID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/clients/{clientID}": {
+      "get": {
+        "tags": [
+          "client"
+        ],
+        "summary": "Get client detail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClientID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/ClientResponse"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "client"
+        ],
+        "summary": "Update client",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClientID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "client"
+        ],
+        "summary": "Delete client",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ClientID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/employees/{employeeID}": {
+      "get": {
+        "tags": [
+          "employee"
+        ],
+        "summary": "Get employee detail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmployeeID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmployeeResponse"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "employee"
+        ],
+        "summary": "Update employee",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmployeeID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "employee"
+        ],
+        "summary": "Delete employee",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EmployeeID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/manpower-requests/{manpowerRequestID}/candidates": {
+      "get": {
+        "tags": [
+          "manpower-request"
+        ],
+        "summary": "Get candidates for a manpower request",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "manpowerRequestID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CandidateApplicationResponse"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/candidate-applications": {
+      "post": {
+        "tags": [
+          "candidate"
+        ],
+        "summary": "Create candidate application",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateApplicationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/candidate-applications/{applicationID}": {
+      "get": {
+        "tags": [
+          "candidate-application"
+        ],
+        "summary": "Get candidate application detail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ApplicationID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CandidateApplicationResponse"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "candidate-application"
+        ],
+        "summary": "Update candidate application status",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ApplicationID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateApplicationUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "candidate-application"
+        ],
+        "summary": "Delete candidate application",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ApplicationID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/fe/subscription-plans": {
+      "get": {
+        "tags": [
+          "fe"
+        ],
+        "summary": "Get subscription plans (public)",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/SubscriptionPlanResponse"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fe/subscription-plans/{planID}": {
+      "get": {
+        "tags": [
+          "fe"
+        ],
+        "summary": "Get subscription plan detail (public)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionPlanID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/SubscriptionPlanResponse"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/admin/subscription-plans": {
+      "get": {
+        "tags": [
+          "subscription-plan"
+        ],
+        "summary": "Get all subscription plans (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/SubscriptionPlanResponse"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "subscription-plan"
+        ],
+        "summary": "Create subscription plan",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionPlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/admin/subscription-plans/{planID}": {
+      "get": {
+        "tags": [
+          "subscription-plan"
+        ],
+        "summary": "Get subscription plan by ID (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionPlanID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/SubscriptionPlanResponse"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "subscription-plan"
+        ],
+        "summary": "Update subscription plan",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionPlanID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionPlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "subscription-plan"
+        ],
+        "summary": "Delete subscription plan",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionPlanID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/active": {
+      "get": {
+        "tags": [
+          "subscription"
+        ],
+        "summary": "Get active subscription",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/SubscriptionResponse"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/history": {
+      "get": {
+        "tags": [
+          "subscription"
+        ],
+        "summary": "Get subscription history",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/SubscriptionResponse"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/subscribe": {
+      "post": {
+        "tags": [
+          "subscription"
+        ],
+        "summary": "Subscribe to a plan",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscribeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/Created"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscriptionID}/cancel": {
+      "post": {
+        "tags": [
+          "subscription"
+        ],
+        "summary": "Cancel subscription",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/change-plan": {
+      "post": {
+        "tags": [
+          "subscription"
+        ],
+        "summary": "Change subscription plan",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
         }
       }
     }
@@ -1736,62 +3636,188 @@
       "Page": {
         "in": "query",
         "name": "page",
-        "schema": { "type": "integer", "minimum": 1, "default": 1 },
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
         "description": "Page number"
       },
       "Limit": {
         "in": "query",
         "name": "limit",
-        "schema": { "type": "integer", "minimum": 1, "default": 10 },
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10
+        },
         "description": "Items per page"
       },
       "Search": {
         "in": "query",
         "name": "search",
-        "schema": { "type": "string" },
+        "schema": {
+          "type": "string"
+        },
         "description": "Search keyword"
       },
       "CategoryID": {
         "name": "categoryID",
         "in": "path",
         "required": true,
-        "schema": { "type": "integer" }
+        "schema": {
+          "type": "integer"
+        }
       },
       "ContentID": {
         "name": "contentID",
         "in": "path",
         "required": true,
-        "schema": { "type": "integer" }
+        "schema": {
+          "type": "integer"
+        }
       },
       "InterviewID": {
         "name": "interviewID",
         "in": "path",
         "required": true,
-        "schema": { "type": "integer" }
+        "schema": {
+          "type": "integer"
+        }
       },
       "OfferID": {
         "name": "offerID",
         "in": "path",
         "required": true,
-        "schema": { "type": "integer" }
+        "schema": {
+          "type": "integer"
+        }
       },
       "AssignmentID": {
         "name": "assignmentID",
         "in": "path",
         "required": true,
-        "schema": { "type": "integer" }
+        "schema": {
+          "type": "integer"
+        }
       },
       "AttendanceID": {
         "name": "attendanceID",
         "in": "path",
         "required": true,
-        "schema": { "type": "string", "format": "uuid" }
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
       },
       "PayrollID": {
         "name": "payrollID",
         "in": "path",
         "required": true,
-        "schema": { "type": "string", "format": "uuid" }
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "CandidateID": {
+        "name": "candidateID",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Candidate ID"
+      },
+      "ClientID": {
+        "name": "clientID",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Client ID"
+      },
+      "EmployeeID": {
+        "name": "employeeID",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Employee ID"
+      },
+      "ManpowerRequestID": {
+        "name": "manpowerRequestID",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Manpower Request ID"
+      },
+      "ApplicationID": {
+        "name": "applicationID",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Candidate Application ID"
+      },
+      "SubscriptionPlanID": {
+        "name": "planID",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Subscription Plan ID"
+      },
+      "SubscriptionID": {
+        "name": "subscriptionID",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "description": "Subscription ID"
+      },
+      "Status": {
+        "name": "status",
+        "in": "query",
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter by status"
+      },
+      "OrderBy": {
+        "name": "orderBy",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "default": "created_at"
+        },
+        "description": "Order by field"
+      },
+      "OrderType": {
+        "name": "orderType",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        },
+        "description": "Order type"
       }
     },
     "responses": {
@@ -1799,7 +3825,9 @@
         "description": "Success",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/DefaultResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/DefaultResponse"
+            }
           }
         }
       },
@@ -1807,7 +3835,9 @@
         "description": "Created",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/DefaultResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/DefaultResponse"
+            }
           }
         }
       },
@@ -1815,7 +3845,9 @@
         "description": "Bad Request",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       },
@@ -1823,7 +3855,9 @@
         "description": "Unauthorized",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       },
@@ -1831,7 +3865,9 @@
         "description": "Not Found",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       }
@@ -1843,8 +3879,14 @@
           "meta": {
             "type": "object",
             "properties": {
-              "status": { "type": "boolean", "example": false },
-              "message": { "type": "string", "example": "An error occurred" }
+              "status": {
+                "type": "boolean",
+                "example": false
+              },
+              "message": {
+                "type": "string",
+                "example": "An error occurred"
+              }
             }
           }
         }
@@ -1855,8 +3897,14 @@
           "meta": {
             "type": "object",
             "properties": {
-              "status": { "type": "boolean", "example": true },
-              "message": { "type": "string", "example": "success" }
+              "status": {
+                "type": "boolean",
+                "example": true
+              },
+              "message": {
+                "type": "string",
+                "example": "success"
+              }
             }
           },
           "data": {}
@@ -1865,18 +3913,41 @@
       "Pagination": {
         "type": "object",
         "properties": {
-          "total_records": { "type": "integer", "example": 100 },
-          "page": { "type": "integer", "example": 1 },
-          "per_page": { "type": "integer", "example": 10 },
-          "total_pages": { "type": "integer", "example": 10 }
+          "total_records": {
+            "type": "integer",
+            "example": 100
+          },
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "per_page": {
+            "type": "integer",
+            "example": 10
+          },
+          "total_pages": {
+            "type": "integer",
+            "example": 10
+          }
         }
       },
       "LoginRequest": {
         "type": "object",
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "properties": {
-          "email": { "type": "string", "format": "email", "example": "admin@workzen.com" },
-          "password": { "type": "string", "minLength": 8, "example": "password123" }
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "admin@workzen.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "password123"
+          }
         }
       },
       "AuthResponse": {
@@ -1885,160 +3956,448 @@
           "meta": {
             "type": "object",
             "properties": {
-              "status": { "type": "boolean", "example": true },
-              "message": { "type": "string", "example": "success" }
+              "status": {
+                "type": "boolean",
+                "example": true
+              },
+              "message": {
+                "type": "string",
+                "example": "success"
+              }
             }
           },
-          "access_token": { "type": "string", "example": "eyJhbGci..." },
-          "expired_at": { "type": "integer", "example": 1735689600 }
+          "access_token": {
+            "type": "string",
+            "example": "eyJhbGci..."
+          },
+          "expired_at": {
+            "type": "integer",
+            "example": 1735689600
+          }
         }
       },
       "CategoryRequest": {
         "type": "object",
-        "required": ["title"],
+        "required": [
+          "title"
+        ],
         "properties": {
-          "title": { "type": "string", "example": "Technology" }
+          "title": {
+            "type": "string",
+            "example": "Technology"
+          }
         }
       },
       "ContentRequest": {
         "type": "object",
-        "required": ["title", "status"],
+        "required": [
+          "title",
+          "status"
+        ],
         "properties": {
-          "title": { "type": "string", "example": "Article Title" },
-          "excerpt": { "type": "string", "example": "Short summary" },
-          "description": { "type": "string", "example": "Full content body" },
-          "tags": { "type": "string", "example": "tech,news" },
-          "category_id": { "type": "integer", "example": 1 },
-          "status": { "type": "string", "enum": ["DRAFT", "PUBLISH"], "example": "DRAFT" },
-          "image": { "type": "string", "example": "https://cdn.example.com/image.jpg" }
+          "title": {
+            "type": "string",
+            "example": "Article Title"
+          },
+          "excerpt": {
+            "type": "string",
+            "example": "Short summary"
+          },
+          "description": {
+            "type": "string",
+            "example": "Full content body"
+          },
+          "tags": {
+            "type": "string",
+            "example": "tech,news"
+          },
+          "category_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PUBLISH"
+            ],
+            "example": "DRAFT"
+          },
+          "image": {
+            "type": "string",
+            "example": "https://cdn.example.com/image.jpg"
+          }
         }
       },
       "UpdatePasswordRequest": {
         "type": "object",
-        "required": ["current_password", "new_password", "confirm_password"],
+        "required": [
+          "current_password",
+          "new_password",
+          "confirm_password"
+        ],
         "properties": {
-          "current_password": { "type": "string", "example": "oldpassword" },
-          "new_password": { "type": "string", "minLength": 8, "example": "newpassword123" },
-          "confirm_password": { "type": "string", "example": "newpassword123" }
+          "current_password": {
+            "type": "string",
+            "example": "oldpassword"
+          },
+          "new_password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "newpassword123"
+          },
+          "confirm_password": {
+            "type": "string",
+            "example": "newpassword123"
+          }
         }
       },
       "RegisterTenantRequest": {
         "type": "object",
-        "required": ["company_name", "admin_name", "admin_email", "password"],
+        "required": [
+          "company_name",
+          "admin_name",
+          "admin_email",
+          "password"
+        ],
         "properties": {
-          "company_name": { "type": "string", "example": "PT Contoh Jaya" },
-          "company_address": { "type": "string", "example": "Jl. Sudirman No. 1" },
-          "plan": { "type": "string", "enum": ["BASIC", "PRO", "ENTERPRISE"], "example": "BASIC" },
-          "admin_name": { "type": "string", "example": "John Doe" },
-          "admin_email": { "type": "string", "format": "email", "example": "admin@ptcontoh.com" },
-          "password": { "type": "string", "minLength": 8, "example": "password123" }
+          "company_name": {
+            "type": "string",
+            "example": "PT Contoh Jaya"
+          },
+          "company_address": {
+            "type": "string",
+            "example": "Jl. Sudirman No. 1"
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "BASIC",
+              "PRO",
+              "ENTERPRISE"
+            ],
+            "example": "BASIC"
+          },
+          "admin_name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "admin_email": {
+            "type": "string",
+            "format": "email",
+            "example": "admin@ptcontoh.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "password123"
+          }
         }
       },
       "EmployeeRequest": {
         "type": "object",
-        "required": ["name", "citizen_id", "phone_number"],
+        "required": [
+          "name",
+          "citizen_id",
+          "phone_number"
+        ],
         "properties": {
-          "name": { "type": "string", "example": "Budi Santoso" },
-          "citizen_id": { "type": "string", "example": "3201234567890001" },
-          "phone_number": { "type": "string", "example": "081234567890" }
+          "name": {
+            "type": "string",
+            "example": "Budi Santoso"
+          },
+          "citizen_id": {
+            "type": "string",
+            "example": "3201234567890001"
+          },
+          "phone_number": {
+            "type": "string",
+            "example": "081234567890"
+          }
         }
       },
       "ClientRequest": {
         "type": "object",
-        "required": ["company_name", "address"],
+        "required": [
+          "company_name",
+          "address"
+        ],
         "properties": {
-          "company_name": { "type": "string", "example": "PT Client ABC" },
-          "address": { "type": "string", "example": "Jl. Gatot Subroto No. 10" }
+          "company_name": {
+            "type": "string",
+            "example": "PT Client ABC"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Gatot Subroto No. 10"
+          }
         }
       },
       "ManpowerRequestBody": {
         "type": "object",
-        "required": ["client_id", "position", "required_count", "salary_min", "salary_max", "work_location", "job_description", "deadline_date"],
+        "required": [
+          "client_id",
+          "position",
+          "required_count",
+          "salary_min",
+          "salary_max",
+          "work_location",
+          "job_description",
+          "deadline_date"
+        ],
         "properties": {
-          "client_id": { "type": "integer", "example": 1 },
-          "position": { "type": "string", "example": "Software Engineer" },
-          "required_count": { "type": "integer", "example": 3 },
-          "salary_min": { "type": "number", "example": 8000000 },
-          "salary_max": { "type": "number", "example": 15000000 },
-          "work_location": { "type": "string", "example": "Jakarta" },
-          "job_description": { "type": "string", "example": "Develop and maintain backend services" },
-          "deadline_date": { "type": "string", "format": "date-time", "example": "2024-12-31T00:00:00Z" }
+          "client_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "position": {
+            "type": "string",
+            "example": "Software Engineer"
+          },
+          "required_count": {
+            "type": "integer",
+            "example": 3
+          },
+          "salary_min": {
+            "type": "number",
+            "example": 8000000
+          },
+          "salary_max": {
+            "type": "number",
+            "example": 15000000
+          },
+          "work_location": {
+            "type": "string",
+            "example": "Jakarta"
+          },
+          "job_description": {
+            "type": "string",
+            "example": "Develop and maintain backend services"
+          },
+          "deadline_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-12-31T00:00:00Z"
+          }
         }
       },
       "CandidateRequest": {
         "type": "object",
-        "required": ["full_name", "email", "phone", "birth_date", "address", "source"],
+        "required": [
+          "full_name",
+          "email",
+          "phone",
+          "birth_date",
+          "address",
+          "source"
+        ],
         "properties": {
-          "full_name": { "type": "string", "example": "Andi Prasetyo" },
-          "email": { "type": "string", "format": "email", "example": "andi@mail.com" },
-          "phone": { "type": "string", "example": "082123456789" },
-          "citizen_id": { "type": "string", "example": "3201234567890002" },
-          "birth_date": { "type": "string", "format": "date-time", "example": "1995-05-20T00:00:00Z" },
-          "address": { "type": "string", "example": "Jl. Kebon Jeruk No. 5" },
-          "source": { "type": "string", "example": "LinkedIn" },
-          "status": { "type": "string", "example": "active" }
+          "full_name": {
+            "type": "string",
+            "example": "Andi Prasetyo"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "andi@mail.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "082123456789"
+          },
+          "citizen_id": {
+            "type": "string",
+            "example": "3201234567890002"
+          },
+          "birth_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "1995-05-20T00:00:00Z"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Kebon Jeruk No. 5"
+          },
+          "source": {
+            "type": "string",
+            "example": "LinkedIn"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          }
         }
       },
       "CandidateApplicationRequest": {
         "type": "object",
-        "required": ["candidate_id", "manpower_request_id"],
+        "required": [
+          "candidate_id",
+          "manpower_request_id"
+        ],
         "properties": {
-          "candidate_id": { "type": "integer", "example": 1 },
-          "manpower_request_id": { "type": "integer", "example": 2 }
+          "candidate_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "manpower_request_id": {
+            "type": "integer",
+            "example": 2
+          }
         }
       },
       "InterviewRequest": {
         "type": "object",
-        "required": ["candidate_application_id", "interviewer_id", "scheduled_at", "duration_minutes", "type"],
+        "required": [
+          "candidate_application_id",
+          "interviewer_id",
+          "scheduled_at",
+          "duration_minutes",
+          "type"
+        ],
         "properties": {
-          "candidate_application_id": { "type": "integer", "example": 1 },
-          "manpower_request_id": { "type": "integer", "example": 1 },
-          "interviewer_id": { "type": "integer", "example": 5 },
-          "interview_type": { "type": "string", "example": "technical" },
-          "scheduled_at": { "type": "string", "example": "2024-06-15T10:00:00Z" },
-          "duration_minutes": { "type": "integer", "example": 60 },
-          "type": {
+          "candidate_application_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "manpower_request_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "interviewer_id": {
+            "type": "integer",
+            "example": 5
+          },
+          "interview_type": {
             "type": "string",
-            "enum": ["phone", "video", "in-person", "technical", "hr", "final"],
             "example": "technical"
           },
-          "location": { "type": "string", "example": "Ruang Meeting A" },
-          "meeting_link": { "type": "string", "example": "https://meet.google.com/xyz" }
+          "scheduled_at": {
+            "type": "string",
+            "example": "2024-06-15T10:00:00Z"
+          },
+          "duration_minutes": {
+            "type": "integer",
+            "example": 60
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "phone",
+              "video",
+              "in-person",
+              "technical",
+              "hr",
+              "final"
+            ],
+            "example": "technical"
+          },
+          "location": {
+            "type": "string",
+            "example": "Ruang Meeting A"
+          },
+          "meeting_link": {
+            "type": "string",
+            "example": "https://meet.google.com/xyz"
+          }
         }
       },
       "InterviewUpdateRequest": {
         "type": "object",
         "properties": {
-          "scheduled_at": { "type": "string", "example": "2024-06-16T14:00:00Z" },
-          "duration_minutes": { "type": "integer", "example": 45 },
+          "scheduled_at": {
+            "type": "string",
+            "example": "2024-06-16T14:00:00Z"
+          },
+          "duration_minutes": {
+            "type": "integer",
+            "example": 45
+          },
           "type": {
             "type": "string",
-            "enum": ["phone", "video", "in-person", "technical", "hr", "final"]
+            "enum": [
+              "phone",
+              "video",
+              "in-person",
+              "technical",
+              "hr",
+              "final"
+            ]
           },
-          "location": { "type": "string", "example": "Ruang Meeting B" },
-          "meeting_link": { "type": "string", "example": "https://zoom.us/j/123456" }
+          "location": {
+            "type": "string",
+            "example": "Ruang Meeting B"
+          },
+          "meeting_link": {
+            "type": "string",
+            "example": "https://zoom.us/j/123456"
+          }
         }
       },
       "OfferRequest": {
         "type": "object",
-        "required": ["candidate_application_id", "position", "base_salary"],
+        "required": [
+          "candidate_application_id",
+          "position",
+          "base_salary"
+        ],
         "properties": {
-          "candidate_application_id": { "type": "integer", "example": 1 },
-          "position": { "type": "string", "example": "Senior Software Engineer" },
-          "department": { "type": "string", "example": "Engineering" },
+          "candidate_application_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "position": {
+            "type": "string",
+            "example": "Senior Software Engineer"
+          },
+          "department": {
+            "type": "string",
+            "example": "Engineering"
+          },
           "employment_type": {
             "type": "string",
-            "enum": ["full_time", "part_time", "contract", "freelance", "internship"],
+            "enum": [
+              "full_time",
+              "part_time",
+              "contract",
+              "freelance",
+              "internship"
+            ],
             "example": "full_time"
           },
-          "base_salary": { "type": "number", "example": 15000000 },
-          "currency": { "type": "string", "example": "IDR" },
-          "bonus": { "type": "number", "example": 2000000 },
-          "benefits": { "type": "string", "example": "BPJS, THR, Laptop" },
-          "probation_period_months": { "type": "integer", "example": 3 },
-          "notice_period_days": { "type": "integer", "example": 30 },
-          "start_date": { "type": "string", "format": "date", "example": "2024-07-01" },
-          "expiry_date": { "type": "string", "format": "date", "example": "2024-06-20" }
+          "base_salary": {
+            "type": "number",
+            "example": 15000000
+          },
+          "currency": {
+            "type": "string",
+            "example": "IDR"
+          },
+          "bonus": {
+            "type": "number",
+            "example": 2000000
+          },
+          "benefits": {
+            "type": "string",
+            "example": "BPJS, THR, Laptop"
+          },
+          "probation_period_months": {
+            "type": "integer",
+            "example": 3
+          },
+          "notice_period_days": {
+            "type": "integer",
+            "example": 30
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-07-01"
+          },
+          "expiry_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-06-20"
+          }
         }
       },
       "OfferUpdateRequest": {
@@ -2046,65 +4405,194 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": ["draft", "sent", "accepted", "rejected", "withdrawn"],
+            "enum": [
+              "draft",
+              "sent",
+              "accepted",
+              "rejected",
+              "withdrawn"
+            ],
             "example": "sent"
           },
-          "feedback": { "type": "string", "example": "Candidate accepted the offer" },
-          "negotiated_salary": { "type": "number", "example": 16000000 },
-          "start_date": { "type": "string", "format": "date", "example": "2024-08-01" }
+          "feedback": {
+            "type": "string",
+            "example": "Candidate accepted the offer"
+          },
+          "negotiated_salary": {
+            "type": "number",
+            "example": 16000000
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-08-01"
+          }
         }
       },
       "AssignmentRequest": {
         "type": "object",
-        "required": ["employee_id", "assignment_type", "start_date"],
+        "required": [
+          "employee_id",
+          "assignment_type",
+          "start_date"
+        ],
         "properties": {
-          "employee_id": { "type": "integer", "example": 1 },
-          "client_id": { "type": "integer", "example": 2 },
-          "project_id": { "type": "integer", "example": 3 },
-          "department_id": { "type": "integer", "example": 1 },
-          "assignment_type": { "type": "string", "example": "onsite" },
-          "start_date": { "type": "string", "format": "date", "example": "2024-07-01" },
-          "end_date": { "type": "string", "format": "date", "example": "2024-12-31" },
-          "expected_end_date": { "type": "string", "format": "date", "example": "2024-12-31" },
-          "role": { "type": "string", "example": "Backend Developer" },
-          "position": { "type": "string", "example": "Senior Engineer" },
-          "location": { "type": "string", "example": "Jakarta" },
-          "remote_type": { "type": "string", "enum": ["onsite", "remote", "hybrid"], "example": "hybrid" },
-          "billing_rate": { "type": "number", "example": 150 },
-          "cost_rate": { "type": "number", "example": 100 },
-          "currency": { "type": "string", "example": "USD" },
-          "hours_per_week": { "type": "integer", "example": 40 },
-          "notes": { "type": "string", "example": "Assigned to client project" }
+          "employee_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "client_id": {
+            "type": "integer",
+            "example": 2
+          },
+          "project_id": {
+            "type": "integer",
+            "example": 3
+          },
+          "department_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "assignment_type": {
+            "type": "string",
+            "example": "onsite"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-07-01"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-12-31"
+          },
+          "expected_end_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-12-31"
+          },
+          "role": {
+            "type": "string",
+            "example": "Backend Developer"
+          },
+          "position": {
+            "type": "string",
+            "example": "Senior Engineer"
+          },
+          "location": {
+            "type": "string",
+            "example": "Jakarta"
+          },
+          "remote_type": {
+            "type": "string",
+            "enum": [
+              "onsite",
+              "remote",
+              "hybrid"
+            ],
+            "example": "hybrid"
+          },
+          "billing_rate": {
+            "type": "number",
+            "example": 150
+          },
+          "cost_rate": {
+            "type": "number",
+            "example": 100
+          },
+          "currency": {
+            "type": "string",
+            "example": "USD"
+          },
+          "hours_per_week": {
+            "type": "integer",
+            "example": 40
+          },
+          "notes": {
+            "type": "string",
+            "example": "Assigned to client project"
+          }
         }
       },
       "AssignmentUpdateRequest": {
         "type": "object",
         "properties": {
-          "status": { "type": "string", "enum": ["active", "completed", "cancelled"], "example": "completed" },
-          "end_date": { "type": "string", "format": "date", "example": "2024-11-30" },
-          "notes": { "type": "string", "example": "Project completed early" },
-          "termination_reason": { "type": "string", "example": "Project completed" }
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "completed",
+              "cancelled"
+            ],
+            "example": "completed"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-11-30"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Project completed early"
+          },
+          "termination_reason": {
+            "type": "string",
+            "example": "Project completed"
+          }
         }
       },
       "AttendanceRequest": {
         "type": "object",
-        "required": ["employee_id", "date", "type", "status"],
+        "required": [
+          "employee_id",
+          "date",
+          "type",
+          "status"
+        ],
         "properties": {
-          "employee_id": { "type": "string", "format": "uuid", "example": "550e8400-e29b-41d4-a716-446655440000" },
-          "date": { "type": "string", "format": "date", "example": "2024-06-15" },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-06-15"
+          },
           "type": {
             "type": "string",
-            "enum": ["regular", "overtime", "weekend", "holiday"],
+            "enum": [
+              "regular",
+              "overtime",
+              "weekend",
+              "holiday"
+            ],
             "example": "regular"
           },
           "status": {
             "type": "string",
-            "enum": ["present", "absent", "leave", "holiday"],
+            "enum": [
+              "present",
+              "absent",
+              "leave",
+              "holiday"
+            ],
             "example": "present"
           },
-          "check_in": { "type": "string", "example": "08:00:00" },
-          "check_out": { "type": "string", "example": "17:00:00" },
-          "notes": { "type": "string", "example": "Normal working day" }
+          "check_in": {
+            "type": "string",
+            "example": "08:00:00"
+          },
+          "check_out": {
+            "type": "string",
+            "example": "17:00:00"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Normal working day"
+          }
         }
       },
       "AttendanceUpdateRequest": {
@@ -2112,246 +4600,812 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": ["present", "absent", "leave", "holiday"]
+            "enum": [
+              "present",
+              "absent",
+              "leave",
+              "holiday"
+            ]
           },
-          "check_in": { "type": "string", "example": "08:30:00" },
-          "check_out": { "type": "string", "example": "17:30:00" },
-          "notes": { "type": "string", "example": "Updated notes" }
+          "check_in": {
+            "type": "string",
+            "example": "08:30:00"
+          },
+          "check_out": {
+            "type": "string",
+            "example": "17:30:00"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Updated notes"
+          }
         }
       },
       "CheckInRequest": {
         "type": "object",
         "properties": {
-          "check_in_time": { "type": "string", "example": "08:05:00" },
-          "location": { "type": "string", "example": "Kantor Pusat" }
+          "check_in_time": {
+            "type": "string",
+            "example": "08:05:00"
+          },
+          "location": {
+            "type": "string",
+            "example": "Kantor Pusat"
+          }
         }
       },
       "CheckOutRequest": {
         "type": "object",
         "properties": {
-          "check_out_time": { "type": "string", "example": "17:05:00" }
+          "check_out_time": {
+            "type": "string",
+            "example": "17:05:00"
+          }
         }
       },
       "PayrollRequest": {
         "type": "object",
-        "required": ["employee_id", "period_start", "period_end", "basic_salary"],
+        "required": [
+          "employee_id",
+          "period_start",
+          "period_end",
+          "basic_salary"
+        ],
         "properties": {
-          "employee_id": { "type": "string", "format": "uuid", "example": "550e8400-e29b-41d4-a716-446655440000" },
-          "period_start": { "type": "string", "format": "date", "example": "2024-06-01" },
-          "period_end": { "type": "string", "format": "date", "example": "2024-06-30" },
-          "basic_salary": { "type": "number", "example": 10000000 },
-          "allowances": { "type": "number", "example": 500000 },
-          "deductions": { "type": "number", "example": 200000 },
-          "tax": { "type": "number", "example": 150000 },
-          "net_salary": { "type": "number", "example": 10150000 },
-          "notes": { "type": "string", "example": "June 2024 payroll" }
+          "employee_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-06-01"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-06-30"
+          },
+          "basic_salary": {
+            "type": "number",
+            "example": 10000000
+          },
+          "allowances": {
+            "type": "number",
+            "example": 500000
+          },
+          "deductions": {
+            "type": "number",
+            "example": 200000
+          },
+          "tax": {
+            "type": "number",
+            "example": 150000
+          },
+          "net_salary": {
+            "type": "number",
+            "example": 10150000
+          },
+          "notes": {
+            "type": "string",
+            "example": "June 2024 payroll"
+          }
         }
       },
       "PayrollUpdateRequest": {
         "type": "object",
         "properties": {
-          "basic_salary": { "type": "number", "example": 11000000 },
-          "allowances": { "type": "number", "example": 600000 },
-          "deductions": { "type": "number", "example": 250000 },
-          "tax": { "type": "number", "example": 180000 },
-          "net_salary": { "type": "number", "example": 11170000 },
-          "notes": { "type": "string", "example": "Updated notes" }
+          "basic_salary": {
+            "type": "number",
+            "example": 11000000
+          },
+          "allowances": {
+            "type": "number",
+            "example": 600000
+          },
+          "deductions": {
+            "type": "number",
+            "example": 250000
+          },
+          "tax": {
+            "type": "number",
+            "example": 180000
+          },
+          "net_salary": {
+            "type": "number",
+            "example": 11170000
+          },
+          "notes": {
+            "type": "string",
+            "example": "Updated notes"
+          }
         }
       },
       "MarkAsPaidRequest": {
         "type": "object",
-        "required": ["payment_date", "payment_method"],
+        "required": [
+          "payment_date",
+          "payment_method"
+        ],
         "properties": {
-          "payment_date": { "type": "string", "format": "date", "example": "2024-07-01" },
-          "payment_method": { "type": "string", "example": "bank_transfer" },
-          "transaction_id": { "type": "string", "example": "TXN-20240701-001" }
+          "payment_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-07-01"
+          },
+          "payment_method": {
+            "type": "string",
+            "example": "bank_transfer"
+          },
+          "transaction_id": {
+            "type": "string",
+            "example": "TXN-20240701-001"
+          }
         }
       },
       "CategoryResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "title": { "type": "string", "example": "Technology" },
-          "slug": { "type": "string", "example": "technology" },
-          "created_by_name": { "type": "string", "example": "John Doe" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Technology"
+          },
+          "slug": {
+            "type": "string",
+            "example": "technology"
+          },
+          "created_by_name": {
+            "type": "string",
+            "example": "John Doe"
+          }
         }
       },
       "ContentResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "title": { "type": "string", "example": "Article Title" },
-          "excerpt": { "type": "string", "example": "Short summary" },
-          "description": { "type": "string", "example": "Full content body" },
-          "status": { "type": "string", "example": "PUBLISH" },
-          "image": { "type": "string", "example": "https://cdn.example.com/image.jpg" },
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Article Title"
+          },
+          "excerpt": {
+            "type": "string",
+            "example": "Short summary"
+          },
+          "description": {
+            "type": "string",
+            "example": "Full content body"
+          },
+          "status": {
+            "type": "string",
+            "example": "PUBLISH"
+          },
+          "image": {
+            "type": "string",
+            "example": "https://cdn.example.com/image.jpg"
+          },
           "tags": {
             "type": "array",
-            "items": { "type": "string" },
-            "example": ["tech", "news"]
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "tech",
+              "news"
+            ]
           },
-          "created_at": { "type": "string", "format": "date-time" },
-          "category_name": { "type": "string", "example": "Technology" },
-          "author": { "type": "string", "example": "John Doe" },
-          "category_id": { "type": "integer", "example": 1 },
-          "created_by_id": { "type": "integer", "example": 1 }
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "category_name": {
+            "type": "string",
+            "example": "Technology"
+          },
+          "author": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "category_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "created_by_id": {
+            "type": "integer",
+            "example": 1
+          }
         }
       },
       "ProfileResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "John Doe" },
-          "email": { "type": "string", "example": "john@workzen.com" },
-          "role": { "type": "string", "example": "TENANT_ADMIN" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "john@workzen.com"
+          },
+          "role": {
+            "type": "string",
+            "example": "TENANT_ADMIN"
+          }
         }
       },
       "EmployeeResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "Budi Santoso" },
-          "citizen_id": { "type": "string", "example": "3201234567890001" },
-          "phone_number": { "type": "string", "example": "081234567890" },
-          "status": { "type": "string", "example": "active" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Budi Santoso"
+          },
+          "citizen_id": {
+            "type": "string",
+            "example": "3201234567890001"
+          },
+          "phone_number": {
+            "type": "string",
+            "example": "081234567890"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          }
         }
       },
       "ClientResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "company_name": { "type": "string", "example": "PT Client ABC" },
-          "address": { "type": "string", "example": "Jl. Gatot Subroto No. 10" },
-          "status": { "type": "string", "example": "active" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "company_name": {
+            "type": "string",
+            "example": "PT Client ABC"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Gatot Subroto No. 10"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          }
         }
       },
       "ManpowerRequestResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "client_id": { "type": "integer", "example": 1 },
-          "position": { "type": "string", "example": "Software Engineer" },
-          "required_count": { "type": "integer", "example": 3 },
-          "salary_min": { "type": "number", "example": 8000000 },
-          "salary_max": { "type": "number", "example": 15000000 },
-          "work_location": { "type": "string", "example": "Jakarta" },
-          "job_description": { "type": "string", "example": "Develop backend services" },
-          "deadline_date": { "type": "string", "format": "date-time" },
-          "status": { "type": "string", "example": "open" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "client_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "position": {
+            "type": "string",
+            "example": "Software Engineer"
+          },
+          "required_count": {
+            "type": "integer",
+            "example": 3
+          },
+          "salary_min": {
+            "type": "number",
+            "example": 8000000
+          },
+          "salary_max": {
+            "type": "number",
+            "example": 15000000
+          },
+          "work_location": {
+            "type": "string",
+            "example": "Jakarta"
+          },
+          "job_description": {
+            "type": "string",
+            "example": "Develop backend services"
+          },
+          "deadline_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "example": "open"
+          }
         }
       },
       "CandidateResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "full_name": { "type": "string", "example": "Andi Prasetyo" },
-          "email": { "type": "string", "example": "andi@mail.com" },
-          "phone": { "type": "string", "example": "082123456789" },
-          "birth_date": { "type": "string", "format": "date" },
-          "address": { "type": "string", "example": "Jl. Kebon Jeruk No. 5" },
-          "source": { "type": "string", "example": "LinkedIn" },
-          "status": { "type": "string", "example": "active" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "full_name": {
+            "type": "string",
+            "example": "Andi Prasetyo"
+          },
+          "email": {
+            "type": "string",
+            "example": "andi@mail.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "082123456789"
+          },
+          "birth_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Kebon Jeruk No. 5"
+          },
+          "source": {
+            "type": "string",
+            "example": "LinkedIn"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          }
         }
       },
       "CandidateApplicationResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "candidate_id": { "type": "integer", "example": 1 },
-          "manpower_request_id": { "type": "integer", "example": 2 },
-          "status": { "type": "string", "example": "pending" },
-          "applied_at": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "candidate_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "manpower_request_id": {
+            "type": "integer",
+            "example": 2
+          },
+          "status": {
+            "type": "string",
+            "example": "pending"
+          },
+          "applied_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "InterviewResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "interview_type": { "type": "string", "example": "technical" },
-          "scheduled_at": { "type": "string", "example": "15 June 2024 10:00" },
-          "duration_minutes": { "type": "integer", "example": 60 },
-          "location": { "type": "string", "example": "Ruang Meeting A" },
-          "meeting_link": { "type": "string", "example": "https://meet.google.com/xyz" },
-          "status": { "type": "string", "example": "scheduled" },
-          "feedback": { "type": "string", "example": "Candidate performed well" },
-          "rating": { "type": "integer", "example": 4 },
-          "completed_at": { "type": "string", "example": "15 June 2024 11:00" },
-          "cancelled_at": { "type": "string", "example": "" },
-          "cancel_reason": { "type": "string", "example": "" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "interview_type": {
+            "type": "string",
+            "example": "technical"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "example": "15 June 2024 10:00"
+          },
+          "duration_minutes": {
+            "type": "integer",
+            "example": 60
+          },
+          "location": {
+            "type": "string",
+            "example": "Ruang Meeting A"
+          },
+          "meeting_link": {
+            "type": "string",
+            "example": "https://meet.google.com/xyz"
+          },
+          "status": {
+            "type": "string",
+            "example": "scheduled"
+          },
+          "feedback": {
+            "type": "string",
+            "example": "Candidate performed well"
+          },
+          "rating": {
+            "type": "integer",
+            "example": 4
+          },
+          "completed_at": {
+            "type": "string",
+            "example": "15 June 2024 11:00"
+          },
+          "cancelled_at": {
+            "type": "string",
+            "example": ""
+          },
+          "cancel_reason": {
+            "type": "string",
+            "example": ""
+          }
         }
       },
       "OfferResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "position": { "type": "string", "example": "Senior Software Engineer" },
-          "department": { "type": "string", "example": "Engineering" },
-          "employment_type": { "type": "string", "example": "full_time" },
-          "base_salary": { "type": "number", "example": 15000000 },
-          "currency": { "type": "string", "example": "IDR" },
-          "bonus": { "type": "number", "example": 2000000 },
-          "benefits": { "type": "string", "example": "BPJS, THR, Laptop" },
-          "probation_period_months": { "type": "integer", "example": 3 },
-          "notice_period_days": { "type": "integer", "example": 30 },
-          "start_date": { "type": "string", "format": "date", "example": "2024-07-01" },
-          "expiry_date": { "type": "string", "format": "date", "example": "2024-06-20" },
-          "status": { "type": "string", "example": "sent" },
-          "sent_at": { "type": "string", "format": "date-time" },
-          "responded_at": { "type": "string", "format": "date-time" },
-          "notes": { "type": "string", "example": "Please respond by expiry date" },
-          "terms": { "type": "string", "example": "Standard employment terms" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "position": {
+            "type": "string",
+            "example": "Senior Software Engineer"
+          },
+          "department": {
+            "type": "string",
+            "example": "Engineering"
+          },
+          "employment_type": {
+            "type": "string",
+            "example": "full_time"
+          },
+          "base_salary": {
+            "type": "number",
+            "example": 15000000
+          },
+          "currency": {
+            "type": "string",
+            "example": "IDR"
+          },
+          "bonus": {
+            "type": "number",
+            "example": 2000000
+          },
+          "benefits": {
+            "type": "string",
+            "example": "BPJS, THR, Laptop"
+          },
+          "probation_period_months": {
+            "type": "integer",
+            "example": 3
+          },
+          "notice_period_days": {
+            "type": "integer",
+            "example": 30
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-07-01"
+          },
+          "expiry_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-06-20"
+          },
+          "status": {
+            "type": "string",
+            "example": "sent"
+          },
+          "sent_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "responded_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Please respond by expiry date"
+          },
+          "terms": {
+            "type": "string",
+            "example": "Standard employment terms"
+          }
         }
       },
       "AssignmentResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "assignment_type": { "type": "string", "example": "onsite" },
-          "start_date": { "type": "string", "format": "date", "example": "2024-07-01" },
-          "end_date": { "type": "string", "format": "date", "example": "2024-12-31" },
-          "expected_end_date": { "type": "string", "format": "date", "example": "2024-12-31" },
-          "status": { "type": "string", "example": "active" },
-          "role": { "type": "string", "example": "Backend Developer" },
-          "position": { "type": "string", "example": "Senior Engineer" },
-          "location": { "type": "string", "example": "Jakarta" },
-          "remote_type": { "type": "string", "example": "hybrid" },
-          "billing_rate": { "type": "number", "example": 150 },
-          "cost_rate": { "type": "number", "example": 100 },
-          "currency": { "type": "string", "example": "USD" },
-          "hours_per_week": { "type": "integer", "example": 40 },
-          "notes": { "type": "string", "example": "Assigned to client project" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "assignment_type": {
+            "type": "string",
+            "example": "onsite"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-07-01"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-12-31"
+          },
+          "expected_end_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-12-31"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "role": {
+            "type": "string",
+            "example": "Backend Developer"
+          },
+          "position": {
+            "type": "string",
+            "example": "Senior Engineer"
+          },
+          "location": {
+            "type": "string",
+            "example": "Jakarta"
+          },
+          "remote_type": {
+            "type": "string",
+            "example": "hybrid"
+          },
+          "billing_rate": {
+            "type": "number",
+            "example": 150
+          },
+          "cost_rate": {
+            "type": "number",
+            "example": 100
+          },
+          "currency": {
+            "type": "string",
+            "example": "USD"
+          },
+          "hours_per_week": {
+            "type": "integer",
+            "example": 40
+          },
+          "notes": {
+            "type": "string",
+            "example": "Assigned to client project"
+          }
         }
       },
       "AttendanceResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid", "example": "550e8400-e29b-41d4-a716-446655440000" },
-          "employee_id": { "type": "string", "format": "uuid" },
-          "date": { "type": "string", "format": "date", "example": "2024-06-15" },
-          "type": { "type": "string", "example": "regular" },
-          "status": { "type": "string", "example": "present" },
-          "check_in": { "type": "string", "example": "08:00:00" },
-          "check_out": { "type": "string", "example": "17:00:00" },
-          "work_hours": { "type": "number", "example": 8.5 },
-          "overtime_hours": { "type": "number", "example": 0 },
-          "notes": { "type": "string", "example": "" }
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-06-15"
+          },
+          "type": {
+            "type": "string",
+            "example": "regular"
+          },
+          "status": {
+            "type": "string",
+            "example": "present"
+          },
+          "check_in": {
+            "type": "string",
+            "example": "08:00:00"
+          },
+          "check_out": {
+            "type": "string",
+            "example": "17:00:00"
+          },
+          "work_hours": {
+            "type": "number",
+            "example": 8.5
+          },
+          "overtime_hours": {
+            "type": "number",
+            "example": 0
+          },
+          "notes": {
+            "type": "string",
+            "example": ""
+          }
         }
       },
       "PayrollResponse": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid", "example": "550e8400-e29b-41d4-a716-446655440001" },
-          "employee_id": { "type": "string", "format": "uuid" },
-          "period_start": { "type": "string", "format": "date", "example": "2024-06-01" },
-          "period_end": { "type": "string", "format": "date", "example": "2024-06-30" },
-          "basic_salary": { "type": "number", "example": 10000000 },
-          "allowances": { "type": "number", "example": 500000 },
-          "deductions": { "type": "number", "example": 200000 },
-          "tax": { "type": "number", "example": 150000 },
-          "net_salary": { "type": "number", "example": 10150000 },
-          "status": { "type": "string", "enum": ["draft", "processed", "paid"], "example": "draft" },
-          "paid_at": { "type": "string", "format": "date-time" },
-          "notes": { "type": "string", "example": "June 2024 payroll" }
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440001"
+          },
+          "employee_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-06-01"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-06-30"
+          },
+          "basic_salary": {
+            "type": "number",
+            "example": 10000000
+          },
+          "allowances": {
+            "type": "number",
+            "example": 500000
+          },
+          "deductions": {
+            "type": "number",
+            "example": 200000
+          },
+          "tax": {
+            "type": "number",
+            "example": 150000
+          },
+          "net_salary": {
+            "type": "number",
+            "example": 10150000
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "processed",
+              "paid"
+            ],
+            "example": "draft"
+          },
+          "paid_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notes": {
+            "type": "string",
+            "example": "June 2024 payroll"
+          }
+        }
+      },
+      "CandidateApplicationUpdateRequest": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Application status (APPLIED, SCREENING, INTERVIEW, HIRED, REJECTED)"
+          }
+        }
+      },
+      "SubscriptionPlanRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "price",
+          "duration_days",
+          "max_employees"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "duration_days": {
+            "type": "integer"
+          },
+          "max_employees": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "SubscriptionPlanResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "duration_days": {
+            "type": "integer"
+          },
+          "max_employees": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "SubscriptionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "tenant_id": {
+            "type": "integer"
+          },
+          "plan_id": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          }
+        }
+      },
+      "SubscribeRequest": {
+        "type": "object",
+        "required": [
+          "plan_id"
+        ],
+        "properties": {
+          "plan_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "ChangePlanRequest": {
+        "type": "object",
+        "required": [
+          "plan_id"
+        ],
+        "properties": {
+          "plan_id": {
+            "type": "integer"
+          }
         }
       }
     }
