@@ -28,8 +28,8 @@ services:
       "up"
     ]
     depends_on:
-      - db
-
+      db:
+        condition: service_healthy
   app:
     build: .
     image: workzen-be-app-image:v1.0
@@ -37,7 +37,10 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     env_file:
       - .env.dev
     environment:

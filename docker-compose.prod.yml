@@ -21,7 +21,8 @@ services:
   migrate:
     image: migrate/migrate
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./database/migrations:/migrations
     command: [
@@ -37,8 +38,10 @@ services:
     container_name: workzen-be
     restart: always
     depends_on:
-      - db
-      - migrate
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     env_file:
       - .env
     environment:
