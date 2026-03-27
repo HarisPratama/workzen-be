@@ -104,7 +104,7 @@ func (c2 *candidateHandler) GetCandidatesByTenant(c *fiber.Ctx) error {
 		search = c.Query("search")
 	}
 
-	status := "active"
+	status := ""
 	if c.Query("status") != "" {
 		status = c.Query("status")
 	}
