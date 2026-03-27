@@ -45,6 +45,6 @@ CREATE INDEX idx_tenant_subscriptions_status ON tenant_subscriptions (status);
 
 -- Seed default subscription plans
 INSERT INTO subscription_plans (name, tier, description, price, billing_cycle, max_employees, max_clients, max_manpower_requests, features) VALUES
-('Free', 'FREE', 'Basic plan for small teams', 0, 'monthly', 5, 2, 3, '{"payroll": false, "attendance": true, "interview": true, "offer": true, "assignment": true, "report": false}'),
-('Pro', 'PRO', 'Professional plan for growing businesses', 499000, 'monthly', 50, 10, 20, '{"payroll": true, "attendance": true, "interview": true, "offer": true, "assignment": true, "report": true}'),
+('Free', 'FREE', 'Basic plan for small teams', 0, 'monthly', 20, 5, 10, '{"payroll": false, "attendance": true, "interview": true, "offer": true, "assignment": true, "report": false}'),
+('Pro', 'PRO', 'Professional plan for growing businesses', 499000, 'monthly', 200, 10, 20, '{"payroll": true, "attendance": true, "interview": true, "offer": true, "assignment": true, "report": true}'),
 ('Enterprise', 'ENTERPRISE', 'Custom plan for large organizations', 0, 'custom', 0, 0, 0, '{"payroll": true, "attendance": true, "interview": true, "offer": true, "assignment": true, "report": true, "custom_integration": true, "dedicated_support": true}');
