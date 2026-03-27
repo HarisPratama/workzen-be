@@ -1,10 +1,9 @@
-name: Deploy to VPS (Fixed)
+name: Deploy to VPS
 
 on:
   push:
     branches:
       - main
-      - develop
 
 env:
   REGISTRY: ghcr.io
@@ -52,56 +51,30 @@ jobs:
           script: |
             echo "=== Starting Deployment ==="
             
-            # Create deploy directory
-            mkdir -p ~/workzen-be-deploy
             cd ~/workzen-be-deploy
             
             # Login to GHCR
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u harispratama --password-stdin
             
-            # Write environment file
+            # Update environment file
             echo "${{ secrets.ENV_FILE }}" > .env
             chmod 600 .env
-            
-            # Create production compose file
-            cat > docker-compose.prod.yml << 'COMPOSEEOF'
-            services:
-              app:
-                image: ghcr.io/harispratama/workzen-be:latest
-                pull_policy: always
-                restart: unless-stopped
-                env_file:
-                  - .env
-                ports:
-                  - "8080:8080"
-                networks:
-                  - workzen-network
-            
-            networks:
-              workzen-network:
-                driver: bridge
-            COMPOSEEOF
             
             # Pull latest image
             echo "=== Pulling latest image ==="
             docker pull ghcr.io/harispratama/workzen-be:latest
             
-            # Stop old containers
-            echo "=== Stopping old containers ==="
-            docker compose -f docker-compose.prod.yml down --remove-orphans
-            
-            # Start new containers
-            echo "=== Starting new containers ==="
-            docker compose -f docker-compose.prod.yml up -d
+            # Restart only the app container (keep DB running)
+            echo "=== Restarting app container ==="
+            docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate app
             
             # Cleanup old images
-            echo "=== Cleaning up old images ==="
+            echo "=== Cleaning up ==="
             docker image prune -f --filter "until=24h"
             
             # Show status
             echo "=== Deployment Status ==="
             docker compose -f docker-compose.prod.yml ps
-            docker compose -f docker-compose.prod.yml logs --tail=20
             
             echo "=== Deployment Complete ==="
 
@@ -121,8 +94,8 @@ jobs:
 
             Branch: ${{ github.ref_name }}
             Commit: ${{ github.sha }}
-          
+            
             Message:
             ${{ github.event.head_commit.message }}
-          
+            
             Status: ${{ job.status }}
