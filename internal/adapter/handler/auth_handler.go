@@ -60,6 +60,7 @@ func (a *authHandler) RefreshToken(c *fiber.Ctx) error {
 		Name:     "access_token",
 		Value:    newAccessToken,
 		Path:     "/",
+		Domain:   ".workzen.web.id", // ← TAMBAH INI
 		HTTPOnly: true,
 		Secure:   true, // true jika HTTPS
 		SameSite: "None",
@@ -79,6 +80,7 @@ func (a *authHandler) Logout(c *fiber.Ctx) error {
 		Name:     "access_token",
 		Value:    "",
 		Path:     "/",
+		Domain:   ".workzen.web.id", // ← TAMBAH INI
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "None",
@@ -90,6 +92,7 @@ func (a *authHandler) Logout(c *fiber.Ctx) error {
 		Name:     "refresh_token",
 		Value:    "",
 		Path:     "/",
+		Domain:   ".workzen.web.id", // ← TAMBAH INI
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "None",
@@ -151,16 +154,18 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 		Name:     "access_token",
 		Value:    result.AccessToken,
 		Path:     "/",
+		Domain:   ".workzen.web.id", // ← TAMBAH INI
 		HTTPOnly: true,
-		Secure:   true, // true jika HTTPS
+		Secure:   true,
 		SameSite: "None",
-		Expires:  expiresAt, // seconds
+		Expires:  expiresAt,
 	})
 
 	c.Cookie(&fiber.Cookie{
 		Name:     "refresh_token",
 		Value:    result.RefreshToken,
 		Path:     "/",
+		Domain:   ".workzen.web.id", // ← TAMBAH INI
 		HTTPOnly: true,
 		Secure:   true,
 		SameSite: "None",
