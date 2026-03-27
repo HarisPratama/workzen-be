@@ -67,6 +67,7 @@ func RunServer() {
 	offerRepo := repository.NewOfferRepository(db.DB)
 	assignmentRepo := repository.NewEmployeeAssignmentRepository(db.DB)
 	subscriptionRepo := repository.NewSubscriptionRepository(db.DB)
+	overviewRepo := repository.NewOverviewRepository(db.DB)
 
 	//service
 	authService := service.NewAuthService(authRepo, cfg, jwt)
@@ -87,6 +88,7 @@ func RunServer() {
 	offerService := service.NewOfferService(offerRepo)
 	employeeAssignmentService := service.NewEmployeeAssignmentService(assignmentRepo)
 	subscriptionService := service.NewSubscriptionService(subscriptionRepo)
+	overviewService := service.NewOverviewService(overviewRepo)
 
 	//handler
 	authHandler := handler.NewAuthHandler(authService)
@@ -107,6 +109,7 @@ func RunServer() {
 	offerHandler := handler.NewOfferHandler(offerService)
 	employeeAssignmentHandler := handler.NewEmployeeAssignmentHandler(employeeAssignmentService)
 	subscriptionHandler := handler.NewSubscriptionHandler(subscriptionService)
+	overviewHandler := handler.NewOverviewHandler(overviewService)
 
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
@@ -190,6 +193,9 @@ func RunServer() {
 
 	tenantApp := api.Group("/v1")
 	tenantApp.Use(middlewareAuth.CheckCookieToken())
+
+	// overview
+	tenantApp.Get("/overview", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), overviewHandler.GetOverview)
 
 	// employee
 	tenantApp.Get("/employees", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.GetEmployees)

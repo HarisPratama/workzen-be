@@ -13,7 +13,15 @@
       "Bash(then)",
       "Bash(basename \"$file\")",
       "Bash(python3 -c \":*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(find /Users/devita/Documents/BWANEWS/FE -type f -name *overview*)",
+      "Bash(xargs ls:*)",
+      "Bash(grep -r \"org\\\\|organization\\\\|overview\\\\|dashboard\\\\|summary\\\\|stats\\\\|total\\\\|count\" /Users/devita/Documents/BWANEWS/FE/bwanews-fe/app --include=*.tsx --include=*.ts)",
+      "Bash(grep -r \"Organization\\\\|org\\\\|overview\" /Users/devita/Documents/BWANEWS/FE/bwanews-fe --include=*.tsx --include=*.ts --include=*.json)",
+      "Bash(xargs basename:*)",
+      "Bash(ls:*)",
+      "Bash(grep -r \"organization\\\\|org\" /Users/devita/Documents/BWANEWS/BE --include=*.go --include=*.ts -i)"
     ]
   }
 }

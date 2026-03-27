@@ -28,6 +28,20 @@
   },
   "item": [
     {
+      "name": "Overview",
+      "item": [
+        {
+          "name": "Get Tenant Overview",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/v1/overview", "host": ["{{base_url}}"], "path": ["v1", "overview"] }
+          }
+        }
+      ]
+    },
+    {
       "name": "Auth",
       "item": [
         {
