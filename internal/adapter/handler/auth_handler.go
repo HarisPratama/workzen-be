@@ -61,8 +61,8 @@ func (a *authHandler) RefreshToken(c *fiber.Ctx) error {
 		Value:    newAccessToken,
 		Path:     "/",
 		HTTPOnly: true,
-		Secure:   false, // true jika HTTPS
-		SameSite: "Lax",
+		Secure:   true, // true jika HTTPS
+		SameSite: "None",
 		Expires:  expiresAt, // seconds
 	})
 
@@ -80,7 +80,10 @@ func (a *authHandler) Logout(c *fiber.Ctx) error {
 		Value:    "",
 		Path:     "/",
 		HTTPOnly: true,
+		Secure:   true,
+		SameSite: "None",
 		Expires:  time.Now().Add(-time.Hour),
+		MaxAge:   -1,
 	})
 
 	c.Cookie(&fiber.Cookie{
@@ -88,7 +91,10 @@ func (a *authHandler) Logout(c *fiber.Ctx) error {
 		Value:    "",
 		Path:     "/",
 		HTTPOnly: true,
+		Secure:   true,
+		SameSite: "None",
 		Expires:  time.Now().Add(-time.Hour),
+		MaxAge:   -1,
 	})
 
 	resp.Meta.Status = true
@@ -146,8 +152,8 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 		Value:    result.AccessToken,
 		Path:     "/",
 		HTTPOnly: true,
-		Secure:   false, // true jika HTTPS
-		SameSite: "Lax",
+		Secure:   true, // true jika HTTPS
+		SameSite: "None",
 		Expires:  expiresAt, // seconds
 	})
 
@@ -156,8 +162,8 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 		Value:    result.RefreshToken,
 		Path:     "/",
 		HTTPOnly: true,
-		Secure:   false,
-		SameSite: "Lax",
+		Secure:   true,
+		SameSite: "None",
 		Expires:  refreshExpires,
 	})
 
