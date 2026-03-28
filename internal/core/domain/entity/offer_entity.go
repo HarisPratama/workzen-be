@@ -22,6 +22,7 @@ type OfferEntity struct {
 	RespondedAt            time.Time                  `json:"responded_at"`
 	Notes                  string                     `json:"notes"`
 	Terms                  string                     `json:"terms"`
+	Feedback               string                     `json:"feedback"`
 	NegotiationCounter     *float64                   `json:"negotiation_counter"`
 	NegotiationNotes       string                     `json:"negotiation_notes"`
 	Tenant                 TenantEntity               `json:"tenant"`
@@ -29,15 +30,16 @@ type OfferEntity struct {
 }
 
 type OfferQueryString struct {
-	Limit       int
-	Page        int
-	OrderBy     string
-	OrderType   string
-	Search      string
-	Status      string
-	CandidateID int64
-	StartDate   string
-	EndDate     string
+	Limit                  int
+	Page                   int
+	OrderBy                string
+	OrderType              string
+	Search                 string
+	Status                 string
+	CandidateID            int64
+	CandidateApplicationID int64
+	StartDate              string
+	EndDate                string
 }
 
 type OfferEntityRequest struct {

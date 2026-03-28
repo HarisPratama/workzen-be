@@ -23,6 +23,7 @@ type Offer struct {
 	Notes                  string               `gorm:"notes"`
 	Terms                  string               `gorm:"terms"`
 	NegotiationCounter     *float64             `gorm:"negotiation_counter"`
+	Feedback               string               `gorm:"feedback"`
 	NegotiationNotes       string               `gorm:"negotiation_notes"`
 	Tenant                 Tenant               `gorm:"foreignkey:TenantID"`
 	CandidateApplication   CandidateApplication `gorm:"foreignkey:CandidateApplicationID"`

@@ -72,6 +72,10 @@ func (r *offerRepository) GetOffersByTenant(ctx context.Context, tenantID int64,
 		sqlMain = sqlMain.Where("offers.status = ?", query.Status)
 	}
 
+	if query.CandidateApplicationID != 0 {
+		sqlMain = sqlMain.Where("offers.candidate_application_id = ?", query.CandidateApplicationID)
+	}
+
 	if query.CandidateID != 0 {
 		sqlMain = sqlMain.Joins("JOIN candidate_applications ca ON ca.id = offers.candidate_application_id").
 			Where("ca.candidate_id = ?", query.CandidateID)
@@ -146,6 +150,7 @@ func (r *offerRepository) GetOffersByTenant(ctx context.Context, tenantID int64,
 			RespondedAt:            item.RespondedAt,
 			Notes:                  item.Notes,
 			Terms:                  item.Terms,
+			Feedback:               item.Feedback,
 			NegotiationCounter:     item.NegotiationCounter,
 			NegotiationNotes:       item.NegotiationNotes,
 			Tenant: entity.TenantEntity{
@@ -203,6 +208,7 @@ func (r *offerRepository) GetOfferByID(ctx context.Context, id int64) (*entity.O
 		RespondedAt:            modelOffer.RespondedAt,
 		Notes:                  modelOffer.Notes,
 		Terms:                  modelOffer.Terms,
+		Feedback:               modelOffer.Feedback,
 		NegotiationCounter:     modelOffer.NegotiationCounter,
 		NegotiationNotes:       modelOffer.NegotiationNotes,
 		Tenant: entity.TenantEntity{
@@ -227,17 +233,29 @@ func (r *offerRepository) GetOfferByID(ctx context.Context, id int64) (*entity.O
 }
 
 func (r *offerRepository) UpdateOffer(ctx context.Context, id int64, req entity.OfferUpdateRequest) error {
-	updates := map[string]interface{}{
-		"status":              req.Status,
-		"feedback":            req.Feedback,
-		"negotiation_counter": req.NegotiatedSalary,
-		"start_date":          req.StartDate,
+	updates := map[string]interface{}{}
+
+	if req.Status != "" {
+		status := strings.ToUpper(req.Status)
+		updates["status"] = status
+
+		if status == "SENT" {
+			updates["sent_at"] = time.Now()
+		} else if status == "ACCEPTED" || status == "REJECTED" {
+			updates["responded_at"] = time.Now()
+		}
 	}
 
-	if req.Status == "SENT" {
-		updates["sent_at"] = time.Now()
-	} else if req.Status == "ACCEPTED" || req.Status == "REJECTED" {
-		updates["responded_at"] = time.Now()
+	if req.Feedback != "" {
+		updates["feedback"] = req.Feedback
+	}
+
+	if req.NegotiatedSalary != nil {
+		updates["negotiation_counter"] = req.NegotiatedSalary
+	}
+
+	if req.StartDate != "" {
+		updates["start_date"] = req.StartDate
 	}
 
 	err := r.db.WithContext(ctx).

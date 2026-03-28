@@ -1484,6 +1484,15 @@
                 "desc"
               ]
             }
+          },
+          {
+            "in": "query",
+            "name": "candidate_application_id",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Filter by candidate application ID"
           }
         ],
         "responses": {
@@ -1703,6 +1712,15 @@
                 "desc"
               ]
             }
+          },
+          {
+            "in": "query",
+            "name": "candidate_application_id",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Filter by candidate application ID"
           }
         ],
         "responses": {

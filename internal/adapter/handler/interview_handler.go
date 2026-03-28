@@ -63,6 +63,12 @@ func (h *interviewHandler) GetInterviews(c *fiber.Ctx) error {
 		query.OrderType = c.Query("order_type")
 	}
 
+	if c.Query("candidate_application_id") != "" {
+		if val, err := conv.StringToInt64(c.Query("candidate_application_id")); err == nil {
+			query.CandidateApplicationID = val
+		}
+	}
+
 	results, totalData, totalPages, err := h.interviewService.GetInterviewsByTenant(c.Context(), int64(tenantID), query)
 	if err != nil {
 		code := "[HANDLER] GetInterviews - 2"
