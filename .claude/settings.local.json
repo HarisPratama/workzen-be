@@ -24,7 +24,8 @@
       "Bash(grep -r \"organization\\\\|org\" /Users/devita/Documents/BWANEWS/BE --include=*.go --include=*.ts -i)",
       "Bash(go env:*)",
       "Bash(migrate:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(git cherry-pick:*)"
     ]
   }
 }

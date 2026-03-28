@@ -12,6 +12,11 @@ type App struct {
 
 	JwtSecretKey string `json:"jwt_secret_key"`
 	JwtIssuer    string `json:"jwt_issuer"`
+
+	CorsOrigins    string `json:"cors_origins"`
+	CookieDomain   string `json:"cookie_domain"`
+	CookieSecure   bool   `json:"cookie_secure"`
+	CookieSameSite string `json:"cookie_same_site"`
 }
 
 type PsqlDB struct {
@@ -47,6 +52,11 @@ func NewConfig() *Config {
 
 			JwtSecretKey: viper.GetString("JWT_SECRET_KEY"),
 			JwtIssuer:    viper.GetString("JWT_ISSUER"),
+
+			CorsOrigins:    viper.GetString("CORS_ORIGINS"),
+			CookieDomain:   viper.GetString("COOKIE_DOMAIN"),
+			CookieSecure:   viper.GetBool("COOKIE_SECURE"),
+			CookieSameSite: viper.GetString("COOKIE_SAME_SITE"),
 		},
 		Psql: PsqlDB{
 			Host:      viper.GetString("DATABASE_HOST"),

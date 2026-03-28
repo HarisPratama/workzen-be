@@ -92,7 +92,7 @@ func RunServer() {
 	overviewService := service.NewOverviewService(overviewRepo)
 
 	//handler
-	authHandler := handler.NewAuthHandler(authService)
+	authHandler := handler.NewAuthHandler(authService, cfg)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	contentHandler := handler.NewContentHandler(contentService)
 	userHandler := handler.NewUserHandler(userService)
@@ -113,8 +113,12 @@ func RunServer() {
 	overviewHandler := handler.NewOverviewHandler(overviewService)
 
 	app := fiber.New()
+	corsOrigins := cfg.App.CorsOrigins
+	if corsOrigins == "" {
+		corsOrigins = "http://localhost:3000"
+	}
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:3000, https://workzen.web.id",
+		AllowOrigins:     corsOrigins,
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",

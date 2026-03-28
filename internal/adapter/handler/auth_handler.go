@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"time"
+	"workzen-be/config"
 	"workzen-be/internal/adapter/handler/request"
 	"workzen-be/internal/adapter/handler/response"
 	"workzen-be/internal/core/domain/entity"
@@ -28,6 +29,17 @@ type AuthHandler interface {
 
 type authHandler struct {
 	authService service.AuthService
+	cfg         *config.Config
+}
+
+func (a *authHandler) cookieConfig() (string, bool, string) {
+	domain := a.cfg.App.CookieDomain
+	secure := a.cfg.App.CookieSecure
+	sameSite := a.cfg.App.CookieSameSite
+	if sameSite == "" {
+		sameSite = "Lax"
+	}
+	return domain, secure, sameSite
 }
 
 func (a *authHandler) RefreshToken(c *fiber.Ctx) error {
@@ -60,6 +72,7 @@ func (a *authHandler) RefreshToken(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
+	domain, secure, sameSite := a.cookieConfig()
 	now := time.Now().In(jakartaTZ)
 	expiresAt := now.Add(15 * time.Minute)
 
@@ -67,11 +80,11 @@ func (a *authHandler) RefreshToken(c *fiber.Ctx) error {
 		Name:     "access_token",
 		Value:    newAccessToken,
 		Path:     "/",
-		Domain:   ".workzen.web.id", // ← TAMBAH INI
+		Domain:   domain,
 		HTTPOnly: true,
-		Secure:   true, // true jika HTTPS
-		SameSite: "None",
-		Expires:  expiresAt, // seconds
+		Secure:   secure,
+		SameSite: sameSite,
+		Expires:  expiresAt,
 	})
 
 	resp.Meta.Status = true
@@ -82,15 +95,16 @@ func (a *authHandler) RefreshToken(c *fiber.Ctx) error {
 
 func (a *authHandler) Logout(c *fiber.Ctx) error {
 	resp := response.SuccessAuthResponse{}
+	domain, secure, sameSite := a.cookieConfig()
 
 	c.Cookie(&fiber.Cookie{
 		Name:     "access_token",
 		Value:    "",
 		Path:     "/",
-		Domain:   ".workzen.web.id", // ← TAMBAH INI
+		Domain:   domain,
 		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "None",
+		Secure:   secure,
+		SameSite: sameSite,
 		Expires:  time.Now().Add(-time.Hour),
 		MaxAge:   -1,
 	})
@@ -99,10 +113,10 @@ func (a *authHandler) Logout(c *fiber.Ctx) error {
 		Name:     "refresh_token",
 		Value:    "",
 		Path:     "/",
-		Domain:   ".workzen.web.id", // ← TAMBAH INI
+		Domain:   domain,
 		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "None",
+		Secure:   secure,
+		SameSite: sameSite,
 		Expires:  time.Now().Add(-time.Hour),
 		MaxAge:   -1,
 	})
@@ -162,6 +176,7 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 		}
 	}
 
+	domain, secure, sameSite := a.cookieConfig()
 	now := time.Now().In(jakartaTZ)
 	expiresAt := now.Add(15 * time.Minute)
 	refreshExpires := now.Add(time.Hour * 24)
@@ -170,10 +185,10 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 		Name:     "access_token",
 		Value:    result.AccessToken,
 		Path:     "/",
-		Domain:   ".workzen.web.id", // ← TAMBAH INI
+		Domain:   domain,
 		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "None",
+		Secure:   secure,
+		SameSite: sameSite,
 		Expires:  expiresAt,
 	})
 
@@ -181,10 +196,10 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 		Name:     "refresh_token",
 		Value:    result.RefreshToken,
 		Path:     "/",
-		Domain:   ".workzen.web.id", // ← TAMBAH INI
+		Domain:   domain,
 		HTTPOnly: true,
-		Secure:   true,
-		SameSite: "None",
+		Secure:   secure,
+		SameSite: sameSite,
 		Expires:  refreshExpires,
 	})
 
@@ -194,8 +209,9 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 	return c.JSON(&resp)
 }
 
-func NewAuthHandler(authService service.AuthService) AuthHandler {
+func NewAuthHandler(authService service.AuthService, cfg *config.Config) AuthHandler {
 	return &authHandler{
 		authService: authService,
+		cfg:         cfg,
 	}
 }
