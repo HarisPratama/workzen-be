@@ -74,21 +74,39 @@ func (h *employeeAssignmentHandler) GetAssignments(c *fiber.Ctx) error {
 
 	var respData []response.EmployeeAssignmentResponse
 	for _, item := range results {
+		endDate := ""
+		if !item.EndDate.IsZero() {
+			endDate = item.EndDate.In(jakartaTZ).Format("2006-01-02")
+		}
+		expectedEndDate := ""
+		if !item.ExpectedEndDate.IsZero() {
+			expectedEndDate = item.ExpectedEndDate.In(jakartaTZ).Format("2006-01-02")
+		}
+
 		respData = append(respData, response.EmployeeAssignmentResponse{
-			ID:             item.ID,
-			AssignmentType: item.AssignmentType,
-			StartDate:      item.StartDate.In(jakartaTZ).Format("2006-01-02"),
-			EndDate:        item.EndDate.In(jakartaTZ).Format("2006-01-02"),
-			Status:         item.Status,
-			Role:           item.Role,
-			Position:       item.Position,
-			Location:       item.Location,
-			RemoteType:     item.RemoteType,
-			BillingRate:    item.BillingRate,
-			CostRate:       item.CostRate,
-			Currency:       item.Currency,
-			HoursPerWeek:   item.HoursPerWeek,
-			Notes:          item.Notes,
+			ID:              item.ID,
+			AssignmentType:  item.AssignmentType,
+			StartDate:       item.StartDate.In(jakartaTZ).Format("2006-01-02"),
+			EndDate:         endDate,
+			ExpectedEndDate: expectedEndDate,
+			Status:          item.Status,
+			Role:            item.Role,
+			Position:        item.Position,
+			Location:        item.Location,
+			RemoteType:      item.RemoteType,
+			BillingRate:     item.BillingRate,
+			CostRate:        item.CostRate,
+			Currency:        item.Currency,
+			HoursPerWeek:    item.HoursPerWeek,
+			Notes:           item.Notes,
+			Employee: response.EmployeeAssignmentEmployeeResp{
+				ID:   item.Employee.ID,
+				Name: item.Employee.Name,
+			},
+			Client: response.EmployeeAssignmentClientResp{
+				ID:          item.Client.ID,
+				CompanyName: item.Client.CompanyName,
+			},
 		})
 	}
 
@@ -134,21 +152,39 @@ func (h *employeeAssignmentHandler) GetAssignmentByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(errorResp)
 	}
 
+	endDate := ""
+	if !result.EndDate.IsZero() {
+		endDate = result.EndDate.In(jakartaTZ).Format("2006-01-02")
+	}
+	expectedEndDate := ""
+	if !result.ExpectedEndDate.IsZero() {
+		expectedEndDate = result.ExpectedEndDate.In(jakartaTZ).Format("2006-01-02")
+	}
+
 	respData := response.EmployeeAssignmentResponse{
-		ID:             result.ID,
-		AssignmentType: result.AssignmentType,
-		StartDate:      result.StartDate.In(jakartaTZ).Format("2006-01-02"),
-		EndDate:        result.EndDate.In(jakartaTZ).Format("2006-01-02"),
-		Status:         result.Status,
-		Role:           result.Role,
-		Position:       result.Position,
-		Location:       result.Location,
-		RemoteType:     result.RemoteType,
-		BillingRate:    result.BillingRate,
-		CostRate:       result.CostRate,
-		Currency:       result.Currency,
-		HoursPerWeek:   result.HoursPerWeek,
-		Notes:          result.Notes,
+		ID:              result.ID,
+		AssignmentType:  result.AssignmentType,
+		StartDate:       result.StartDate.In(jakartaTZ).Format("2006-01-02"),
+		EndDate:         endDate,
+		ExpectedEndDate: expectedEndDate,
+		Status:          result.Status,
+		Role:            result.Role,
+		Position:        result.Position,
+		Location:        result.Location,
+		RemoteType:      result.RemoteType,
+		BillingRate:     result.BillingRate,
+		CostRate:        result.CostRate,
+		Currency:        result.Currency,
+		HoursPerWeek:    result.HoursPerWeek,
+		Notes:           result.Notes,
+		Employee: response.EmployeeAssignmentEmployeeResp{
+			ID:   result.Employee.ID,
+			Name: result.Employee.Name,
+		},
+		Client: response.EmployeeAssignmentClientResp{
+			ID:          result.Client.ID,
+			CompanyName: result.Client.CompanyName,
+		},
 	}
 
 	defaultSuccessResponse.Meta.Status = true
