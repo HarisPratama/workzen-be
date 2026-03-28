@@ -63,6 +63,12 @@ func (h *offerHandler) GetOffers(c *fiber.Ctx) error {
 		query.OrderType = c.Query("order_type")
 	}
 
+	if c.Query("candidate_application_id") != "" {
+		if val, err := conv.StringToInt64(c.Query("candidate_application_id")); err == nil {
+			query.CandidateApplicationID = val
+		}
+	}
+
 	results, totalData, totalPages, err := h.offerService.GetOffersByTenant(context.Background(), int64(tenantID), query)
 	if err != nil {
 		code := "[HANDLER] GetOffers - 2"
@@ -150,6 +156,7 @@ func (h *offerHandler) GetOfferByID(c *fiber.Ctx) error {
 		RespondedAt:           result.RespondedAt,
 		Notes:                 result.Notes,
 		Terms:                 result.Terms,
+		Feedback:              result.Feedback,
 	}
 
 	defaultSuccessResponse.Meta.Status = true

@@ -31,6 +31,7 @@ func (u *userRepository) GetUserByID(ctx context.Context, id int64) (*entity.Use
 		ID:    modelUser.ID,
 		Name:  modelUser.Name,
 		Email: modelUser.Email,
+		Role:  modelUser.Role,
 	}, nil
 }
 

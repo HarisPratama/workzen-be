@@ -776,7 +776,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/interviews?page=1&limit=10&search=&status=&order_by=&order_type=desc",
+              "raw": "{{base_url}}/v1/interviews?page=1&limit=10&search=&status=&order_by=&order_type=desc&candidate_application_id=",
               "host": ["{{base_url}}"],
               "path": ["v1", "interviews"],
               "query": [
@@ -785,7 +785,8 @@
                 { "key": "search", "value": "" },
                 { "key": "status", "value": "", "description": "scheduled | completed | cancelled | no_show" },
                 { "key": "order_by", "value": "" },
-                { "key": "order_type", "value": "desc" }
+                { "key": "order_type", "value": "desc" },
+                { "key": "candidate_application_id", "value": "", "description": "Filter by candidate application ID" }
               ]
             }
           }
@@ -848,7 +849,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/offers?page=1&limit=10&search=&status=&order_by=&order_type=desc",
+              "raw": "{{base_url}}/v1/offers?page=1&limit=10&search=&status=&order_by=&order_type=desc&candidate_application_id=",
               "host": ["{{base_url}}"],
               "path": ["v1", "offers"],
               "query": [
@@ -857,7 +858,8 @@
                 { "key": "search", "value": "" },
                 { "key": "status", "value": "", "description": "draft | sent | accepted | rejected | withdrawn | expired" },
                 { "key": "order_by", "value": "" },
-                { "key": "order_type", "value": "desc" }
+                { "key": "order_type", "value": "desc" },
+                { "key": "candidate_application_id", "value": "", "description": "Filter by candidate application ID" }
               ]
             }
           }

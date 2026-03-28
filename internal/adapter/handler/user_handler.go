@@ -105,6 +105,7 @@ func (u *userHandler) GetUserByID(c *fiber.Ctx) error {
 		ID:    user.ID,
 		Name:  user.Name,
 		Email: user.Email,
+		Role:  user.Role,
 	}
 	defaultSuccessResponse.Data = resp
 

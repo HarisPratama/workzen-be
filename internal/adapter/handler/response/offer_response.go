@@ -21,4 +21,5 @@ type OfferResponse struct {
 	RespondedAt            time.Time `json:"responded_at"`
 	Notes                  string    `json:"notes"`
 	Terms                  string    `json:"terms"`
+	Feedback               string    `json:"feedback"`
 }
