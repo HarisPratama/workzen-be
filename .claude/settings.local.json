@@ -25,7 +25,10 @@
       "Bash(go env:*)",
       "Bash(migrate:*)",
       "Bash(psql:*)",
-      "Bash(git cherry-pick:*)"
+      "Bash(git cherry-pick:*)",
+      "Bash(find /Users/devita/Documents/BWANEWS/BE/internal/adapter/handler/request -name *.go -type f)",
+      "Bash(PGPASSWORD=\"\" psql -h localhost -p 5432 -U postgres -d postgres -c \"SELECT conname, pg_get_constraintdef\\(oid\\) FROM pg_constraint WHERE conrelid = 'employee_assignments'::regclass AND contype = 'c';\")",
+      "Bash(PGPASSWORD=\"\" psql -h localhost -p 5432 -U postgres -d postgres -c \"\\\\d employee_assignments\")"
     ]
   }
 }

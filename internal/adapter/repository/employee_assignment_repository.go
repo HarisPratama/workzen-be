@@ -65,6 +65,7 @@ func (r *employeeAssignmentRepository) GetEmployeeAssignmentsByTenant(ctx contex
 	sqlMain := r.db.WithContext(ctx).
 		Model(&model.EmployeeAssignment{}).
 		Preload("Employee").
+		Preload("Client").
 		Preload("Tenant").
 		Where("tenant_id = ?", tenantID)
 
@@ -152,6 +153,10 @@ func (r *employeeAssignmentRepository) GetEmployeeAssignmentsByTenant(ctx contex
 				ID:   item.Employee.ID,
 				Name: item.Employee.Name,
 			},
+			Client: entity.ClientEntity{
+				ID:          item.Client.ID,
+				CompanyName: item.Client.CompanyName,
+			},
 		})
 	}
 
@@ -162,6 +167,7 @@ func (r *employeeAssignmentRepository) GetEmployeeAssignmentByID(ctx context.Con
 	var modelAssignment model.EmployeeAssignment
 	err := r.db.WithContext(ctx).
 		Preload("Employee").
+		Preload("Client").
 		Preload("Tenant").
 		First(&modelAssignment, id).Error
 
@@ -194,6 +200,10 @@ func (r *employeeAssignmentRepository) GetEmployeeAssignmentByID(ctx context.Con
 		Employee: entity.EmployeeEntity{
 			ID:   modelAssignment.Employee.ID,
 			Name: modelAssignment.Employee.Name,
+		},
+		Client: entity.ClientEntity{
+			ID:          modelAssignment.Client.ID,
+			CompanyName: modelAssignment.Client.CompanyName,
 		},
 	}, nil
 }

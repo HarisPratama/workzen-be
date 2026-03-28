@@ -90,6 +90,7 @@ func RunServer() {
 	employeeAssignmentService := service.NewEmployeeAssignmentService(assignmentRepo)
 	subscriptionService := service.NewSubscriptionService(subscriptionRepo)
 	overviewService := service.NewOverviewService(overviewRepo)
+	hireService := service.NewHireService(db.DB)
 
 	//handler
 	authHandler := handler.NewAuthHandler(authService, cfg)
@@ -111,6 +112,7 @@ func RunServer() {
 	employeeAssignmentHandler := handler.NewEmployeeAssignmentHandler(employeeAssignmentService)
 	subscriptionHandler := handler.NewSubscriptionHandler(subscriptionService)
 	overviewHandler := handler.NewOverviewHandler(overviewService)
+	hireHandler := handler.NewHireHandler(hireService)
 
 	app := fiber.New()
 	corsOrigins := cfg.App.CorsOrigins
@@ -236,6 +238,7 @@ func RunServer() {
 	tenantApp.Get("/candidate-applications/:applicationID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.GetCandidateApplicationDetail)
 	tenantApp.Put("/candidate-applications/:applicationID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.UpdateCandidateApplication)
 	tenantApp.Delete("/candidate-applications/:applicationID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.DeleteCandidateApplication)
+	tenantApp.Post("/candidate-applications/:applicationID/hire", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), hireHandler.HireCandidate)
 
 	// Subscription (Tenant)
 	subscriptionApp := tenantApp.Group("/subscriptions", middlewareAuth.RequireRole("TENANT_ADMIN"))
