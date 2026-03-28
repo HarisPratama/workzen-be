@@ -4,6 +4,7 @@ import "time"
 
 type OfferResponse struct {
 	ID                     int64     `json:"id"`
+	CandidateApplicationID int64     `json:"candidate_application_id"`
 	Position               string    `json:"position"`
 	Department             string    `json:"department"`
 	EmploymentType         string    `json:"employment_type"`

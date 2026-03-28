@@ -46,15 +46,16 @@ func (s *employeeAssignmentService) GetEmployeeAssignmentByID(ctx context.Contex
 }
 
 func (s *employeeAssignmentService) CreateEmployeeAssignment(ctx context.Context, req entity.EmployeeAssignmentEntityRequest, tenantID int64) error {
+	jakartaTZ, _ := time.LoadLocation("Asia/Jakarta")
 	var startDate, endDate, expectedEndDate time.Time
 	if req.StartDate != "" {
-		startDate, _ = time.Parse("2006-01-02", req.StartDate)
+		startDate, _ = time.ParseInLocation("2006-01-02", req.StartDate, jakartaTZ)
 	}
 	if req.EndDate != "" {
-		endDate, _ = time.Parse("2006-01-02", req.EndDate)
+		endDate, _ = time.ParseInLocation("2006-01-02", req.EndDate, jakartaTZ)
 	}
 	if req.ExpectedEndDate != "" {
-		expectedEndDate, _ = time.Parse("2006-01-02", req.ExpectedEndDate)
+		expectedEndDate, _ = time.ParseInLocation("2006-01-02", req.ExpectedEndDate, jakartaTZ)
 	}
 
 	reqEntity := entity.EmployeeAssignmentEntity{

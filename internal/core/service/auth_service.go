@@ -12,10 +12,19 @@ import (
 
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v5"
+	"gorm.io/gorm"
 )
 
 var err error
 var code string
+
+var (
+	ErrUserNotFound    = errors.New("email not registered")
+	ErrInvalidPassword = errors.New("incorrect password")
+	ErrAccountInactive = errors.New("account is inactive, please contact administrator")
+	ErrTokenGeneration = errors.New("failed to generate authentication token")
+	ErrInvalidRefresh  = errors.New("refresh token is invalid or expired")
+)
 
 type AuthService interface {
 	GetUserByEmail(ctx context.Context, req entity.LoginRequest) (*entity.AccessToken, error)
@@ -34,7 +43,7 @@ func (a *authService) RefreshToken(ctx context.Context, refreshToken string) (st
 	if err != nil {
 		code = "[SERVICE] RefreshToken - 1"
 		log.Errorw(code, err)
-		return "", 0, err
+		return "", 0, ErrInvalidRefresh
 	}
 
 	jwtData := entity.JwtData{
@@ -48,8 +57,13 @@ func (a *authService) RefreshToken(ctx context.Context, refreshToken string) (st
 	}
 
 	accessToken, expiresAt, err := a.jwtToken.GenerateToken(&jwtData)
+	if err != nil {
+		code = "[SERVICE] RefreshToken - 2"
+		log.Errorw(code, err)
+		return "", 0, ErrTokenGeneration
+	}
 
-	return accessToken, expiresAt, err
+	return accessToken, expiresAt, nil
 }
 
 func (a *authService) GetUserByEmail(ctx context.Context, req entity.LoginRequest) (*entity.AccessToken, error) {
@@ -57,14 +71,22 @@ func (a *authService) GetUserByEmail(ctx context.Context, req entity.LoginReques
 	if err != nil {
 		code = "[SERVICE] GetUserByEmail - 1"
 		log.Errorw(code, err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrUserNotFound
+		}
 		return nil, err
 	}
 
-	if checkPass := conv.CheckPasswordHash(req.Password, result.Password); !checkPass {
+	if result.Status != "ACTIVE" {
 		code = "[SERVICE] GetUserByEmail - 2"
-		err = errors.New("invalid password")
+		log.Errorw(code, "account inactive", "email", req.Email)
+		return nil, ErrAccountInactive
+	}
+
+	if checkPass := conv.CheckPasswordHash(req.Password, result.Password); !checkPass {
+		code = "[SERVICE] GetUserByEmail - 3"
 		log.Errorw(code, "Invalid Password")
-		return nil, err
+		return nil, ErrInvalidPassword
 	}
 
 	var tenantID float64
@@ -83,12 +105,17 @@ func (a *authService) GetUserByEmail(ctx context.Context, req entity.LoginReques
 	}
 
 	accessToken, expiresAt, err := a.jwtToken.GenerateToken(&jwtData)
-	refreshToken, _, err := a.jwtToken.GenerateRefreshToken(&jwtData)
-
 	if err != nil {
-		code = "[SERVICE] GetUserByEmail - 3"
+		code = "[SERVICE] GetUserByEmail - 4"
 		log.Errorw(code, err)
-		return nil, err
+		return nil, ErrTokenGeneration
+	}
+
+	refreshToken, _, err := a.jwtToken.GenerateRefreshToken(&jwtData)
+	if err != nil {
+		code = "[SERVICE] GetUserByEmail - 5"
+		log.Errorw(code, err)
+		return nil, ErrTokenGeneration
 	}
 
 	resp := entity.AccessToken{

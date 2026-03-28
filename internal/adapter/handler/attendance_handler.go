@@ -72,7 +72,7 @@ func (h *attendanceHandler) CreateAttendance(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	date, _ := time.Parse("2006-01-02", req.Date)
+	date, _ := time.ParseInLocation("2006-01-02", req.Date, jakartaTZ)
 	attendance := entity.Attendance{
 		TenantID:   uuid.UUID{},
 		EmployeeID: employeeUUID,
@@ -83,12 +83,12 @@ func (h *attendanceHandler) CreateAttendance(c *fiber.Ctx) error {
 	}
 
 	if req.CheckIn != "" {
-		checkIn, _ := time.Parse("15:04:05", req.CheckIn)
+		checkIn, _ := time.ParseInLocation("15:04:05", req.CheckIn, jakartaTZ)
 		attendance.CheckIn = &checkIn
 	}
 
 	if req.CheckOut != "" {
-		checkOut, _ := time.Parse("15:04:05", req.CheckOut)
+		checkOut, _ := time.ParseInLocation("15:04:05", req.CheckOut, jakartaTZ)
 		attendance.CheckOut = &checkOut
 	}
 
@@ -148,12 +148,12 @@ func (h *attendanceHandler) UpdateAttendance(c *fiber.Ctx) error {
 	}
 
 	if req.CheckIn != "" {
-		checkIn, _ := time.Parse("15:04:05", req.CheckIn)
+		checkIn, _ := time.ParseInLocation("15:04:05", req.CheckIn, jakartaTZ)
 		attendance.CheckIn = &checkIn
 	}
 
 	if req.CheckOut != "" {
-		checkOut, _ := time.Parse("15:04:05", req.CheckOut)
+		checkOut, _ := time.ParseInLocation("15:04:05", req.CheckOut, jakartaTZ)
 		attendance.CheckOut = &checkOut
 	}
 
@@ -337,7 +337,7 @@ func (h *attendanceHandler) GetAttendancesByPeriod(c *fiber.Ctx) error {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 
-	start, err := time.Parse("2006-01-02", startDate)
+	start, err := time.ParseInLocation("2006-01-02", startDate, jakartaTZ)
 	if err != nil {
 		code := "[HANDLER] GetAttendancesByPeriod - 2"
 		log.Errorw(code, err)
@@ -346,7 +346,7 @@ func (h *attendanceHandler) GetAttendancesByPeriod(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	end, err := time.Parse("2006-01-02", endDate)
+	end, err := time.ParseInLocation("2006-01-02", endDate, jakartaTZ)
 	if err != nil {
 		code := "[HANDLER] GetAttendancesByPeriod - 3"
 		log.Errorw(code, err)
@@ -407,7 +407,7 @@ func (h *attendanceHandler) CheckIn(c *fiber.Ctx) error {
 
 	checkInTime := time.Now()
 	if req.CheckInTime != "" {
-		checkInTime, _ = time.Parse("15:04:05", req.CheckInTime)
+		checkInTime, _ = time.ParseInLocation("15:04:05", req.CheckInTime, jakartaTZ)
 	}
 
 	var location *string
@@ -461,7 +461,7 @@ func (h *attendanceHandler) CheckOut(c *fiber.Ctx) error {
 
 	checkOutTime := time.Now()
 	if req.CheckOutTime != "" {
-		checkOutTime, _ = time.Parse("15:04:05", req.CheckOutTime)
+		checkOutTime, _ = time.ParseInLocation("15:04:05", req.CheckOutTime, jakartaTZ)
 	}
 
 	if err := h.attendanceService.CheckOut(c.Context(), attendanceID, checkOutTime); err != nil {
@@ -552,8 +552,8 @@ func (h *attendanceHandler) GetAttendanceSummary(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	start, _ := time.Parse("2006-01-02", startDate)
-	end, _ := time.Parse("2006-01-02", endDate)
+	start, _ := time.ParseInLocation("2006-01-02", startDate, jakartaTZ)
+	end, _ := time.ParseInLocation("2006-01-02", endDate, jakartaTZ)
 
 	result, err := h.attendanceService.GetAttendanceSummary(c.Context(), employeeUUID, start, end)
 	if err != nil {

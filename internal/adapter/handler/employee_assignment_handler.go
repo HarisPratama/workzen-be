@@ -77,8 +77,8 @@ func (h *employeeAssignmentHandler) GetAssignments(c *fiber.Ctx) error {
 		respData = append(respData, response.EmployeeAssignmentResponse{
 			ID:             item.ID,
 			AssignmentType: item.AssignmentType,
-			StartDate:      item.StartDate.Format("2006-01-02"),
-			EndDate:        item.EndDate.Format("2006-01-02"),
+			StartDate:      item.StartDate.In(jakartaTZ).Format("2006-01-02"),
+			EndDate:        item.EndDate.In(jakartaTZ).Format("2006-01-02"),
 			Status:         item.Status,
 			Role:           item.Role,
 			Position:       item.Position,
@@ -137,8 +137,8 @@ func (h *employeeAssignmentHandler) GetAssignmentByID(c *fiber.Ctx) error {
 	respData := response.EmployeeAssignmentResponse{
 		ID:             result.ID,
 		AssignmentType: result.AssignmentType,
-		StartDate:      result.StartDate.Format("2006-01-02"),
-		EndDate:        result.EndDate.Format("2006-01-02"),
+		StartDate:      result.StartDate.In(jakartaTZ).Format("2006-01-02"),
+		EndDate:        result.EndDate.In(jakartaTZ).Format("2006-01-02"),
 		Status:         result.Status,
 		Role:           result.Role,
 		Position:       result.Position,

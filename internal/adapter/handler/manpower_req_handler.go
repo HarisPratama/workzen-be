@@ -68,8 +68,8 @@ func (m *manpowerReqHandler) GetDetailManpowerRequestByTenant(c *fiber.Ctx) erro
 		SalaryMax:      result.SalaryMax,
 		WorkLocation:   result.WorkLocation,
 		JobDescription: result.JobDescription,
-		DeadlineDate:   result.DeadlineDate.Local().Format("02 January 2006"),
-		CreatedAt:      result.CreatedAt.Local().Format("02 January 2006"),
+		DeadlineDate:   result.DeadlineDate.In(jakartaTZ).Format("02 January 2006"),
+		CreatedAt:      result.CreatedAt.In(jakartaTZ).Format("02 January 2006"),
 		Status:         result.Status,
 		Client: response.ClientResponse{
 			ID:          result.Client.ID,
@@ -172,8 +172,8 @@ func (m *manpowerReqHandler) GetManpowerReqByTenant(c *fiber.Ctx) error {
 			WorkLocation:   manpowerReq.WorkLocation,
 			JobDescription: manpowerReq.JobDescription,
 			Status:         manpowerReq.Status,
-			DeadlineDate:   manpowerReq.DeadlineDate.Local().Format("02 January 2006"),
-			CreatedAt:      manpowerReq.CreatedAt.Local().Format("02 January 2006"),
+			DeadlineDate:   manpowerReq.DeadlineDate.In(jakartaTZ).Format("02 January 2006"),
+			CreatedAt:      manpowerReq.CreatedAt.In(jakartaTZ).Format("02 January 2006"),
 			Client: response.ClientResponse{
 				ID:          manpowerReq.ClientID,
 				CompanyName: manpowerReq.Client.CompanyName,

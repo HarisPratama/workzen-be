@@ -56,7 +56,7 @@ type TenantSubscriptionQueryString struct {
 
 type SubscriptionPlanRequest struct {
 	Name                string  `json:"name" validate:"required"`
-	Tier                string  `json:"tier" validate:"required,oneof=FREE PRO ENTERPRISE CUSTOM"`
+	Tier                string  `json:"tier" validate:"required,oneof=FREE TRIAL PRO ENTERPRISE CUSTOM"`
 	Description         string  `json:"description"`
 	Price               float64 `json:"price" validate:"gte=0"`
 	BillingCycle        string  `json:"billing_cycle" validate:"required,oneof=monthly yearly custom"`

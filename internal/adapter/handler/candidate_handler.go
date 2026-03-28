@@ -142,7 +142,7 @@ func (c2 *candidateHandler) GetCandidatesByTenant(c *fiber.Ctx) error {
 			Address:   candidate.Address,
 			Source:    candidate.Source,
 			Status:    candidate.Status,
-			BirthDate: candidate.BirthDate.Local().Format("02 January 2006"),
+			BirthDate: candidate.BirthDate.In(jakartaTZ).Format("02 January 2006"),
 		}
 		respCandidates = append(respCandidates, respCandidate)
 	}

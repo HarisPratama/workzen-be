@@ -54,7 +54,8 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@workzen.com\",\n  \"password\": \"password123\"\n}",
               "options": { "raw": { "language": "json" } }
-            }
+            },
+            "description": "Authenticate user.\n\nError responses:\n- 400: Invalid request body / Validation Error (missing email, invalid email format, missing password, password too short)\n- 401: Incorrect password\n- 403: Account is inactive, please contact administrator\n- 404: Email not registered\n- 500: Failed to generate authentication token / unexpected error"
           }
         },
         {
@@ -71,7 +72,8 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": { "raw": "{{base_url}}/v1/auth/refresh", "host": ["{{base_url}}"], "path": ["v1", "auth", "refresh"] }
+            "url": { "raw": "{{base_url}}/v1/auth/refresh", "host": ["{{base_url}}"], "path": ["v1", "auth", "refresh"] },
+            "description": "Refresh access token using refresh_token cookie.\n\nError responses:\n- 401: Session expired, please login again / Refresh token is invalid or expired\n- 500: Failed to refresh session"
           }
         }
       ]
@@ -393,9 +395,10 @@
             "url": { "raw": "{{base_url}}/fe/tenants/register", "host": ["{{base_url}}"], "path": ["fe", "tenants", "register"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"company_name\": \"PT Contoh Jaya\",\n  \"company_address\": \"Jl. Sudirman No. 1, Jakarta\",\n  \"plan\": \"BASIC\",\n  \"admin_name\": \"John Doe\",\n  \"admin_email\": \"admin@ptcontoh.com\",\n  \"password\": \"password123\"\n}",
+              "raw": "{\n  \"company_name\": \"PT Contoh Jaya\",\n  \"company_address\": \"Jl. Sudirman No. 1, Jakarta\",\n  \"admin_name\": \"John Doe\",\n  \"admin_email\": \"admin@ptcontoh.com\",\n  \"password\": \"password123\"\n}",
               "options": { "raw": { "language": "json" } }
-            }
+            },
+            "description": "Register new company and admin account. Default plan: FREE.\n\nError responses:\n- 400: Invalid request body / Validation Error (missing company_name, admin_name, admin_email, password, invalid email format, password too short)\n- 409: Email is already registered, please use a different email\n- 500: Registration failed, please try again later"
           }
         },
         {
@@ -465,7 +468,8 @@
               "mode": "raw",
               "raw": "{\n  \"name\": \"Budi Santoso\",\n  \"citizen_id\": \"3201234567890001\",\n  \"phone_number\": \"081234567890\"\n}",
               "options": { "raw": { "language": "json" } }
-            }
+            },
+            "description": "Create a new employee. Subject to subscription quota (MaxEmployees).\n\nError responses:\n- 400: Invalid request body / Validation error\n- 403: Employee limit reached (5/5). Please upgrade your subscription plan to add more employees.\n- 500: Internal server error"
           }
         },
         {
@@ -534,7 +538,8 @@
               "mode": "raw",
               "raw": "{\n  \"company_name\": \"PT Client ABC\",\n  \"address\": \"Jl. Gatot Subroto No. 10, Jakarta\"\n}",
               "options": { "raw": { "language": "json" } }
-            }
+            },
+            "description": "Create a new client. Subject to subscription quota (MaxClients).\n\nError responses:\n- 400: Invalid request body / Validation error\n- 403: Client limit reached (3/3). Please upgrade your subscription plan to add more clients.\n- 500: Internal server error"
           }
         },
         {
@@ -612,7 +617,8 @@
               "mode": "raw",
               "raw": "{\n  \"client_id\": 1,\n  \"position\": \"Software Engineer\",\n  \"required_count\": 3,\n  \"salary_min\": 8000000,\n  \"salary_max\": 15000000,\n  \"work_location\": \"Jakarta\",\n  \"job_description\": \"Develop and maintain backend services\",\n  \"deadline_date\": \"2024-12-31T00:00:00Z\"\n}",
               "options": { "raw": { "language": "json" } }
-            }
+            },
+            "description": "Create a new manpower request. Subject to subscription quota (MaxManpowerRequests).\n\nError responses:\n- 400: Invalid request body / Validation error\n- 403: Manpower request limit reached (5/5). Please upgrade your subscription plan to add more manpower requests.\n- 500: Internal server error"
           }
         },
         {

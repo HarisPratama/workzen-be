@@ -46,12 +46,13 @@ func (s *offerService) GetOfferByID(ctx context.Context, id int64) (*entity.Offe
 }
 
 func (s *offerService) CreateOffer(ctx context.Context, req entity.OfferEntityRequest, tenantID int64) error {
+	jakartaTZ, _ := time.LoadLocation("Asia/Jakarta")
 	var startDate, expiryDate time.Time
 	if req.StartDate != "" {
-		startDate, _ = time.Parse("2006-01-02", req.StartDate)
+		startDate, _ = time.ParseInLocation("2006-01-02", req.StartDate, jakartaTZ)
 	}
 	if req.ExpiryDate != "" {
-		expiryDate, _ = time.Parse("2006-01-02", req.ExpiryDate)
+		expiryDate, _ = time.ParseInLocation("2006-01-02", req.ExpiryDate, jakartaTZ)
 	}
 
 	reqEntity := entity.OfferEntity{

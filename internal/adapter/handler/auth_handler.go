@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"time"
 	"workzen-be/internal/adapter/handler/request"
 	"workzen-be/internal/adapter/handler/response"
@@ -17,6 +18,7 @@ var err error
 var code string
 var errorResp response.ErrorResponseDefault
 var validate = validator.New()
+var jakartaTZ, _ = time.LoadLocation("Asia/Jakarta")
 
 type AuthHandler interface {
 	Login(c *fiber.Ctx) error
@@ -35,9 +37,9 @@ func (a *authHandler) RefreshToken(c *fiber.Ctx) error {
 
 	if refreshToken == "" {
 		code = "[HANDLER] RefreshToken - 1"
-		log.Errorw(code, err)
+		log.Errorw(code, "refresh token cookie is empty")
 		errorResp.Meta.Status = false
-		errorResp.Meta.Message = "unauthorized"
+		errorResp.Meta.Message = "Session expired, please login again"
 
 		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
 	}
@@ -48,12 +50,17 @@ func (a *authHandler) RefreshToken(c *fiber.Ctx) error {
 		code = "[HANDLER] RefreshToken - 2"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
-		errorResp.Meta.Message = "invalid refresh token"
 
-		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+		if errors.Is(err, service.ErrInvalidRefresh) {
+			errorResp.Meta.Message = err.Error()
+			return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+		}
+
+		errorResp.Meta.Message = "Failed to refresh session"
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	now := time.Now().Local()
+	now := time.Now().In(jakartaTZ)
 	expiresAt := now.Add(15 * time.Minute)
 
 	c.Cookie(&fiber.Cookie{
@@ -114,7 +121,7 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 		code = "[HANDLER] Login - 1"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
-		errorResp.Meta.Message = err.Error()
+		errorResp.Meta.Message = "Invalid request body, please check your input format"
 
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
@@ -140,13 +147,22 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
 
-		if err.Error() == "invalid password" {
+		switch {
+		case errors.Is(err, service.ErrUserNotFound):
+			return c.Status(fiber.StatusNotFound).JSON(errorResp)
+		case errors.Is(err, service.ErrInvalidPassword):
 			return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+		case errors.Is(err, service.ErrAccountInactive):
+			return c.Status(fiber.StatusForbidden).JSON(errorResp)
+		case errors.Is(err, service.ErrTokenGeneration):
+			return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+		default:
+			errorResp.Meta.Message = "An unexpected error occurred, please try again later"
+			return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 		}
-		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
-	now := time.Now().Local()
+	now := time.Now().In(jakartaTZ)
 	expiresAt := now.Add(15 * time.Minute)
 	refreshExpires := now.Add(time.Hour * 24)
 

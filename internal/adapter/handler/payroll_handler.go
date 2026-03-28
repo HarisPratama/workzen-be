@@ -69,8 +69,8 @@ func (h *payrollHandler) CreatePayroll(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	periodStart, _ := time.Parse("2006-01-02", req.PeriodStart)
-	periodEnd, _ := time.Parse("2006-01-02", req.PeriodEnd)
+	periodStart, _ := time.ParseInLocation("2006-01-02", req.PeriodStart, jakartaTZ)
+	periodEnd, _ := time.ParseInLocation("2006-01-02", req.PeriodEnd, jakartaTZ)
 
 	payroll := entity.Payroll{
 		EmployeeID:  employeeUUID,
@@ -365,7 +365,7 @@ func (h *payrollHandler) MarkAsPaid(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	paidAt, _ := time.Parse("2006-01-02", req.PaymentDate)
+	paidAt, _ := time.ParseInLocation("2006-01-02", req.PaymentDate, jakartaTZ)
 
 	if err := h.payrollService.MarkAsPaid(c.Context(), payrollID, paidAt); err != nil {
 		code := "[HANDLER] MarkAsPaid - 4"
@@ -395,8 +395,8 @@ func (h *payrollHandler) CalculatePayrollSummary(c *fiber.Ctx) error {
 	startDateStr := c.Query("start_date")
 	endDateStr := c.Query("end_date")
 
-	startDate, _ := time.Parse("2006-01-02", startDateStr)
-	endDate, _ := time.Parse("2006-01-02", endDateStr)
+	startDate, _ := time.ParseInLocation("2006-01-02", startDateStr, jakartaTZ)
+	endDate, _ := time.ParseInLocation("2006-01-02", endDateStr, jakartaTZ)
 
 	result, err := h.payrollService.CalculatePayrollSummary(c.Context(), uuid.UUID{}, startDate, endDate)
 	if err != nil {

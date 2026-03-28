@@ -100,7 +100,7 @@ func (c2 *clientHandler) GetClientByTenant(c *fiber.Ctx) error {
 			ID:          client.ID,
 			CompanyName: client.CompanyName,
 			Address:     client.Address,
-			CreatedAt:   client.CreatedAt.Local().Format("02 January 2006"),
+			CreatedAt:   client.CreatedAt.In(jakartaTZ).Format("02 January 2006"),
 		}
 		respClients = append(respClients, respClient)
 	}

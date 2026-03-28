@@ -500,8 +500,8 @@ func mapSubscriptionToResponse(item entity.TenantSubscriptionEntity) response.Te
 		ID:            item.ID,
 		TenantID:      item.TenantID,
 		Status:        item.Status,
-		StartDate:     item.StartDate.Format("2006-01-02"),
-		EndDate:       item.EndDate.Format("2006-01-02"),
+		StartDate:     item.StartDate.In(jakartaTZ).Format("2006-01-02"),
+		EndDate:       item.EndDate.In(jakartaTZ).Format("2006-01-02"),
 		AutoRenew:     item.AutoRenew,
 		PaymentMethod: item.PaymentMethod,
 		Plan: response.SubscriptionPlanResponse{
@@ -518,10 +518,10 @@ func mapSubscriptionToResponse(item entity.TenantSubscriptionEntity) response.Te
 	}
 
 	if item.LastPaymentAt != nil {
-		resp.LastPaymentAt = item.LastPaymentAt.Format("2006-01-02")
+		resp.LastPaymentAt = item.LastPaymentAt.In(jakartaTZ).Format("2006-01-02")
 	}
 	if item.CancelledAt != nil {
-		resp.CancelledAt = item.CancelledAt.Format("2006-01-02")
+		resp.CancelledAt = item.CancelledAt.In(jakartaTZ).Format("2006-01-02")
 	}
 	if item.CancelReason != "" {
 		resp.CancelReason = item.CancelReason

@@ -79,7 +79,7 @@ func (c2 *contentHandler) GetContentByID(c *fiber.Ctx) error {
 		Status:       result.Status,
 		CategoryID:   result.CategoryID,
 		CreatedByID:  result.CreatedByID,
-		CreatedAt:    result.CreatedAt.Local().Format("02 January 2006"),
+		CreatedAt:    result.CreatedAt.In(jakartaTZ).Format("02 January 2006"),
 		CategoryName: result.Category.Title,
 		Author:       result.User.Name,
 	}
@@ -420,7 +420,7 @@ func (c2 *contentHandler) GetContentWithQuery(c *fiber.Ctx) error {
 			Status:       content.Status,
 			CategoryID:   content.CategoryID,
 			CreatedByID:  content.CreatedByID,
-			CreatedAt:    content.CreatedAt.Local().Format("02 January 2006"),
+			CreatedAt:    content.CreatedAt.In(jakartaTZ).Format("02 January 2006"),
 			CategoryName: content.Category.Title,
 			Author:       content.User.Name,
 		}
@@ -474,7 +474,7 @@ func (c2 *contentHandler) GetContentDetail(c *fiber.Ctx) error {
 		Status:       result.Status,
 		CategoryID:   result.CategoryID,
 		CreatedByID:  result.CreatedByID,
-		CreatedAt:    result.CreatedAt.Local().Format("02 January 2006"),
+		CreatedAt:    result.CreatedAt.In(jakartaTZ).Format("02 January 2006"),
 		CategoryName: result.Category.Title,
 		Author:       result.User.Name,
 	}
@@ -583,7 +583,7 @@ func (c2 *contentHandler) GetContents(c *fiber.Ctx) error {
 			Status:       content.Status,
 			CategoryID:   content.CategoryID,
 			CreatedByID:  content.CreatedByID,
-			CreatedAt:    content.CreatedAt.Local().Format("02 January 2006"),
+			CreatedAt:    content.CreatedAt.In(jakartaTZ).Format("02 January 2006"),
 			CategoryName: content.Category.Title,
 			Author:       content.User.Name,
 		}

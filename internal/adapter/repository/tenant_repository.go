@@ -26,7 +26,7 @@ func (t *tenantRepository) RegisterTenant(ctx context.Context, req entity.Regist
 		modelTenant := model.Tenant{
 			CompanyName: req.CompanyName,
 			Address:     req.Address,
-			Plan:        "FREE",
+			Plan:        req.Plan,
 			Status:      "ACTIVE",
 		}
 

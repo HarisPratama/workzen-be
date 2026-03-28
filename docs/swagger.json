@@ -130,7 +130,7 @@
           "auth"
         ],
         "summary": "Login",
-        "description": "Authenticate user and get access token",
+        "description": "Authenticate user and get access token. Possible errors: invalid body (400), validation error (400), email not registered (404), incorrect password (401), account inactive (403), server error (500).",
         "requestBody": {
           "required": true,
           "content": {
@@ -143,7 +143,7 @@
         },
         "responses": {
           "200": {
-            "description": "Login success",
+            "description": "Login successful",
             "content": {
               "application/json": {
                 "schema": {
@@ -153,10 +153,24 @@
             }
           },
           "400": {
+            "description": "Invalid request body or validation error (e.g. missing email, invalid email format, password too short)",
             "$ref": "#/components/responses/BadRequest"
           },
           "401": {
+            "description": "Incorrect password",
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Account is inactive, please contact administrator",
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "Email not registered",
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "description": "Failed to generate authentication token or unexpected error",
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
@@ -186,10 +200,10 @@
           "auth"
         ],
         "summary": "Refresh Token",
-        "description": "Refresh access token using cookie",
+        "description": "Refresh access token using refresh_token cookie. Returns 401 if session expired or refresh token is invalid.",
         "responses": {
           "200": {
-            "description": "Token refreshed",
+            "description": "Token refreshed successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -199,7 +213,12 @@
             }
           },
           "401": {
+            "description": "Session expired or refresh token is invalid/expired",
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "description": "Failed to refresh session",
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
@@ -927,6 +946,7 @@
           "fe"
         ],
         "summary": "Register new tenant",
+        "description": "Register a new company and admin account. Possible errors: invalid body (400), validation error (400), email already registered (409), server error (500).",
         "requestBody": {
           "required": true,
           "content": {
@@ -939,10 +959,20 @@
         },
         "responses": {
           "201": {
+            "description": "Registration successful",
             "$ref": "#/components/responses/Created"
           },
           "400": {
+            "description": "Invalid request body or validation error (e.g. missing company_name, admin_name, admin_email, password, invalid email format, password too short)",
             "$ref": "#/components/responses/BadRequest"
+          },
+          "409": {
+            "description": "Email is already registered, please use a different email",
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "description": "Registration failed, please try again later",
+            "$ref": "#/components/responses/InternalServerError"
           }
         }
       }
@@ -1005,6 +1035,7 @@
           "employee"
         ],
         "summary": "Create employee",
+        "description": "Create a new employee. Subject to subscription quota limit (MaxEmployees).",
         "security": [
           {
             "bearerAuth": []
@@ -1026,6 +1057,10 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "403": {
+            "description": "Employee limit reached (e.g. 5/5). Please upgrade your subscription plan to add more employees.",
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
@@ -1088,6 +1123,7 @@
           "client"
         ],
         "summary": "Create client",
+        "description": "Create a new client. Subject to subscription quota limit (MaxClients).",
         "security": [
           {
             "bearerAuth": []
@@ -1109,6 +1145,10 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "403": {
+            "description": "Client limit reached (e.g. 3/3). Please upgrade your subscription plan to add more clients.",
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
@@ -1171,6 +1211,7 @@
           "manpower-request"
         ],
         "summary": "Create manpower request",
+        "description": "Create a new manpower request. Subject to subscription quota limit (MaxManpowerRequests).",
         "security": [
           {
             "bearerAuth": []
@@ -1192,6 +1233,10 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
+          },
+          "403": {
+            "description": "Manpower request limit reached (e.g. 5/5). Please upgrade your subscription plan to add more manpower requests.",
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
@@ -3908,6 +3953,36 @@
             }
           }
         }
+      },
+      "Forbidden": {
+        "description": "Forbidden",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Conflict",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
       }
     },
     "schemas": {
@@ -4119,15 +4194,6 @@
           "company_address": {
             "type": "string",
             "example": "Jl. Sudirman No. 1"
-          },
-          "plan": {
-            "type": "string",
-            "enum": [
-              "BASIC",
-              "PRO",
-              "ENTERPRISE"
-            ],
-            "example": "BASIC"
           },
           "admin_name": {
             "type": "string",

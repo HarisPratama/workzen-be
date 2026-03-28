@@ -109,7 +109,7 @@ func (e *employeeHandler) GetEmployeeDetail(c *fiber.Ctx) error {
 		CitizenID:   result.CitizenID,
 		PhoneNumber: result.PhoneNumber,
 		Status:      result.Status,
-		CreatedAt:   result.CreatedAt.Local().Format("02 January 2006"),
+		CreatedAt:   result.CreatedAt.In(jakartaTZ).Format("02 January 2006"),
 	}
 
 	return c.JSON(defaultSuccessResponse)
@@ -281,7 +281,7 @@ func (e *employeeHandler) GetEmployees(c *fiber.Ctx) error {
 			CitizenID:   employee.CitizenID,
 			PhoneNumber: employee.PhoneNumber,
 			Status:      employee.Status,
-			CreatedAt:   employee.CreatedAt.Local().Format("02 January 2006"),
+			CreatedAt:   employee.CreatedAt.In(jakartaTZ).Format("02 January 2006"),
 		}
 		respEmployees = append(respEmployees, respEmployee)
 	}

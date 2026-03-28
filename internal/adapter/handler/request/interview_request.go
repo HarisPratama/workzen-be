@@ -1,9 +1,8 @@
 package request
 
 type InterviewRequest struct {
-	ManpowerRequestID      int64  `json:"manpower_request_id"`
 	CandidateApplicationID int64  `json:"candidate_application_id" validate:"required"`
-	InterviewerID          int64  `json:"interviewer_id" validate:"required"`
+	InterviewerID          *int64 `json:"interviewer_id"`
 	ScheduledAt            string `json:"scheduled_at" validate:"required,datetime=2006-01-02T15:04:05Z07:00"`
 	InterviewType          string `json:"interview_type"`
 	DurationMinutes        int    `json:"duration_minutes" validate:"required,gte=15"`

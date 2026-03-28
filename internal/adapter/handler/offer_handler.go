@@ -75,17 +75,18 @@ func (h *offerHandler) GetOffers(c *fiber.Ctx) error {
 	var respData []response.OfferResponse
 	for _, item := range results {
 		respData = append(respData, response.OfferResponse{
-			ID:             item.ID,
-			Position:       item.Position,
-			Department:     item.Department,
-			EmploymentType: item.EmploymentType,
-			BaseSalary:     item.BaseSalary,
-			Currency:       item.Currency,
-			Status:         item.Status,
-			StartDate:      item.StartDate.Format("2006-01-02"),
-			ExpiryDate:     item.ExpiryDate.Format("2006-01-02"),
-			SentAt:         item.SentAt,
-			RespondedAt:    item.RespondedAt,
+			ID:                     item.ID,
+			CandidateApplicationID: item.CandidateApplicationID,
+			Position:               item.Position,
+			Department:             item.Department,
+			EmploymentType:         item.EmploymentType,
+			BaseSalary:             item.BaseSalary,
+			Currency:               item.Currency,
+			Status:                 item.Status,
+			StartDate:              item.StartDate.In(jakartaTZ).Format("2006-01-02"),
+			ExpiryDate:             item.ExpiryDate.In(jakartaTZ).Format("2006-01-02"),
+			SentAt:                 item.SentAt,
+			RespondedAt:            item.RespondedAt,
 		})
 	}
 
@@ -142,8 +143,8 @@ func (h *offerHandler) GetOfferByID(c *fiber.Ctx) error {
 		Benefits:              result.Benefits,
 		ProbationPeriodMonths: result.ProbationPeriodMonths,
 		NoticePeriodDays:      result.NoticePeriodDays,
-		StartDate:             result.StartDate.Format("2006-01-02"),
-		ExpiryDate:            result.ExpiryDate.Format("2006-01-02"),
+		StartDate:             result.StartDate.In(jakartaTZ).Format("2006-01-02"),
+		ExpiryDate:            result.ExpiryDate.In(jakartaTZ).Format("2006-01-02"),
 		Status:                result.Status,
 		SentAt:                result.SentAt,
 		RespondedAt:           result.RespondedAt,

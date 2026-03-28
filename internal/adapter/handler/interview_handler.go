@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"workzen-be/internal/adapter/handler/request"
 	"workzen-be/internal/adapter/handler/response"
 	"workzen-be/internal/core/domain/entity"
@@ -64,7 +63,7 @@ func (h *interviewHandler) GetInterviews(c *fiber.Ctx) error {
 		query.OrderType = c.Query("order_type")
 	}
 
-	results, totalData, totalPages, err := h.interviewService.GetInterviewsByTenant(context.Background(), int64(tenantID), query)
+	results, totalData, totalPages, err := h.interviewService.GetInterviewsByTenant(c.Context(), int64(tenantID), query)
 	if err != nil {
 		code := "[HANDLER] GetInterviews - 2"
 		log.Errorw(code, err)
@@ -76,15 +75,16 @@ func (h *interviewHandler) GetInterviews(c *fiber.Ctx) error {
 	var respData []response.InterviewResponse
 	for _, item := range results {
 		respData = append(respData, response.InterviewResponse{
-			ID:              item.ID,
-			InterviewType:   item.InterviewType,
-			ScheduledAt:     item.ScheduledAt.Local().Format("02 January 2006 15:04"),
-			DurationMinutes: item.DurationMinutes,
-			Location:        item.Location,
-			MeetingLink:     item.MeetingLink,
-			Status:          item.Status,
-			Feedback:        item.Feedback,
-			Rating:          item.Rating,
+			ID:                     item.ID,
+			CandidateApplicationID: item.CandidateApplicationID,
+			InterviewType:          item.InterviewType,
+			ScheduledAt:            item.ScheduledAt.In(jakartaTZ).Format("02 January 2006 15:04"),
+			DurationMinutes:        item.DurationMinutes,
+			Location:               item.Location,
+			MeetingLink:            item.MeetingLink,
+			Status:                 item.Status,
+			Feedback:               item.Feedback,
+			Rating:                 item.Rating,
 		})
 	}
 
@@ -121,7 +121,7 @@ func (h *interviewHandler) GetInterviewByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	result, err := h.interviewService.GetInterviewByID(context.Background(), interviewID)
+	result, err := h.interviewService.GetInterviewByID(c.Context(), interviewID)
 	if err != nil {
 		code := "[HANDLER] GetInterviewByID - 3"
 		log.Errorw(code, err)
@@ -133,15 +133,15 @@ func (h *interviewHandler) GetInterviewByID(c *fiber.Ctx) error {
 	respData := response.InterviewResponse{
 		ID:              result.ID,
 		InterviewType:   result.InterviewType,
-		ScheduledAt:     result.ScheduledAt.Local().Format("02 January 2006 15:04"),
+		ScheduledAt:     result.ScheduledAt.In(jakartaTZ).Format("02 January 2006 15:04"),
 		DurationMinutes: result.DurationMinutes,
 		Location:        result.Location,
 		MeetingLink:     result.MeetingLink,
 		Status:          result.Status,
 		Feedback:        result.Feedback,
 		Rating:          result.Rating,
-		CompletedAt:     result.CompletedAt.Local().Format("02 January 2006 15:04"),
-		CancelledAt:     result.CancelledAt.Local().Format("02 January 2006 15:04"),
+		CompletedAt:     result.CompletedAt.In(jakartaTZ).Format("02 January 2006 15:04"),
+		CancelledAt:     result.CancelledAt.In(jakartaTZ).Format("02 January 2006 15:04"),
 		CancelReason:    result.CancelReason,
 	}
 
@@ -183,7 +183,7 @@ func (h *interviewHandler) CreateInterview(c *fiber.Ctx) error {
 	reqEntity := entity.InterviewEntityRequest{
 		TenantID:               int64(tenantID),
 		CandidateApplicationID: req.CandidateApplicationID,
-		ManpowerRequestID:      req.ManpowerRequestID,
+		InterviewerID:          req.InterviewerID,
 		InterviewType:          req.InterviewType,
 		ScheduledAt:            req.ScheduledAt,
 		DurationMinutes:        req.DurationMinutes,
@@ -191,7 +191,7 @@ func (h *interviewHandler) CreateInterview(c *fiber.Ctx) error {
 		MeetingLink:            req.MeetingLink,
 	}
 
-	if err := h.interviewService.CreateInterview(context.Background(), reqEntity, int64(tenantID)); err != nil {
+	if err := h.interviewService.CreateInterview(c.Context(), reqEntity, int64(tenantID)); err != nil {
 		code = "[HANDLER] CreateInterview - 5"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
@@ -235,7 +235,7 @@ func (h *interviewHandler) UpdateInterview(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	if err := h.interviewService.UpdateInterview(context.Background(), interviewID, reqEntity); err != nil {
+	if err := h.interviewService.UpdateInterview(c.Context(), interviewID, reqEntity); err != nil {
 		code := "[HANDLER] UpdateInterview - 5"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
@@ -270,7 +270,7 @@ func (h *interviewHandler) DeleteInterview(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	if err := h.interviewService.DeleteInterview(context.Background(), interviewID); err != nil {
+	if err := h.interviewService.DeleteInterview(c.Context(), interviewID); err != nil {
 		code := "[HANDLER] DeleteInterview - 3"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false

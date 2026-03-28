@@ -45,6 +45,7 @@ func RunServer() {
 
 	jwt := auth.NewJwt(cfg)
 	middlewareAuth := middleware.NewMiddleware(cfg)
+	quotaChecker := middleware.NewQuotaChecker(db.DB)
 
 	_ = pagination.NewPagination()
 
@@ -199,21 +200,21 @@ func RunServer() {
 
 	// employee
 	tenantApp.Get("/employees", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.GetEmployees)
-	tenantApp.Post("/employees", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.CreateEmployee)
+	tenantApp.Post("/employees", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), quotaChecker.CheckQuota(middleware.ResourceEmployee), employeeHandler.CreateEmployee)
 	tenantApp.Get("/employees/:employeeID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.GetEmployeeDetail)
 	tenantApp.Put("/employees/:employeeID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.UpdateEmployee)
 	tenantApp.Delete("/employees/:employeeID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), employeeHandler.DeleteEmployee)
 
 	// client
 	tenantApp.Get("/clients", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.GetClientByTenant)
-	tenantApp.Post("/clients", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.CreateClient)
+	tenantApp.Post("/clients", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), quotaChecker.CheckQuota(middleware.ResourceClient), clientHandler.CreateClient)
 	tenantApp.Get("/clients/:clientID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.GetClientDetailByTenant)
 	tenantApp.Put("/clients/:clientID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.UpdateClient)
 	tenantApp.Delete("/clients/:clientID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), clientHandler.DeleteClient)
 
 	// manpower request
 	tenantApp.Get("/manpower-requests", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.GetManpowerReqByTenant)
-	tenantApp.Post("/manpower-requests", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.CreateManpowerReq)
+	tenantApp.Post("/manpower-requests", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), quotaChecker.CheckQuota(middleware.ResourceManpowerRequest), manpowerReqHandler.CreateManpowerReq)
 	tenantApp.Get("/manpower-requests/:manpowerRequestID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.GetDetailManpowerRequestByTenant)
 	tenantApp.Put("/manpower-requests/:manpowerRequestID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.UpdateManpowerReq)
 	tenantApp.Delete("/manpower-requests/:manpowerRequestID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.DeleteManpowerReq)

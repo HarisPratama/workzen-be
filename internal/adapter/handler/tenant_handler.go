@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"workzen-be/internal/adapter/handler/request"
 	"workzen-be/internal/core/domain/entity"
 	"workzen-be/internal/core/service"
@@ -25,7 +26,7 @@ func (t *tenantHandler) RegisterTenant(c *fiber.Ctx) error {
 		code = "[HANDLER] RegisterTenant - 1"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
-		errorResp.Meta.Message = "Invalid request body"
+		errorResp.Meta.Message = "Invalid request body, please check your input format"
 
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
@@ -41,7 +42,7 @@ func (t *tenantHandler) RegisterTenant(c *fiber.Ctx) error {
 	reqEntity := entity.RegisterTenantEntity{
 		CompanyName: req.CompanyName,
 		Address:     req.CompanyAddress,
-		Plan:        "TRIAL",
+		Plan:        "FREE",
 		Name:        req.AdminName,
 		Email:       req.AdminEmail,
 		Password:    req.Password,
@@ -55,11 +56,17 @@ func (t *tenantHandler) RegisterTenant(c *fiber.Ctx) error {
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
 
-		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+		switch {
+		case errors.Is(err, service.ErrEmailAlreadyExists):
+			return c.Status(fiber.StatusConflict).JSON(errorResp)
+		default:
+			errorResp.Meta.Message = "Registration failed, please try again later"
+			return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+		}
 	}
 
 	defaultSuccessResponse.Meta.Status = true
-	defaultSuccessResponse.Meta.Message = "Success"
+	defaultSuccessResponse.Meta.Message = "Registration successful"
 	defaultSuccessResponse.Data = nil
 
 	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)

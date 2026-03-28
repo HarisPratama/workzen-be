@@ -46,15 +46,23 @@ func (s *interviewService) GetInterviewByID(ctx context.Context, id int64) (*ent
 }
 
 func (s *interviewService) CreateInterview(ctx context.Context, req entity.InterviewEntityRequest, tenantID int64) error {
+	jakartaTZ, _ := time.LoadLocation("Asia/Jakarta")
+	// Strip timezone from input and interpret as Jakarta time
+	timeStr := req.ScheduledAt
+	if len(timeStr) > 19 {
+		timeStr = timeStr[:19]
+	}
+	scheduledAt, _ := time.ParseInLocation("2006-01-02T15:04:05", timeStr, jakartaTZ)
+
 	reqEntity := entity.InterviewEntity{
-		TenantID:          tenantID,
-		CandidateID:       req.CandidateApplicationID,
-		ManpowerRequestID: req.ManpowerRequestID,
-		InterviewType:     req.InterviewType,
-		ScheduledAt:       time.Now(),
-		DurationMinutes:   req.DurationMinutes,
-		Location:          req.Location,
-		MeetingLink:       req.MeetingLink,
+		TenantID:               tenantID,
+		CandidateApplicationID: req.CandidateApplicationID,
+		InterviewerID:          req.InterviewerID,
+		InterviewType:          req.InterviewType,
+		ScheduledAt:            scheduledAt,
+		DurationMinutes:        req.DurationMinutes,
+		Location:               req.Location,
+		MeetingLink:            req.MeetingLink,
 	}
 
 	err := s.interviewRepo.CreateInterview(ctx, reqEntity)

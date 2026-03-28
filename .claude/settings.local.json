@@ -21,7 +21,10 @@
       "Bash(grep -r \"Organization\\\\|org\\\\|overview\" /Users/devita/Documents/BWANEWS/FE/bwanews-fe --include=*.tsx --include=*.ts --include=*.json)",
       "Bash(xargs basename:*)",
       "Bash(ls:*)",
-      "Bash(grep -r \"organization\\\\|org\" /Users/devita/Documents/BWANEWS/BE --include=*.go --include=*.ts -i)"
+      "Bash(grep -r \"organization\\\\|org\" /Users/devita/Documents/BWANEWS/BE --include=*.go --include=*.ts -i)",
+      "Bash(go env:*)",
+      "Bash(migrate:*)",
+      "Bash(psql:*)"
     ]
   }
 }

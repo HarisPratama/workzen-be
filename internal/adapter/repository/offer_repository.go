@@ -40,7 +40,7 @@ func (r *offerRepository) CreateOffer(ctx context.Context, req entity.OfferEntit
 		NoticePeriodDays:       req.NoticePeriodDays,
 		StartDate:              req.StartDate,
 		ExpiryDate:             req.ExpiryDate,
-		Status:                 "DRAFT",
+		Status:                 "SENT",
 	}
 
 	err := r.db.Create(&modelOffer).Error

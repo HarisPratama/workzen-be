@@ -27,15 +27,15 @@ type interviewRepository struct {
 
 func (r *interviewRepository) CreateInterview(ctx context.Context, req entity.InterviewEntity) error {
 	modelInterview := model.Interview{
-		TenantID:          req.TenantID,
-		CandidateID:       req.CandidateID,
-		ManpowerRequestID: req.ManpowerRequestID,
-		InterviewType:     req.InterviewType,
-		ScheduledAt:       req.ScheduledAt,
-		DurationMinutes:   req.DurationMinutes,
-		Location:          req.Location,
-		MeetingLink:       req.MeetingLink,
-		Status:            "SCHEDULED",
+		TenantID:               req.TenantID,
+		CandidateApplicationID: req.CandidateApplicationID,
+		InterviewerID:          req.InterviewerID,
+		InterviewType:          req.InterviewType,
+		ScheduledAt:            req.ScheduledAt,
+		DurationMinutes:        req.DurationMinutes,
+		Location:               req.Location,
+		MeetingLink:            req.MeetingLink,
+		Status:                 "SCHEDULED",
 	}
 
 	err := r.db.Create(&modelInterview).Error
@@ -54,21 +54,17 @@ func (r *interviewRepository) GetInterviewsByTenant(ctx context.Context, tenantI
 
 	sqlMain := r.db.WithContext(ctx).
 		Model(&model.Interview{}).
-		Preload("Candidate").
-		Preload("ManpowerRequest").
+		Preload("CandidateApplication").
+		Preload("CandidateApplication.Candidate").
+		Preload("CandidateApplication.ManpowerRequest").
 		Where("tenant_id = ?", tenantID)
-
-	if query.Search != "" {
-		search := "%" + query.Search + "%"
-		sqlMain = sqlMain.Where(`candidates.full_name ILIKE ?`, search)
-	}
 
 	if query.Status != "" {
 		sqlMain = sqlMain.Where("interviews.status = ?", query.Status)
 	}
 
-	if query.CandidateID != 0 {
-		sqlMain = sqlMain.Where("interviews.candidate_id = ?", query.CandidateID)
+	if query.CandidateApplicationID != 0 {
+		sqlMain = sqlMain.Where("interviews.candidate_application_id = ?", query.CandidateApplicationID)
 	}
 
 	if query.StartDate != "" && query.EndDate != "" {
@@ -120,42 +116,7 @@ func (r *interviewRepository) GetInterviewsByTenant(ctx context.Context, tenantI
 
 	var result []entity.InterviewEntity
 	for _, item := range modelInterviews {
-		result = append(result, entity.InterviewEntity{
-			ID:                item.ID,
-			TenantID:          item.TenantID,
-			CandidateID:       item.CandidateID,
-			ManpowerRequestID: item.ManpowerRequestID,
-			Status:            item.Status,
-			InterviewType:     item.InterviewType,
-			ScheduledAt:       item.ScheduledAt,
-			DurationMinutes:   item.DurationMinutes,
-			Location:          item.Location,
-			MeetingLink:       item.MeetingLink,
-			Feedback:          item.Feedback,
-			Rating:            item.Rating,
-			CompletedAt:       item.CompletedAt,
-			CancelledAt:       item.CancelledAt,
-			CancelReason:      item.CancelReason,
-			Tenant: entity.TenantEntity{
-				ID:          item.Tenant.ID,
-				CompanyName: item.Tenant.CompanyName,
-				Plan:        item.Tenant.Plan,
-				Status:      item.Tenant.Status,
-				Address:     item.Tenant.Address,
-			},
-			Candidate: entity.CandidateEntity{
-				ID:       item.Candidate.ID,
-				TenantID: item.Candidate.TenantID,
-				FullName: item.Candidate.FullName,
-				Email:    item.Candidate.Email,
-				Phone:    item.Candidate.Phone,
-			},
-			ManpowerRequest: entity.ManpowerReqEntity{
-				ID:       item.ManpowerRequest.ID,
-				Position: item.ManpowerRequest.Position,
-				Status:   item.ManpowerRequest.Status,
-			},
-		})
+		result = append(result, mapInterviewModelToEntity(item))
 	}
 
 	return result, countData, totalPages, nil
@@ -164,50 +125,17 @@ func (r *interviewRepository) GetInterviewsByTenant(ctx context.Context, tenantI
 func (r *interviewRepository) GetInterviewByID(ctx context.Context, id int64) (*entity.InterviewEntity, error) {
 	var modelInterview model.Interview
 	err := r.db.WithContext(ctx).
-		Preload("Candidate").
-		Preload("ManpowerRequest").
+		Preload("CandidateApplication").
+		Preload("CandidateApplication.Candidate").
+		Preload("CandidateApplication.ManpowerRequest").
 		First(&modelInterview, id).Error
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &entity.InterviewEntity{
-		ID:                modelInterview.ID,
-		TenantID:          modelInterview.TenantID,
-		CandidateID:       modelInterview.CandidateID,
-		ManpowerRequestID: modelInterview.ManpowerRequestID,
-		Status:            modelInterview.Status,
-		InterviewType:     modelInterview.InterviewType,
-		ScheduledAt:       modelInterview.ScheduledAt,
-		DurationMinutes:   modelInterview.DurationMinutes,
-		Location:          modelInterview.Location,
-		MeetingLink:       modelInterview.MeetingLink,
-		Feedback:          modelInterview.Feedback,
-		Rating:            modelInterview.Rating,
-		CompletedAt:       modelInterview.CompletedAt,
-		CancelledAt:       modelInterview.CancelledAt,
-		CancelReason:      modelInterview.CancelReason,
-		Tenant: entity.TenantEntity{
-			ID:          modelInterview.Tenant.ID,
-			CompanyName: modelInterview.Tenant.CompanyName,
-			Plan:        modelInterview.Tenant.Plan,
-			Status:      modelInterview.Tenant.Status,
-			Address:     modelInterview.Tenant.Address,
-		},
-		Candidate: entity.CandidateEntity{
-			ID:       modelInterview.Candidate.ID,
-			TenantID: modelInterview.Candidate.TenantID,
-			FullName: modelInterview.Candidate.FullName,
-			Email:    modelInterview.Candidate.Email,
-			Phone:    modelInterview.Candidate.Phone,
-		},
-		ManpowerRequest: entity.ManpowerReqEntity{
-			ID:       modelInterview.ManpowerRequest.ID,
-			Position: modelInterview.ManpowerRequest.Position,
-			Status:   modelInterview.ManpowerRequest.Status,
-		},
-	}, nil
+	entity := mapInterviewModelToEntity(modelInterview)
+	return &entity, nil
 }
 
 func (r *interviewRepository) UpdateInterview(ctx context.Context, id int64, req entity.InterviewUpdateRequest) error {
@@ -250,6 +178,51 @@ func (r *interviewRepository) DeleteInterview(ctx context.Context, id int64) err
 	}
 
 	return nil
+}
+
+func mapInterviewModelToEntity(item model.Interview) entity.InterviewEntity {
+	return entity.InterviewEntity{
+		ID:                     item.ID,
+		TenantID:               item.TenantID,
+		CandidateApplicationID: item.CandidateApplicationID,
+		InterviewerID:          item.InterviewerID,
+		Status:                 item.Status,
+		InterviewType:          item.InterviewType,
+		ScheduledAt:            item.ScheduledAt,
+		DurationMinutes:        item.DurationMinutes,
+		Location:               item.Location,
+		MeetingLink:            item.MeetingLink,
+		Feedback:               item.Feedback,
+		Rating:                 item.Rating,
+		CompletedAt:            item.CompletedAt,
+		CancelledAt:            item.CancelledAt,
+		CancelReason:           item.CancelReason,
+		Tenant: entity.TenantEntity{
+			ID:          item.Tenant.ID,
+			CompanyName: item.Tenant.CompanyName,
+			Plan:        item.Tenant.Plan,
+			Status:      item.Tenant.Status,
+			Address:     item.Tenant.Address,
+		},
+		CandidateApplication: entity.CandidateApplicationEntity{
+			ID:                item.CandidateApplication.ID,
+			TenantID:          item.CandidateApplication.TenantID,
+			CandidateID:       item.CandidateApplication.CandidateID,
+			ManpowerRequestID: item.CandidateApplication.ManpowerRequestID,
+			Status:            item.CandidateApplication.Status,
+			Candidate: entity.CandidateEntity{
+				ID:       item.CandidateApplication.Candidate.ID,
+				FullName: item.CandidateApplication.Candidate.FullName,
+				Email:    item.CandidateApplication.Candidate.Email,
+				Phone:    item.CandidateApplication.Candidate.Phone,
+			},
+			ManpowerRequest: entity.ManpowerReqEntity{
+				ID:       item.CandidateApplication.ManpowerRequest.ID,
+				Position: item.CandidateApplication.ManpowerRequest.Position,
+				Status:   item.CandidateApplication.ManpowerRequest.Status,
+			},
+		},
+	}
 }
 
 func NewInterviewRepository(db *gorm.DB) InterviewRepository {
