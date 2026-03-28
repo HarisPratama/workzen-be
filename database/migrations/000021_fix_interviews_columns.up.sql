@@ -1,0 +1,9 @@
+-- Add missing columns that the application code expects
+ALTER TABLE interviews ADD COLUMN IF NOT EXISTS interview_type VARCHAR(50);
+ALTER TABLE interviews ADD COLUMN IF NOT EXISTS duration_minutes INT DEFAULT 60;
+ALTER TABLE interviews ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'SCHEDULED';
+ALTER TABLE interviews ADD COLUMN IF NOT EXISTS feedback TEXT;
+ALTER TABLE interviews ADD COLUMN IF NOT EXISTS rating INT DEFAULT 0;
+ALTER TABLE interviews ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ;
+ALTER TABLE interviews ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ;
+ALTER TABLE interviews ADD COLUMN IF NOT EXISTS cancel_reason TEXT;

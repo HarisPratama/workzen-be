@@ -1,0 +1,20 @@
+-- Add missing columns that the application code expects
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS project_id INT;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS department_id INT;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS assignment_type VARCHAR(50);
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS expected_end_date DATE;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS role VARCHAR(200);
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS location VARCHAR(200);
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS remote_type VARCHAR(50);
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS billing_rate DECIMAL(15,2) DEFAULT 0;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS cost_rate DECIMAL(15,2) DEFAULT 0;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS currency VARCHAR(10) DEFAULT 'IDR';
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS hours_per_week INT DEFAULT 40;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS reason TEXT;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS handover_notes TEXT;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS approved_by_id INT REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS terminated_by_id INT REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS terminated_at TIMESTAMPTZ;
+ALTER TABLE employee_assignments ADD COLUMN IF NOT EXISTS termination_reason TEXT;
