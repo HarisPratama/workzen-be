@@ -92,33 +92,14 @@ func (s *interviewService) UpdateInterview(ctx context.Context, id int64, req en
 }
 
 func (s *interviewService) SubmitFeedback(ctx context.Context, id int64, req entity.SubmitFeedbackRequest) error {
-	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// 1. Get the interview to find associated application
-		interview, err := s.interviewRepo.GetInterviewByID(ctx, id)
-		if err != nil {
-			return err
-		}
+	// Submit feedback to interview
+	if err := s.interviewRepo.SubmitFeedback(ctx, id, req); err != nil {
+		code := "[SERVICE] SubmitFeedback - 1"
+		log.Errorw(code, err)
+		return err
+	}
 
-		// 2. Submit feedback to interview
-		if err := s.interviewRepo.SubmitFeedback(ctx, id, req); err != nil {
-			return err
-		}
-
-		// 3. Update application status
-		newStatus := "REJECTED"
-		if req.Recommendation == "hire" || req.Recommendation == "strong_hire" {
-			newStatus = "OFFERED"
-		}
-
-		if err := tx.Table("candidate_applications").
-			Where("id = ?", interview.CandidateApplicationID).
-			Update("status", newStatus).Error; err != nil {
-			log.Errorw("[SERVICE] SubmitFeedback - Update Status Error", err)
-			return err
-		}
-
-		return nil
-	})
+	return nil
 }
 
 func (s *interviewService) DeleteInterview(ctx context.Context, id int64) error {
