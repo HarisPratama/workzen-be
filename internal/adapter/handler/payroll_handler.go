@@ -6,11 +6,11 @@ import (
 	"workzen-be/internal/adapter/handler/response"
 	"workzen-be/internal/core/domain/entity"
 	"workzen-be/internal/core/service"
+	"workzen-be/lib/conv"
 	validatorLib "workzen-be/lib/validator"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/google/uuid"
 )
 
 type PayrollHandler interface {
@@ -60,20 +60,12 @@ func (h *payrollHandler) CreatePayroll(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	employeeUUID, err := uuid.Parse(req.EmployeeID)
-	if err != nil {
-		code := "[HANDLER] CreatePayroll - 4"
-		log.Errorw(code, err)
-		errorResp.Meta.Status = false
-		errorResp.Meta.Message = "Invalid employee ID"
-		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
-	}
-
 	periodStart, _ := time.ParseInLocation("2006-01-02", req.PeriodStart, jakartaTZ)
 	periodEnd, _ := time.ParseInLocation("2006-01-02", req.PeriodEnd, jakartaTZ)
 
 	payroll := entity.Payroll{
-		EmployeeID:  employeeUUID,
+		TenantID:    int64(claims.TenantID),
+		EmployeeID:  req.EmployeeID,
 		PeriodStart: periodStart,
 		PeriodEnd:   periodEnd,
 		BasicSalary: req.BasicSalary,
@@ -110,7 +102,7 @@ func (h *payrollHandler) UpdatePayroll(c *fiber.Ctx) error {
 	}
 
 	id := c.Params("payrollID")
-	payrollID, err := uuid.Parse(id)
+	payrollID, err := conv.StringToInt64(id)
 	if err != nil {
 		code := "[HANDLER] UpdatePayroll - 2"
 		log.Errorw(code, err)
@@ -163,7 +155,7 @@ func (h *payrollHandler) DeletePayroll(c *fiber.Ctx) error {
 	}
 
 	id := c.Params("payrollID")
-	payrollID, err := uuid.Parse(id)
+	payrollID, err := conv.StringToInt64(id)
 	if err != nil {
 		code := "[HANDLER] DeletePayroll - 2"
 		log.Errorw(code, err)
@@ -198,7 +190,7 @@ func (h *payrollHandler) GetPayrollByID(c *fiber.Ctx) error {
 	}
 
 	id := c.Params("payrollID")
-	payrollID, err := uuid.Parse(id)
+	payrollID, err := conv.StringToInt64(id)
 	if err != nil {
 		code := "[HANDLER] GetPayrollByID - 2"
 		log.Errorw(code, err)
@@ -236,7 +228,7 @@ func (h *payrollHandler) GetPayrollsByTenant(c *fiber.Ctx) error {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 
-	results, total, err := h.payrollService.GetPayrollsByTenant(c.Context(), uuid.UUID{}, page, limit)
+	results, total, err := h.payrollService.GetPayrollsByTenant(c.Context(), int64(claims.TenantID), page, limit)
 	if err != nil {
 		code := "[HANDLER] GetPayrollsByTenant - 2"
 		log.Errorw(code, err)
@@ -268,7 +260,7 @@ func (h *payrollHandler) GetPayrollsByEmployee(c *fiber.Ctx) error {
 	}
 
 	employeeID := c.Params("employeeID")
-	employeeUUID, err := uuid.Parse(employeeID)
+	employeeIntID, err := conv.StringToInt64(employeeID)
 	if err != nil {
 		code := "[HANDLER] GetPayrollsByEmployee - 2"
 		log.Errorw(code, err)
@@ -280,7 +272,7 @@ func (h *payrollHandler) GetPayrollsByEmployee(c *fiber.Ctx) error {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 
-	results, total, err := h.payrollService.GetPayrollsByEmployee(c.Context(), employeeUUID, page, limit)
+	results, total, err := h.payrollService.GetPayrollsByEmployee(c.Context(), employeeIntID, page, limit)
 	if err != nil {
 		code := "[HANDLER] GetPayrollsByEmployee - 3"
 		log.Errorw(code, err)
@@ -312,7 +304,7 @@ func (h *payrollHandler) ProcessPayroll(c *fiber.Ctx) error {
 	}
 
 	id := c.Params("payrollID")
-	payrollID, err := uuid.Parse(id)
+	payrollID, err := conv.StringToInt64(id)
 	if err != nil {
 		code := "[HANDLER] ProcessPayroll - 2"
 		log.Errorw(code, err)
@@ -347,7 +339,7 @@ func (h *payrollHandler) MarkAsPaid(c *fiber.Ctx) error {
 	}
 
 	id := c.Params("payrollID")
-	payrollID, err := uuid.Parse(id)
+	payrollID, err := conv.StringToInt64(id)
 	if err != nil {
 		code := "[HANDLER] MarkAsPaid - 2"
 		log.Errorw(code, err)
@@ -398,7 +390,7 @@ func (h *payrollHandler) CalculatePayrollSummary(c *fiber.Ctx) error {
 	startDate, _ := time.ParseInLocation("2006-01-02", startDateStr, jakartaTZ)
 	endDate, _ := time.ParseInLocation("2006-01-02", endDateStr, jakartaTZ)
 
-	result, err := h.payrollService.CalculatePayrollSummary(c.Context(), uuid.UUID{}, startDate, endDate)
+	result, err := h.payrollService.CalculatePayrollSummary(c.Context(), int64(claims.TenantID), startDate, endDate)
 	if err != nil {
 		code := "[HANDLER] CalculatePayrollSummary - 2"
 		log.Errorw(code, err)

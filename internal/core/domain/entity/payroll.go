@@ -2,8 +2,6 @@ package entity
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type PayrollStatus string
@@ -16,9 +14,9 @@ const (
 )
 
 type Payroll struct {
-	ID          uuid.UUID     `json:"id" gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
-	TenantID    uuid.UUID     `json:"tenant_id" gorm:"type:uuid;not null;index"`
-	EmployeeID  uuid.UUID     `json:"employee_id" gorm:"type:uuid;not null;index"`
+	ID          int64         `json:"id" gorm:"primary_key;autoIncrement"`
+	TenantID    int64         `json:"tenant_id" gorm:"not null;index"`
+	EmployeeID  int64         `json:"employee_id" gorm:"not null;index"`
 	PeriodStart time.Time     `json:"period_start" gorm:"not null"`
 	PeriodEnd   time.Time     `json:"period_end" gorm:"not null"`
 	BasicSalary float64       `json:"basic_salary" gorm:"type:decimal(15,2);not null"`
@@ -34,9 +32,13 @@ type Payroll struct {
 	DeletedAt   *time.Time    `json:"deleted_at,omitempty" gorm:"index"`
 }
 
+func (Payroll) TableName() string {
+	return "payrolls"
+}
+
 type PayrollItem struct {
-	ID          uuid.UUID `json:"id" gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
-	PayrollID   uuid.UUID `json:"payroll_id" gorm:"type:uuid;not null;index"`
+	ID          int64     `json:"id" gorm:"primary_key;autoIncrement"`
+	PayrollID   int64     `json:"payroll_id" gorm:"not null;index"`
 	Type        string    `json:"type" gorm:"type:varchar(50);not null"` // e.g., "OVERTIME", "BONUS", "DEDUCTION"
 	Description string    `json:"description" gorm:"type:varchar(255)"`
 	Amount      float64   `json:"amount" gorm:"type:decimal(15,2);not null"`
@@ -44,6 +46,10 @@ type PayrollItem struct {
 
 	// Relationships
 	Payroll *Payroll `json:"payroll,omitempty" gorm:"foreignKey:PayrollID"`
+}
+
+func (PayrollItem) TableName() string {
+	return "payroll_details"
 }
 
 type PayrollCalculation struct {

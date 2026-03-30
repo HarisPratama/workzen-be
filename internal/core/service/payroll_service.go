@@ -9,22 +9,21 @@ import (
 	"workzen-be/lib/validator"
 
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/google/uuid"
 )
 
 type PayrollService interface {
 	CreatePayroll(ctx context.Context, req entity.Payroll) (*entity.Payroll, error)
-	UpdatePayroll(ctx context.Context, id uuid.UUID, req entity.Payroll) (*entity.Payroll, error)
-	DeletePayroll(ctx context.Context, id uuid.UUID) error
-	GetPayrollByID(ctx context.Context, id uuid.UUID) (*entity.Payroll, error)
-	GetPayrollsByTenant(ctx context.Context, tenantID uuid.UUID, page, limit int) ([]entity.Payroll, int64, error)
-	GetPayrollsByEmployee(ctx context.Context, employeeID uuid.UUID, page, limit int) ([]entity.Payroll, int64, error)
-	GetPayrollsByPeriod(ctx context.Context, tenantID uuid.UUID, startDate, endDate time.Time, page, limit int) ([]entity.Payroll, int64, error)
-	ProcessPayroll(ctx context.Context, id uuid.UUID) error
-	MarkAsPaid(ctx context.Context, id uuid.UUID, paidAt time.Time) error
-	AddPayrollItem(ctx context.Context, payrollID uuid.UUID, item entity.PayrollItem) error
-	RemovePayrollItem(ctx context.Context, itemID uuid.UUID) error
-	CalculatePayrollSummary(ctx context.Context, tenantID uuid.UUID, startDate, endDate time.Time) (*entity.PayrollSummary, error)
+	UpdatePayroll(ctx context.Context, id int64, req entity.Payroll) (*entity.Payroll, error)
+	DeletePayroll(ctx context.Context, id int64) error
+	GetPayrollByID(ctx context.Context, id int64) (*entity.Payroll, error)
+	GetPayrollsByTenant(ctx context.Context, tenantID int64, page, limit int) ([]entity.Payroll, int64, error)
+	GetPayrollsByEmployee(ctx context.Context, employeeID int64, page, limit int) ([]entity.Payroll, int64, error)
+	GetPayrollsByPeriod(ctx context.Context, tenantID int64, startDate, endDate time.Time, page, limit int) ([]entity.Payroll, int64, error)
+	ProcessPayroll(ctx context.Context, id int64) error
+	MarkAsPaid(ctx context.Context, id int64, paidAt time.Time) error
+	AddPayrollItem(ctx context.Context, payrollID int64, item entity.PayrollItem) error
+	RemovePayrollItem(ctx context.Context, itemID int64) error
+	CalculatePayrollSummary(ctx context.Context, tenantID int64, startDate, endDate time.Time) (*entity.PayrollSummary, error)
 }
 
 type payrollService struct {
@@ -59,7 +58,7 @@ func (s *payrollService) CreatePayroll(ctx context.Context, req entity.Payroll) 
 	return &req, nil
 }
 
-func (s *payrollService) UpdatePayroll(ctx context.Context, id uuid.UUID, req entity.Payroll) (*entity.Payroll, error) {
+func (s *payrollService) UpdatePayroll(ctx context.Context, id int64, req entity.Payroll) (*entity.Payroll, error) {
 	// Check if payroll exists
 	existing, err := s.payrollRepo.FindByID(ctx, id)
 	if err != nil {
@@ -89,7 +88,7 @@ func (s *payrollService) UpdatePayroll(ctx context.Context, id uuid.UUID, req en
 	return existing, nil
 }
 
-func (s *payrollService) DeletePayroll(ctx context.Context, id uuid.UUID) error {
+func (s *payrollService) DeletePayroll(ctx context.Context, id int64) error {
 	// Check if payroll exists
 	existing, err := s.payrollRepo.FindByID(ctx, id)
 	if err != nil {
@@ -109,7 +108,7 @@ func (s *payrollService) DeletePayroll(ctx context.Context, id uuid.UUID) error 
 	return nil
 }
 
-func (s *payrollService) GetPayrollByID(ctx context.Context, id uuid.UUID) (*entity.Payroll, error) {
+func (s *payrollService) GetPayrollByID(ctx context.Context, id int64) (*entity.Payroll, error) {
 	payroll, err := s.payrollRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("payroll not found: %w", err)
@@ -117,19 +116,19 @@ func (s *payrollService) GetPayrollByID(ctx context.Context, id uuid.UUID) (*ent
 	return payroll, nil
 }
 
-func (s *payrollService) GetPayrollsByTenant(ctx context.Context, tenantID uuid.UUID, page, limit int) ([]entity.Payroll, int64, error) {
+func (s *payrollService) GetPayrollsByTenant(ctx context.Context, tenantID int64, page, limit int) ([]entity.Payroll, int64, error) {
 	return s.payrollRepo.FindByTenantID(ctx, tenantID, page, limit)
 }
 
-func (s *payrollService) GetPayrollsByEmployee(ctx context.Context, employeeID uuid.UUID, page, limit int) ([]entity.Payroll, int64, error) {
+func (s *payrollService) GetPayrollsByEmployee(ctx context.Context, employeeID int64, page, limit int) ([]entity.Payroll, int64, error) {
 	return s.payrollRepo.FindByEmployeeID(ctx, employeeID, page, limit)
 }
 
-func (s *payrollService) GetPayrollsByPeriod(ctx context.Context, tenantID uuid.UUID, startDate, endDate time.Time, page, limit int) ([]entity.Payroll, int64, error) {
+func (s *payrollService) GetPayrollsByPeriod(ctx context.Context, tenantID int64, startDate, endDate time.Time, page, limit int) ([]entity.Payroll, int64, error) {
 	return s.payrollRepo.FindByPeriod(ctx, tenantID, startDate, endDate, page, limit)
 }
 
-func (s *payrollService) ProcessPayroll(ctx context.Context, id uuid.UUID) error {
+func (s *payrollService) ProcessPayroll(ctx context.Context, id int64) error {
 	payroll, err := s.payrollRepo.FindByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("payroll not found: %w", err)
@@ -147,7 +146,7 @@ func (s *payrollService) ProcessPayroll(ctx context.Context, id uuid.UUID) error
 	return nil
 }
 
-func (s *payrollService) MarkAsPaid(ctx context.Context, id uuid.UUID, paidAt time.Time) error {
+func (s *payrollService) MarkAsPaid(ctx context.Context, id int64, paidAt time.Time) error {
 	payroll, err := s.payrollRepo.FindByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("payroll not found: %w", err)
@@ -165,7 +164,7 @@ func (s *payrollService) MarkAsPaid(ctx context.Context, id uuid.UUID, paidAt ti
 	return nil
 }
 
-func (s *payrollService) AddPayrollItem(ctx context.Context, payrollID uuid.UUID, item entity.PayrollItem) error {
+func (s *payrollService) AddPayrollItem(ctx context.Context, payrollID int64, item entity.PayrollItem) error {
 	payroll, err := s.payrollRepo.FindByID(ctx, payrollID)
 	if err != nil {
 		return fmt.Errorf("payroll not found: %w", err)
@@ -185,7 +184,7 @@ func (s *payrollService) AddPayrollItem(ctx context.Context, payrollID uuid.UUID
 	return nil
 }
 
-func (s *payrollService) RemovePayrollItem(ctx context.Context, itemID uuid.UUID) error {
+func (s *payrollService) RemovePayrollItem(ctx context.Context, itemID int64) error {
 	if err := s.payrollRepo.DeletePayrollItem(ctx, itemID); err != nil {
 		log.Errorw("failed to remove payroll item", "error", err)
 		return fmt.Errorf("failed to remove payroll item: %w", err)
@@ -193,7 +192,7 @@ func (s *payrollService) RemovePayrollItem(ctx context.Context, itemID uuid.UUID
 	return nil
 }
 
-func (s *payrollService) CalculatePayrollSummary(ctx context.Context, tenantID uuid.UUID, startDate, endDate time.Time) (*entity.PayrollSummary, error) {
+func (s *payrollService) CalculatePayrollSummary(ctx context.Context, tenantID int64, startDate, endDate time.Time) (*entity.PayrollSummary, error) {
 	summary, err := s.payrollRepo.CalculatePayrollSummary(ctx, tenantID, startDate, endDate)
 	if err != nil {
 		log.Errorw("failed to calculate payroll summary", "error", err)

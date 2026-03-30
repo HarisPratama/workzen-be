@@ -18,6 +18,7 @@ type InterviewRepository interface {
 	GetInterviewByID(ctx context.Context, id int64) (*entity.InterviewEntity, error)
 	CreateInterview(ctx context.Context, req entity.InterviewEntity) error
 	UpdateInterview(ctx context.Context, id int64, req entity.InterviewUpdateRequest) error
+	SubmitFeedback(ctx context.Context, id int64, req entity.SubmitFeedbackRequest) error
 	DeleteInterview(ctx context.Context, id int64) error
 }
 
@@ -160,6 +161,28 @@ func (r *interviewRepository) UpdateInterview(ctx context.Context, id int64, req
 
 	if err != nil {
 		code := "[REPOSITORY] UpdateInterview - 1"
+		log.Errorw(code, err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *interviewRepository) SubmitFeedback(ctx context.Context, id int64, req entity.SubmitFeedbackRequest) error {
+	updates := map[string]interface{}{
+		"status":       "COMPLETED",
+		"feedback":     req.OverallFeedback,
+		"rating":       req.Rating,
+		"completed_at": time.Now(),
+	}
+
+	err := r.db.WithContext(ctx).
+		Model(&model.Interview{}).
+		Where("id = ?", id).
+		Updates(updates).Error
+
+	if err != nil {
+		code := "[REPOSITORY] SubmitFeedback - 1"
 		log.Errorw(code, err)
 		return err
 	}

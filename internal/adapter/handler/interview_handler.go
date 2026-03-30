@@ -17,6 +17,7 @@ type InterviewHandler interface {
 	GetInterviewByID(c *fiber.Ctx) error
 	CreateInterview(c *fiber.Ctx) error
 	UpdateInterview(c *fiber.Ctx) error
+	SubmitFeedback(c *fiber.Ctx) error
 	DeleteInterview(c *fiber.Ctx) error
 }
 
@@ -91,6 +92,17 @@ func (h *interviewHandler) GetInterviews(c *fiber.Ctx) error {
 			Status:                 item.Status,
 			Feedback:               item.Feedback,
 			Rating:                 item.Rating,
+			CandidateApplication: response.CandidateApplicationResponse{
+				ID:        item.CandidateApplication.ID,
+				Status:    item.CandidateApplication.Status,
+				AppliedAt: item.CandidateApplication.AppliedAt.In(jakartaTZ).Format("02 January 2006 15:04"),
+				Candidate: response.CandidateResponse{
+					ID:       item.CandidateApplication.Candidate.ID,
+					FullName: item.CandidateApplication.Candidate.FullName,
+					Email:    item.CandidateApplication.Candidate.Email,
+					Phone:    item.CandidateApplication.Candidate.Phone,
+				},
+			},
 		})
 	}
 
@@ -190,7 +202,7 @@ func (h *interviewHandler) CreateInterview(c *fiber.Ctx) error {
 		TenantID:               int64(tenantID),
 		CandidateApplicationID: req.CandidateApplicationID,
 		InterviewerID:          req.InterviewerID,
-		InterviewType:          req.InterviewType,
+		InterviewType:          req.Type,
 		ScheduledAt:            req.ScheduledAt,
 		DurationMinutes:        req.DurationMinutes,
 		Location:               req.Location,
@@ -251,6 +263,65 @@ func (h *interviewHandler) UpdateInterview(c *fiber.Ctx) error {
 
 	defaultSuccessResponse.Meta.Status = true
 	defaultSuccessResponse.Meta.Message = "Interview updated successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.JSON(defaultSuccessResponse)
+}
+
+func (h *interviewHandler) SubmitFeedback(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.TenantID == 0 {
+		code := "[HANDLER] SubmitFeedback - 1"
+		log.Errorw(code, "tenant id is empty")
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	idParam := c.Params("interviewID")
+	interviewID, err := conv.StringToInt64(idParam)
+	if err != nil {
+		code := "[HANDLER] SubmitFeedback - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid interview ID"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	var req request.SubmitFeedbackRequest
+	if err := c.BodyParser(&req); err != nil {
+		code := "[HANDLER] SubmitFeedback - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err = validatorLib.ValidateStruct(req); err != nil {
+		code = "[HANDLER] SubmitFeedback - 4"
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	reqEntity := entity.SubmitFeedbackRequest{
+		Rating:          req.Rating,
+		Strengths:       req.Strengths,
+		Weaknesses:      req.Weaknesses,
+		OverallFeedback: req.OverallFeedback,
+		Recommendation:  req.Recommendation,
+	}
+
+	if err := h.interviewService.SubmitFeedback(c.Context(), interviewID, reqEntity); err != nil {
+		code := "[HANDLER] SubmitFeedback - 5"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Feedback submitted successfully"
 	defaultSuccessResponse.Data = nil
 
 	return c.JSON(defaultSuccessResponse)

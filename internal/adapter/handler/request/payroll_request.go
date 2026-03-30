@@ -1,7 +1,7 @@
 package request
 
 type PayrollRequest struct {
-	EmployeeID  string  `json:"employee_id" validate:"required,uuid"`
+	EmployeeID  int64   `json:"employee_id" validate:"required"`
 	PeriodStart string  `json:"period_start" validate:"required,datetime=2006-01-02"`
 	PeriodEnd   string  `json:"period_end" validate:"required,datetime=2006-01-02"`
 	BasicSalary float64 `json:"basic_salary" validate:"required,gte=0"`

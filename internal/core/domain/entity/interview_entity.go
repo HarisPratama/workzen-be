@@ -52,3 +52,11 @@ type InterviewUpdateRequest struct {
 	Location    string `json:"location"`
 	ScheduledAt string `json:"scheduled_at"`
 }
+
+type SubmitFeedbackRequest struct {
+	Rating          int    `json:"rating"`
+	Strengths       string `json:"strengths"`
+	Weaknesses      string `json:"weaknesses"`
+	OverallFeedback string `json:"overall_feedback"`
+	Recommendation  string `json:"recommendation"`
+}

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"strings"
 	"workzen-be/internal/adapter/handler/response"
 	"workzen-be/internal/core/domain/entity"
 	"workzen-be/internal/core/service"
@@ -35,12 +36,13 @@ func (h *offerHandler) GetOffers(c *fiber.Ctx) error {
 	}
 
 	tenantID := claims.TenantID
+	status := strings.ToUpper(c.Query("status"))
 
 	query := entity.OfferQueryString{
 		Limit:  10,
 		Page:   1,
 		Search: c.Query("search"),
-		Status: c.Query("status"),
+		Status: status,
 	}
 
 	if c.Query("limit") != "" {

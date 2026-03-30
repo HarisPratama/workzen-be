@@ -7,6 +7,7 @@ import (
 	"workzen-be/internal/core/domain/entity"
 
 	"github.com/gofiber/fiber/v2/log"
+	"gorm.io/gorm"
 )
 
 type InterviewService interface {
@@ -14,11 +15,13 @@ type InterviewService interface {
 	GetInterviewByID(ctx context.Context, id int64) (*entity.InterviewEntity, error)
 	CreateInterview(ctx context.Context, req entity.InterviewEntityRequest, tenantID int64) error
 	UpdateInterview(ctx context.Context, id int64, req entity.InterviewUpdateRequest) error
+	SubmitFeedback(ctx context.Context, id int64, req entity.SubmitFeedbackRequest) error
 	DeleteInterview(ctx context.Context, id int64) error
 }
 
 type interviewService struct {
 	interviewRepo repository.InterviewRepository
+	db            *gorm.DB
 }
 
 func (s *interviewService) GetInterviewsByTenant(ctx context.Context, tenantID int64, query entity.InterviewQueryString) ([]entity.InterviewEntity, int64, int64, error) {
@@ -88,6 +91,17 @@ func (s *interviewService) UpdateInterview(ctx context.Context, id int64, req en
 	return nil
 }
 
+func (s *interviewService) SubmitFeedback(ctx context.Context, id int64, req entity.SubmitFeedbackRequest) error {
+	// Submit feedback to interview
+	if err := s.interviewRepo.SubmitFeedback(ctx, id, req); err != nil {
+		code := "[SERVICE] SubmitFeedback - 1"
+		log.Errorw(code, err)
+		return err
+	}
+
+	return nil
+}
+
 func (s *interviewService) DeleteInterview(ctx context.Context, id int64) error {
 	err := s.interviewRepo.DeleteInterview(ctx, id)
 
@@ -100,6 +114,9 @@ func (s *interviewService) DeleteInterview(ctx context.Context, id int64) error 
 	return nil
 }
 
-func NewInterviewService(interviewRepo repository.InterviewRepository) InterviewService {
-	return &interviewService{interviewRepo: interviewRepo}
+func NewInterviewService(interviewRepo repository.InterviewRepository, db *gorm.DB) InterviewService {
+	return &interviewService{
+		interviewRepo: interviewRepo,
+		db:            db,
+	}
 }
