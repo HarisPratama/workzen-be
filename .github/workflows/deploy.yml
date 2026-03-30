@@ -20,6 +20,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files in migrations
+        id: changed-migrations
+        uses: tj-actions/changed-files@v44
+        with:
+          files: database/migrations/**
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -64,6 +72,14 @@ jobs:
             echo "=== Pulling latest image ==="
             docker pull ghcr.io/harispratama/workzen-be:latest
             
+            # Run migrations if changed
+            if [ "${{ steps.changed-migrations.outputs.any_changed }}" == "true" ]; then
+              echo "=== Changes detected in migrations, running migrate service ==="
+              docker compose -f docker-compose.prod.yml run --rm migrate
+            else
+              echo "=== No changes in migrations, skipping migration step ==="
+            fi
+
             # Restart only the app container (keep DB running)
             echo "=== Restarting app container ==="
             docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate app
