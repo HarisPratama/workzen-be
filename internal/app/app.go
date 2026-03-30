@@ -85,7 +85,7 @@ func RunServer() {
 	// New services for payroll, attendance, interview, offer, and employee assignment
 	payrollService := service.NewPayrollService(payrollRepo)
 	attendanceService := service.NewAttendanceService(attendanceRepo)
-	interviewService := service.NewInterviewService(interviewRepo)
+	interviewService := service.NewInterviewService(interviewRepo, db.DB)
 	offerService := service.NewOfferService(offerRepo)
 	employeeAssignmentService := service.NewEmployeeAssignmentService(assignmentRepo)
 	subscriptionService := service.NewSubscriptionService(subscriptionRepo)
@@ -278,6 +278,7 @@ func RunServer() {
 	interviewApp.Post("/", interviewHandler.CreateInterview)
 	interviewApp.Get("/:interviewID", interviewHandler.GetInterviewByID)
 	interviewApp.Put("/:interviewID", interviewHandler.UpdateInterview)
+	interviewApp.Post("/:interviewID/feedback", interviewHandler.SubmitFeedback)
 	interviewApp.Delete("/:interviewID", interviewHandler.DeleteInterview)
 
 	// Offer endpoints

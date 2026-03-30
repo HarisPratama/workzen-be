@@ -111,7 +111,7 @@ func (c2 *candidateApplicationHandler) GetCandidateApplicationDetail(c *fiber.Ct
 	resp := response.CandidateApplicationResponse{
 		ID:        result.ID,
 		Status:    result.Status,
-		AppliedAt: result.AppliedAt,
+		AppliedAt: result.AppliedAt.In(jakartaTZ).Format("02 January 2006 15:04"),
 		Candidate: response.CandidateResponse{
 			ID:       result.Candidate.ID,
 			FullName: result.Candidate.FullName,
@@ -299,7 +299,7 @@ func (c2 *candidateApplicationHandler) GetCandidateApplicationByTenantMR(c *fibe
 		respCandidateApplication := response.CandidateApplicationResponse{
 			ID:        result.ID,
 			Status:    result.Status,
-			AppliedAt: result.AppliedAt,
+			AppliedAt: result.AppliedAt.In(jakartaTZ).Format("02 January 2006 15:04"),
 			Candidate: response.CandidateResponse{
 				ID:       result.Candidate.ID,
 				FullName: result.Candidate.FullName,
