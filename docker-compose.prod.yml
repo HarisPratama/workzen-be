@@ -19,12 +19,13 @@ services:
       - workzen-network
 
   migrate:
-    build: .
-    image: workzen-be:latest
+    image: ghcr.io/harispratama/workzen-be:latest
+    env_file:
+      - .env
     command: [
       "/app/migrate",
       "-path", "/app/database/migrations",
-      "-database", "postgres://postgres:postgres@db:5432/my_database?sslmode=disable",
+      "-database", "postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?sslmode=disable",
       "up"
     ]
     depends_on:
@@ -34,8 +35,7 @@ services:
       - workzen-network
 
   app:
-    build: .
-    image: workzen-be:latest
+    image: ghcr.io/harispratama/workzen-be:latest
     container_name: workzen-be
     restart: always
     ports:
