@@ -1,7 +1,13 @@
 .git
+.github
 .gitignore
+.env
+.env.*
+!.env.example
+tmp
 node_modules
 Dockerfile
-docker-compose.yml
-.env
-tmp
+docker-compose*.yml
+nginx
+*.md
+.idea

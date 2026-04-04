@@ -64,17 +64,28 @@ jobs:
             # Login to GHCR
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u harispratama --password-stdin
             
-            # Update environment file
+            # Update environment files
             echo "${{ secrets.ENV_FILE }}" > .env
             chmod 600 .env
+
+            echo "${{ secrets.DB_ENV_FILE }}" > .env.db
+            chmod 600 .env.db
+
+            echo "${{ secrets.AI_ENV_FILE }}" > .env.ai
+            chmod 600 .env.ai
             
             # Pull latest image
             echo "=== Pulling latest image ==="
+            docker pull ghcr.io/harispratama/workzen-be:${{ github.sha }}
             docker pull ghcr.io/harispratama/workzen-be:latest
-            
+
+            # Save current SHA for rollback
+            echo "BE_IMAGE_TAG=${{ github.sha }}" > .env.deploy
+
             # Run migrations if changed
             if [ "${{ steps.changed-migrations.outputs.any_changed }}" == "true" ]; then
               echo "=== Changes detected in migrations, running migrate service ==="
+              export BE_IMAGE_TAG=${{ github.sha }}
               docker compose -f docker-compose.prod.yml run --rm migrate
             else
               echo "=== No changes in migrations, skipping migration step ==="
@@ -82,6 +93,7 @@ jobs:
 
             # Restart only the app container (keep DB running)
             echo "=== Restarting app container ==="
+            export BE_IMAGE_TAG=${{ github.sha }}
             docker compose -f docker-compose.prod.yml up -d --no-deps --force-recreate app
             
             # Cleanup old images

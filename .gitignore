@@ -1,3 +1,7 @@
 /temp
-.env*
+.env
+.env.*
+!.env.example
+!.env.db.example
+!.env.ai.example
 nginx.conf

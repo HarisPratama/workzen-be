@@ -14,6 +14,7 @@ type ManpowerReqEntity struct {
 	WorkLocation   string       `json:"work_location" gorm:"column:work_location"`
 	JobDescription string       `json:"job_description" gorm:"column:job_description"`
 	DeadlineDate   time.Time    `json:"deadline_date" gorm:"column:deadline_date"`
+	PublicToken    string       `json:"public_token" gorm:"column:public_token;uniqueIndex"`
 	Status         string       `json:"status" gorm:"column:status;default:'OPEN'"`
 	CreatedAt      time.Time    `json:"created_at" gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt      time.Time    `json:"updated_at" gorm:"column:updated_at;autoUpdateTime"`
