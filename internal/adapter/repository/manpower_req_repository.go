@@ -15,6 +15,8 @@ import (
 type ManpowerReqRepository interface {
 	GetManpowerReqsByTenant(ctx context.Context, tenantID int64, query entity.ManpowerReqQueryString) ([]entity.ManpowerReqEntity, int64, int64, error)
 	GetDetailManpowerRequestByTenant(ctx context.Context, tenantID int64, manpowerRequestID int64) (*entity.ManpowerReqEntity, error)
+	GetManpowerReqByPublicToken(ctx context.Context, token string) (*entity.ManpowerReqEntity, error)
+	UpdatePublicToken(ctx context.Context, tenantID int64, manpowerReqID int64, token string) error
 	CreateManpowerReq(ctx context.Context, manpowerReq *entity.ManpowerReqEntity) error
 	UpdateManpowerReq(ctx context.Context, manpowerReq *entity.ManpowerReqEntity) error
 	DeleteManpowerReq(ctx context.Context, tenantID int64, manpowerReqID int64) error
@@ -159,6 +161,35 @@ func (m *manpowerReqRepository) DeleteManpowerReq(ctx context.Context, tenantID 
 		Delete(&entity.ManpowerReqEntity{}, manpowerReqID).Error
 	if err != nil {
 		code = "[REPOSITORY] DeleteManpowerReq - 1"
+		log.Errorw(code, err)
+		return err
+	}
+
+	return nil
+}
+
+func (m *manpowerReqRepository) GetManpowerReqByPublicToken(ctx context.Context, token string) (*entity.ManpowerReqEntity, error) {
+	var manpowerRequest entity.ManpowerReqEntity
+	err := m.db.WithContext(ctx).
+		Where("public_token = ?", token).
+		Preload("Client").
+		First(&manpowerRequest).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &manpowerRequest, nil
+}
+
+func (m *manpowerReqRepository) UpdatePublicToken(ctx context.Context, tenantID int64, manpowerReqID int64, token string) error {
+	err := m.db.WithContext(ctx).
+		Model(&entity.ManpowerReqEntity{}).
+		Where("id = ? AND tenant_id = ?", manpowerReqID, tenantID).
+		Update("public_token", token).Error
+
+	if err != nil {
+		code = "[REPOSITORY] UpdatePublicToken - 1"
 		log.Errorw(code, err)
 		return err
 	}

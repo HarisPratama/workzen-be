@@ -7,11 +7,14 @@ import (
 	"workzen-be/internal/core/domain/entity"
 
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/google/uuid"
 )
 
 type ManpowerReqService interface {
 	GetManpowerReqByTenant(ctx context.Context, tenantID int64, query entity.ManpowerReqQueryString) ([]entity.ManpowerReqEntity, int64, int64, error)
 	GetDetailManpowerRequestByTenant(ctx context.Context, tenantID int64, id int64) (*entity.ManpowerReqEntity, error)
+	GetManpowerReqByPublicToken(ctx context.Context, token string) (*entity.ManpowerReqEntity, error)
+	GeneratePublicLink(ctx context.Context, tenantID int64, manpowerReqID int64) (string, error)
 	CreateManpowerReq(ctx context.Context, manpowerReq *entity.ManpowerReqEntity) error
 	UpdateManpowerReq(ctx context.Context, tenantID int64, manpowerReqID int64, manpowerReq *entity.ManpowerReqEntity) error
 	DeleteManpowerReq(ctx context.Context, tenantID int64, manpowerReqID int64) error
@@ -88,6 +91,37 @@ func (m *manpowerReqService) DeleteManpowerReq(ctx context.Context, tenantID int
 	}
 
 	return nil
+}
+
+func (m *manpowerReqService) GetManpowerReqByPublicToken(ctx context.Context, token string) (*entity.ManpowerReqEntity, error) {
+	result, err := m.manpowerReqRepo.GetManpowerReqByPublicToken(ctx, token)
+	if err != nil {
+		code = "[SERVICE] GetManpowerReqByPublicToken - 1"
+		log.Errorw(code, err)
+		return nil, err
+	}
+	return result, nil
+}
+
+func (m *manpowerReqService) GeneratePublicLink(ctx context.Context, tenantID int64, manpowerReqID int64) (string, error) {
+	existing, err := m.manpowerReqRepo.GetDetailManpowerRequestByTenant(ctx, tenantID, manpowerReqID)
+	if err != nil {
+		return "", fmt.Errorf("manpower request not found: %w", err)
+	}
+
+	if existing.PublicToken != "" {
+		return existing.PublicToken, nil
+	}
+
+	token := uuid.New().String()
+	err = m.manpowerReqRepo.UpdatePublicToken(ctx, tenantID, manpowerReqID, token)
+	if err != nil {
+		code = "[SERVICE] GeneratePublicLink - 1"
+		log.Errorw(code, err)
+		return "", err
+	}
+
+	return token, nil
 }
 
 func NewManpowerReqService(repo repository.ManpowerReqRepository) ManpowerReqService {

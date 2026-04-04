@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 	"workzen-be/config"
 	"workzen-be/internal/adapter/repository"
@@ -100,7 +101,7 @@ func (a *authService) GetUserByEmail(ctx context.Context, req entity.LoginReques
 		TenantID: tenantID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			NotBefore: jwt.NewNumericDate(time.Now().Add(-time.Hour * 2)),
-			ID:        string(result.ID),
+			ID:        strconv.FormatInt(result.ID, 10),
 		},
 	}
 

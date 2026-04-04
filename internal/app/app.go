@@ -15,6 +15,7 @@ import (
 	"workzen-be/lib/auth"
 	"workzen-be/lib/middleware"
 	"workzen-be/lib/pagination"
+	"workzen-be/internal/ai"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gofiber/contrib/swagger"
@@ -28,13 +29,13 @@ func RunServer() {
 	cfg := config.NewConfig()
 	db, err := cfg.ConnectionPostgres()
 	if err != nil {
-		log.Fatal("Could not connect to database: %v", err)
+		log.Fatalf("Could not connect to database: %v", err)
 		return
 	}
 
 	err = os.MkdirAll("./temp/content", 0755)
 	if err != nil {
-		log.Fatal("Could not create temp content directory: %v", err)
+		log.Fatalf("Could not create temp content directory: %v", err)
 		return
 	}
 
@@ -70,6 +71,16 @@ func RunServer() {
 	subscriptionRepo := repository.NewSubscriptionRepository(db.DB)
 	overviewRepo := repository.NewOverviewRepository(db.DB)
 
+	// AI Client
+	aiAddr := os.Getenv("AI_SERVICE_ADDR")
+	if aiAddr == "" {
+		aiAddr = "localhost:50051"
+	}
+	aiClient, err := ai.NewClient(aiAddr)
+	if err != nil {
+		log.Printf("Warning: Could not connect to AI service: %v", err)
+	}
+
 	//service
 	authService := service.NewAuthService(authRepo, cfg, jwt)
 	categoryService := service.NewCategoryService(categoryRepo)
@@ -91,6 +102,8 @@ func RunServer() {
 	subscriptionService := service.NewSubscriptionService(subscriptionRepo)
 	overviewService := service.NewOverviewService(overviewRepo)
 	hireService := service.NewHireService(db.DB)
+	aiService := service.NewAIService(aiClient)
+	jobPostingService := service.NewJobPostingService(db.DB, candidateRepo, candidateApplicationRepo, aiService)
 
 	//handler
 	authHandler := handler.NewAuthHandler(authService, cfg)
@@ -113,6 +126,8 @@ func RunServer() {
 	subscriptionHandler := handler.NewSubscriptionHandler(subscriptionService)
 	overviewHandler := handler.NewOverviewHandler(overviewService)
 	hireHandler := handler.NewHireHandler(hireService)
+	aiHandler := handler.NewAIHandler(aiService)
+	jobPostingHandler := handler.NewJobPostingHandler(manpowerReqService, jobPostingService)
 
 	app := fiber.New()
 	corsOrigins := cfg.App.CorsOrigins
@@ -198,6 +213,10 @@ func RunServer() {
 	feApp.Get("/subscription-plans", subscriptionHandler.GetPlans)
 	feApp.Get("/subscription-plans/:planID", subscriptionHandler.GetPlanByID)
 
+	// Job Postings (public - no auth required)
+	feApp.Get("/job-postings/:token", jobPostingHandler.GetJobPosting)
+	feApp.Post("/job-postings/:token/apply", jobPostingHandler.ApplyToJob)
+
 	tenantApp := api.Group("/v1")
 	tenantApp.Use(middlewareAuth.CheckCookieToken())
 
@@ -224,6 +243,7 @@ func RunServer() {
 	tenantApp.Get("/manpower-requests/:manpowerRequestID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.GetDetailManpowerRequestByTenant)
 	tenantApp.Put("/manpower-requests/:manpowerRequestID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.UpdateManpowerReq)
 	tenantApp.Delete("/manpower-requests/:manpowerRequestID", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), manpowerReqHandler.DeleteManpowerReq)
+	tenantApp.Post("/manpower-requests/:manpowerRequestID/generate-link", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), jobPostingHandler.GenerateLink)
 	tenantApp.Get("/manpower-requests/:manpowerRequestID/candidates", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"), candidateApplicationHandler.GetCandidateApplicationByTenantMR)
 
 	// candidate
@@ -247,6 +267,11 @@ func RunServer() {
 	subscriptionApp.Post("/subscribe", subscriptionHandler.Subscribe)
 	subscriptionApp.Post("/:subscriptionID/cancel", subscriptionHandler.CancelSubscription)
 	subscriptionApp.Post("/change-plan", subscriptionHandler.ChangePlan)
+
+	// AI endpoints
+	aiApp := tenantApp.Group("/ai", middlewareAuth.RequireRole("TENANT_ADMIN", "SUPERVISOR"))
+	aiApp.Post("/analyze-cv", aiHandler.AnalyzeCV)
+	aiApp.Post("/match-job", aiHandler.MatchJob)
 
 	// ========== NEW ENDPOINTS ==========
 	// Payroll endpoints
@@ -298,24 +323,14 @@ func RunServer() {
 	assignmentApp.Delete("/:assignmentID", employeeAssignmentHandler.DeleteAssignment)
 
 	// Start server
-	log.Println("Starting server on port:", cfg.App.AppPort)
 	if cfg.App.AppPort == "" {
 		cfg.App.AppPort = os.Getenv("APP_PORT")
 	}
-
-	err = app.Listen(":" + cfg.App.AppPort)
-	if err != nil {
-		log.Fatal("Could not start server: %v", err)
-	}
+	log.Println("Starting server on port:", cfg.App.AppPort)
 
 	go func() {
-		if cfg.App.AppPort == "" {
-			cfg.App.AppPort = os.Getenv("APP_PORT")
-		}
-
-		err := app.Listen(":" + cfg.App.AppPort)
-		if err != nil {
-			log.Fatal("app listen error: %v", err)
+		if err := app.Listen(":" + cfg.App.AppPort); err != nil {
+			log.Fatalf("Could not start server: %v", err)
 		}
 	}()
 
@@ -329,5 +344,7 @@ func RunServer() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	app.ShutdownWithContext(ctx)
+	if err := app.ShutdownWithContext(ctx); err != nil {
+		log.Fatalf("Server shutdown error: %v", err)
+	}
 }

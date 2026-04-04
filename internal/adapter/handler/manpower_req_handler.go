@@ -69,6 +69,7 @@ func (m *manpowerReqHandler) GetDetailManpowerRequestByTenant(c *fiber.Ctx) erro
 		WorkLocation:   result.WorkLocation,
 		JobDescription: result.JobDescription,
 		DeadlineDate:   result.DeadlineDate.In(jakartaTZ).Format("02 January 2006"),
+		PublicToken:    result.PublicToken,
 		CreatedAt:      result.CreatedAt.In(jakartaTZ).Format("02 January 2006"),
 		Status:         result.Status,
 		Client: response.ClientResponse{
