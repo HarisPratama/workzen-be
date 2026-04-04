@@ -10,7 +10,6 @@ import (
 	"workzen-be/internal/core/service"
 	validatorLib "workzen-be/lib/validator"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 )
@@ -18,7 +17,6 @@ import (
 var err error
 var code string
 var errorResp response.ErrorResponseDefault
-var validate = validator.New()
 var jakartaTZ, _ = time.LoadLocation("Asia/Jakarta")
 
 type AuthHandler interface {

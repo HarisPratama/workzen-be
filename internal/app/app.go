@@ -29,13 +29,13 @@ func RunServer() {
 	cfg := config.NewConfig()
 	db, err := cfg.ConnectionPostgres()
 	if err != nil {
-		log.Fatal("Could not connect to database: %v", err)
+		log.Fatalf("Could not connect to database: %v", err)
 		return
 	}
 
 	err = os.MkdirAll("./temp/content", 0755)
 	if err != nil {
-		log.Fatal("Could not create temp content directory: %v", err)
+		log.Fatalf("Could not create temp content directory: %v", err)
 		return
 	}
 
@@ -323,24 +323,14 @@ func RunServer() {
 	assignmentApp.Delete("/:assignmentID", employeeAssignmentHandler.DeleteAssignment)
 
 	// Start server
-	log.Println("Starting server on port:", cfg.App.AppPort)
 	if cfg.App.AppPort == "" {
 		cfg.App.AppPort = os.Getenv("APP_PORT")
 	}
-
-	err = app.Listen(":" + cfg.App.AppPort)
-	if err != nil {
-		log.Fatal("Could not start server: %v", err)
-	}
+	log.Println("Starting server on port:", cfg.App.AppPort)
 
 	go func() {
-		if cfg.App.AppPort == "" {
-			cfg.App.AppPort = os.Getenv("APP_PORT")
-		}
-
-		err := app.Listen(":" + cfg.App.AppPort)
-		if err != nil {
-			log.Fatal("app listen error: %v", err)
+		if err := app.Listen(":" + cfg.App.AppPort); err != nil {
+			log.Fatalf("Could not start server: %v", err)
 		}
 	}()
 
@@ -354,5 +344,7 @@ func RunServer() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	app.ShutdownWithContext(ctx)
+	if err := app.ShutdownWithContext(ctx); err != nil {
+		log.Fatalf("Server shutdown error: %v", err)
+	}
 }
